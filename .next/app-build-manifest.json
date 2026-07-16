@@ -20,28 +20,21 @@
       "static/chunks/fd9d1056-ac0a0ec8b0d930f7.js",
       "static/chunks/864-070f2d01bc0b1d69.js",
       "static/chunks/main-app-798298d97e0c7829.js",
-      "static/chunks/app/page-b5da3000b480ae87.js"
+      "static/chunks/app/page-be1c7ea56ede8273.js"
     ],
     "/cups/page": [
       "static/chunks/webpack-146cb5ccf6eeb00a.js",
       "static/chunks/fd9d1056-ac0a0ec8b0d930f7.js",
       "static/chunks/864-070f2d01bc0b1d69.js",
       "static/chunks/main-app-798298d97e0c7829.js",
-      "static/chunks/app/cups/page-91428f5084479dfb.js"
+      "static/chunks/app/cups/page-a6319e68ef1b0c46.js"
     ],
     "/keychains/page": [
       "static/chunks/webpack-146cb5ccf6eeb00a.js",
       "static/chunks/fd9d1056-ac0a0ec8b0d930f7.js",
       "static/chunks/864-070f2d01bc0b1d69.js",
       "static/chunks/main-app-798298d97e0c7829.js",
-      "static/chunks/app/keychains/page-9f940f62952ade5b.js"
-    ],
-    "/shirts/page": [
-      "static/chunks/webpack-146cb5ccf6eeb00a.js",
-      "static/chunks/fd9d1056-ac0a0ec8b0d930f7.js",
-      "static/chunks/864-070f2d01bc0b1d69.js",
-      "static/chunks/main-app-798298d97e0c7829.js",
-      "static/chunks/app/shirts/page-286c064fa067f867.js"
+      "static/chunks/app/keychains/page-4596f10839ed4489.js"
     ],
     "/wraps/page": [
       "static/chunks/webpack-146cb5ccf6eeb00a.js",
@@ -49,6 +42,13 @@
       "static/chunks/864-070f2d01bc0b1d69.js",
       "static/chunks/main-app-798298d97e0c7829.js",
       "static/chunks/app/wraps/page-793009ed3e6cee2d.js"
+    ],
+    "/shirts/page": [
+      "static/chunks/webpack-146cb5ccf6eeb00a.js",
+      "static/chunks/fd9d1056-ac0a0ec8b0d930f7.js",
+      "static/chunks/864-070f2d01bc0b1d69.js",
+      "static/chunks/main-app-798298d97e0c7829.js",
+      "static/chunks/app/shirts/page-286c064fa067f867.js"
     ]
   }
 }

@@ -3,6 +3,6 @@
   "/page": "app/page.js",
   "/cups/page": "app/cups/page.js",
   "/keychains/page": "app/keychains/page.js",
-  "/shirts/page": "app/shirts/page.js",
-  "/wraps/page": "app/wraps/page.js"
+  "/wraps/page": "app/wraps/page.js",
+  "/shirts/page": "app/shirts/page.js"
 }
