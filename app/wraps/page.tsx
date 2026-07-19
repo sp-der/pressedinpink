@@ -1,24 +1,96 @@
-const wrapCategories = [
+"use client";
+
+import { useState } from "react";
+
+type WrapCategory = {
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+  keywords: string;
+  imageScale?: string;
+};
+
+const wrapCategories: WrapCategory[] = [
   {
     title: "90s Cartoons",
     description:
       "Browse nostalgic designs inspired by classic cartoons and characters.",
-    href: "/wraps/90s-cartoons",
-    icon: "📺",
+    href: "/wraps/90scartoons",
+    image: "/wrap-categories/90s Cartoons.png",
+    keywords:
+      "90s cartoons retro nostalgic Nickelodeon Cartoon Network characters",
+    imageScale: "scale-[1.65]",
   },
   {
     title: "Sports",
     description:
       "Browse team-inspired, game-day, and sports-themed UV-DTF wraps.",
     href: "/wraps/sports",
-    icon: "🏆",
+    image: "/wrap-categories/Sports.png",
+    keywords:
+      "sports football basketball baseball soccer teams game day athletes",
+    imageScale: "scale-[1.25]",
   },
   {
     title: "Hello Kitty",
     description:
       "Browse cute Hello Kitty-inspired wraps, characters, and pink designs.",
     href: "/wraps/hello-kitty",
-    icon: "🎀",
+    image: "/wrap-categories/Hello Kitty.png",
+    keywords:
+      "Hello Kitty Sanrio cute kawaii pink characters girly",
+    imageScale: "scale-[1.25]",
+  },
+  {
+    title: "Anime",
+    description:
+      "Browse anime-inspired characters, series, artwork, and colorful UV-DTF wraps.",
+    href: "/wraps/anime",
+    image: "/wrap-categories/Anime.png",
+    keywords:
+      "anime manga Japanese series characters cartoons colorful",
+    imageScale: "scale-100",
+  },
+  {
+    title: "K-Pop",
+    description:
+      "Browse K-pop-inspired groups, artists, albums, and fan-favorite UV-DTF wraps.",
+    href: "/wraps/kpop",
+    image: "/wrap-categories/K-pop.png",
+    keywords:
+      "K-pop kpop Korean music groups idols artists albums",
+    imageScale: "scale-[1.45]",
+  },
+  {
+    title: "Music",
+    description:
+      "Browse music-inspired artists, albums, lyrics, and fan-favorite designs.",
+    href: "/wraps/music",
+    image: "/wrap-categories/music.png",
+    keywords:
+      "music musicians artists singers rappers albums lyrics bands concerts",
+    imageScale: "scale-[1.25]",
+  },
+  {
+    title: "420",
+    description:
+      "Browse bold, colorful, and laid-back 420-inspired wrap designs.",
+    href: "/wraps/420",
+    image: "/wrap-categories/420.png",
+    keywords:
+      "420 cannabis weed marijuana smoke smoking green stoner",
+    imageScale: "scale-[1.25]",
+  },
+  {
+    title: "Clearance",
+    description:
+      "Browse discounted wrap designs available while supplies last.",
+    href: "/wraps/clearance",
+    image: "/wrap-categories/clearance.png",
+    keywords:
+      "clearance discount discounted sale deals cheap last chance",
+    imageScale: "scale-[1.25]",
   },
 ];
 
@@ -28,9 +100,23 @@ const smokyTextShadow = {
 };
 
 export default function WrapsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  const filteredCategories = wrapCategories.filter((category) => {
+    const searchableText = `
+      ${category.title}
+      ${category.description}
+      ${category.keywords}
+    `.toLowerCase();
+
+    return searchableText.includes(normalizedSearch);
+  });
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      {/* Same responsive background used on the homepage */}
+      {/* Background */}
       <div
         aria-hidden="true"
         className="
@@ -45,7 +131,7 @@ export default function WrapsPage() {
         }}
       />
 
-      {/* Dark tint over the background */}
+      {/* Dark background tint */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-black/35"
@@ -55,7 +141,6 @@ export default function WrapsPage() {
         {/* Header */}
         <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
-            {/* Back button on desktop */}
             <div className="flex justify-center md:justify-start">
               <a
                 href="/"
@@ -66,7 +151,6 @@ export default function WrapsPage() {
               </a>
             </div>
 
-            {/* Centered logo */}
             <a href="/" className="flex justify-center">
               <img
                 src="/header-logo.png"
@@ -75,7 +159,6 @@ export default function WrapsPage() {
               />
             </a>
 
-            {/* Social buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end">
               <a
                 href="https://www.instagram.com/pressed_in_pink/"
@@ -119,82 +202,127 @@ export default function WrapsPage() {
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
             >
-              
+              Choose a category below to browse available wrap designs.
             </p>
           </div>
         </section>
 
         {/* Wrap categories */}
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          
+          {/* Category search */}
+          <div className="mx-auto mb-10 max-w-2xl">
+            <label htmlFor="wrap-category-search" className="sr-only">
+              Search wrap categories
+            </label>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {wrapCategories.map((category) => (
-              <a
-                key={category.title}
-                href={category.href}
-                className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
-              >
-                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full border border-red-900 bg-black/80 text-4xl transition group-hover:border-red-600 group-hover:scale-105">
-                  {category.icon}
-                </div>
+            <div className="flex items-center gap-3 rounded-full border border-red-900 bg-black/90 px-5 py-3 shadow-xl backdrop-blur-md transition focus-within:border-red-600">
+              <span aria-hidden="true" className="text-xl text-white">
+                🔍
+              </span>
 
-                <h2
-                  className="text-2xl font-black text-white"
-                  style={smokyTextShadow}
+              <input
+                id="wrap-category-search"
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search wrap categories..."
+                autoComplete="off"
+                className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/60"
+              />
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="rounded-full border border-red-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-red-600"
                 >
-                  {category.title}
-                </h2>
-
-                <p
-                  className="mt-4 text-sm leading-6 text-white"
-                  style={smokyTextShadow}
-                >
-                  {category.description}
-                </p>
-
-                <div className="mt-auto pt-7">
-                  <span
-                    className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition group-hover:bg-red-600"
-                    style={smokyTextShadow}
-                  >
-                    View Designs →
-                  </span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {/* Instagram order section */}
-        <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-900 bg-black/90 p-7 text-center shadow-xl backdrop-blur-md sm:p-10">
-            <h2
-              className="text-3xl font-black text-white"
-              style={smokyTextShadow}
-            >
-              Looking for another design?
-            </h2>
+                  Clear
+                </button>
+              )}
+            </div>
 
             <p
-              className="mx-auto mt-4 max-w-2xl leading-7 text-white"
+              className="mt-3 text-center text-sm text-white"
               style={smokyTextShadow}
             >
-              Pressed In Pink has thousands of wraps in stock. Message us on
-              Instagram with the theme, character, team, or style you are
-              looking for.
+              Showing {filteredCategories.length}{" "}
+              {filteredCategories.length === 1
+                ? "category"
+                : "categories"}
             </p>
-
-            <a
-              href="https://www.instagram.com/pressed_in_pink/"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-7 inline-flex rounded-full border-2 border-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-600"
-              style={smokyTextShadow}
-            >
-              Message on Instagram
-            </a>
           </div>
+
+          {filteredCategories.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredCategories.map((category) => (
+                <a
+                  key={category.title}
+                  href={category.href}
+                  className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
+                >
+                  {/* Category image */}
+                  <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
+                    <img
+                      src={category.image}
+                      alt={`${category.title} category`}
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className={`
+                        h-full w-full object-contain
+                        transition-transform duration-300
+                        ${category.imageScale ?? "scale-100"}
+                      `}
+                    />
+                  </div>
+
+                  <h2
+                    className="text-2xl font-black text-white"
+                    style={smokyTextShadow}
+                  >
+                    {category.title}
+                  </h2>
+
+                  <p
+                    className="mt-4 text-sm leading-6 text-white"
+                    style={smokyTextShadow}
+                  >
+                    {category.description}
+                  </p>
+
+                  <div className="mt-auto pt-7">
+                    <span
+                      className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition group-hover:bg-red-600"
+                      style={smokyTextShadow}
+                    >
+                      View Designs →
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-red-900 bg-black/90 px-6 py-12 text-center shadow-xl backdrop-blur-md">
+              <h2
+                className="text-2xl font-black text-white"
+                style={smokyTextShadow}
+              >
+                No matching categories found
+              </h2>
+
+              <p className="mt-3 text-white" style={smokyTextShadow}>
+                Try another character, theme, team, artist, or style.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-600"
+              >
+                View All Categories
+              </button>
+            </div>
+          )}
         </section>
 
         {/* Footer */}
@@ -221,4 +349,3 @@ export default function WrapsPage() {
     </main>
   );
 }
-
