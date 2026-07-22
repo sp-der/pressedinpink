@@ -33,15 +33,15 @@ const wrapCategories: WrapCategory[] = [
     imageScale: "scale-[1.25]",
   },
   {
-    title: "Hello Kitty",
-    description:
-      "Browse cute Hello Kitty-inspired wraps, characters, and pink designs.",
-    href: "/wraps/hello-kitty",
-    image: "/wrap-categories/Hello Kitty.png",
-    keywords:
-      "Hello Kitty Sanrio cute kawaii pink characters girly",
-    imageScale: "scale-[1.25]",
-  },
+  title: "Hello Kitty and Friends",
+  description:
+    "Browse Hello Kitty, Sanrio friends, and other cute character wrap designs.",
+  href: "/wraps/hello-kitty",
+  image: "/wrap-categories/Hello Kitty.png",
+  keywords:
+    "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
+  imageScale: "scale-[1.25]",
+},
   {
     title: "Anime",
     description:
@@ -62,6 +62,16 @@ const wrapCategories: WrapCategory[] = [
       "K-pop kpop Korean music groups idols artists albums",
     imageScale: "scale-[1.45]",
   },
+  {
+  title: "Villains",
+  description:
+    "Browse iconic villains, dark characters, and wickedly fun UV-DTF wrap designs.",
+  href: "/wraps/villians",
+  image: "/wrap-categories/villians.png",
+  keywords:
+    "villains villians evil dark characters Disney horror bad guys antagonists",
+    imageScale: "scale-[1.85]",
+},
   {
     title: "Music",
     description:
