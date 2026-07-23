@@ -92,16 +92,6 @@ const wrapCategories: WrapCategory[] = [
       "420 cannabis weed marijuana smoke smoking green stoner",
     imageScale: "scale-[1.25]",
   },
-  {
-    title: "Clearance",
-    description:
-      "Browse discounted wrap designs available while supplies last.",
-    href: "/wraps/clearance",
-    image: "/wrap-categories/clearance.png",
-    keywords:
-      "clearance discount discounted sale deals cheap last chance",
-    imageScale: "scale-[1.25]",
-  },
 ];
 
 const smokyTextShadow = {
