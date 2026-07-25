@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-type WrapCategory = {
+type SportsCategory = {
   title: string;
   description: string;
   href: string;
@@ -11,86 +11,16 @@ type WrapCategory = {
   imageScale?: string;
 };
 
-const wrapCategories: WrapCategory[] = [
+const sportsCategories: SportsCategory[] = [
   {
-    title: "90s Cartoons",
+    title: "Dodgers",
     description:
-      "Browse nostalgic designs inspired by classic cartoons and characters.",
-    href: "/wraps/90scartoons",
-    image: "/wrap-categories/90s Cartoons.png",
+      "Browse Los Angeles Dodgers-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/dodgers",
+    image: "/wrap-categories/Sports/dodgers.png",
     keywords:
-      "90s cartoons retro nostalgic Nickelodeon Cartoon Network characters",
-    imageScale: "scale-[1.65]",
-  },
-  {
-    title: "Sports",
-    description:
-      "Browse team-inspired, game-day, and sports-themed UV-DTF wraps.",
-    href: "/wraps/sports",
-    image: "/wrap-categories/Sports.png",
-    keywords:
-      "sports football basketball baseball soccer teams game day athletes",
-    imageScale: "scale-[1.25]",
-  },
-  {
-    title: "Hello Kitty and Friends",
-    description:
-      "Browse Hello Kitty, Sanrio friends, and other cute character wrap designs.",
-    href: "/wraps/hello-kitty",
-    image: "/wrap-categories/Hello Kitty.png",
-    keywords:
-      "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
-    imageScale: "scale-[1.25]",
-  },
-  {
-    title: "Anime",
-    description:
-      "Browse anime-inspired characters, series, artwork, and colorful UV-DTF wraps.",
-    href: "/wraps/anime",
-    image: "/wrap-categories/Anime.png",
-    keywords:
-      "anime manga Japanese series characters cartoons colorful",
-    imageScale: "scale-100",
-  },
-  {
-    title: "K-Pop",
-    description:
-      "Browse K-pop-inspired groups, artists, albums, and fan-favorite UV-DTF wraps.",
-    href: "/wraps/kpop",
-    image: "/wrap-categories/K-pop.png",
-    keywords:
-      "K-pop kpop Korean music groups idols artists albums",
-    imageScale: "scale-[1.45]",
-  },
-  {
-    title: "Labubu",
-    description:
-      "Browse playful Labubu-inspired characters, colors, and collectible-style designs.",
-    href: "/wraps/labubu",
-    image: "/wrap-categories/labubu.png",
-    keywords:
-      "Labubu Pop Mart monster collectible cute character toy",
-    imageScale: "scale-[1.25]",
-  },
-  {
-    title: "Music",
-    description:
-      "Browse music-inspired artists, albums, lyrics, and fan-favorite designs.",
-    href: "/wraps/music",
-    image: "/wrap-categories/music.png",
-    keywords:
-      "music musicians artists singers rappers albums lyrics bands concerts",
-    imageScale: "scale-[1.25]",
-  },
-  {
-    title: "420",
-    description:
-      "Browse bold, colorful, and laid-back 420-inspired wrap designs.",
-    href: "/wraps/420",
-    image: "/wrap-categories/420.png",
-    keywords:
-      "420 cannabis weed marijuana smoke smoking green stoner",
-    imageScale: "scale-[1.25]",
+      "Dodgers Los Angeles baseball MLB blue LA sports team",
+    imageScale: "scale-[1.2]",
   },
 ];
 
@@ -99,12 +29,12 @@ const smokyTextShadow = {
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
-export default function WrapsPage() {
+export default function SportsWrapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const filteredCategories = wrapCategories.filter((category) => {
+  const filteredCategories = sportsCategories.filter((category) => {
     const searchableText = `
       ${category.title}
       ${category.description}
@@ -131,10 +61,10 @@ export default function WrapsPage() {
         }}
       />
 
-      {/* Dark background tint */}
+      {/* Background tint */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-black/35"
+        className="pointer-events-none fixed inset-0 bg-black/40"
       />
 
       <div className="relative z-10">
@@ -143,11 +73,11 @@ export default function WrapsPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
               <a
-                href="/"
+                href="/wraps"
                 className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
                 style={smokyTextShadow}
               >
-                ← Back Home
+                ← Back to Wraps
               </a>
             </div>
 
@@ -181,7 +111,7 @@ export default function WrapsPage() {
           </div>
         </nav>
 
-        {/* Page heading */}
+        {/* Heading */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">
             <p
@@ -195,24 +125,23 @@ export default function WrapsPage() {
               className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl"
               style={smokyTextShadow}
             >
-              UV-DTF Wraps
+              Sports Wraps
             </h1>
 
             <p
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
             >
-              Choose a category below to browse available wrap designs.
+              Choose a team below to browse available sports wrap designs.
             </p>
           </div>
         </section>
 
-        {/* Wrap categories */}
+        {/* Sports categories */}
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          {/* Category search */}
           <div className="mx-auto mb-10 max-w-2xl">
-            <label htmlFor="wrap-category-search" className="sr-only">
-              Search wrap categories
+            <label htmlFor="sports-category-search" className="sr-only">
+              Search sports categories
             </label>
 
             <div className="flex items-center gap-3 rounded-full border border-red-900 bg-black/90 px-5 py-3 shadow-xl backdrop-blur-md transition focus-within:border-red-600">
@@ -221,11 +150,11 @@ export default function WrapsPage() {
               </span>
 
               <input
-                id="wrap-category-search"
+                id="sports-category-search"
                 type="search"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search wrap categories..."
+                placeholder="Search teams..."
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/60"
               />
@@ -246,9 +175,7 @@ export default function WrapsPage() {
               style={smokyTextShadow}
             >
               Showing {filteredCategories.length}{" "}
-              {filteredCategories.length === 1
-                ? "category"
-                : "categories"}
+              {filteredCategories.length === 1 ? "team" : "teams"}
             </p>
           </div>
 
@@ -260,11 +187,10 @@ export default function WrapsPage() {
                   href={category.href}
                   className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
-                  {/* Category image */}
                   <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
                     <img
                       src={category.image}
-                      alt={`${category.title} category`}
+                      alt={`${category.title} team category`}
                       loading="lazy"
                       decoding="async"
                       draggable={false}
@@ -307,11 +233,11 @@ export default function WrapsPage() {
                 className="text-2xl font-black text-white"
                 style={smokyTextShadow}
               >
-                No matching categories found
+                No matching teams found
               </h2>
 
               <p className="mt-3 text-white" style={smokyTextShadow}>
-                Try another character, theme, team, artist, or style.
+                Try another team, city, league, or sport.
               </p>
 
               <button
@@ -319,7 +245,7 @@ export default function WrapsPage() {
                 onClick={() => setSearchQuery("")}
                 className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-600"
               >
-                View All Categories
+                View All Teams
               </button>
             </div>
           )}
@@ -338,11 +264,11 @@ export default function WrapsPage() {
           </p>
 
           <a
-            href="/"
+            href="/wraps"
             className="mt-5 inline-block text-sm font-bold text-white transition hover:text-red-500"
             style={smokyTextShadow}
           >
-            Return Home
+            Return to Wraps
           </a>
         </footer>
       </div>
