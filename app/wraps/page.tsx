@@ -7,6 +7,7 @@ type WrapCategory = {
   description: string;
   href: string;
   image: string;
+  fallbackImage?: string;
   keywords: string;
   imageScale?: string;
 };
@@ -41,6 +42,28 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
     imageScale: "scale-[1.25]",
+  },
+  {
+    title: "Nightmare Before Christmas",
+    description:
+      "Browse spooky, festive, and character-inspired Nightmare Before Christmas wraps.",
+    href: "/wraps/nightmare",
+    image: "/wrap-categories/nightmare.png",
+    fallbackImage: "/wraps/nightmare/thumbnails/nightmare (1).webp",
+    keywords:
+      "Nightmare Before Christmas Jack Skellington Sally Zero Halloween Christmas spooky",
+    imageScale: "scale-[1.2]",
+  },
+  {
+    title: "Winnie the Pooh & Friends",
+    description:
+      "Browse Winnie the Pooh, Tigger, Eeyore, Piglet, and friends.",
+    href: "/wraps/pooh",
+    image: "/wrap-categories/pooh.png",
+    fallbackImage: "/wraps/pooh/thumbnails/pooh (1).webp",
+    keywords:
+      "Winnie the Pooh friends Tigger Eeyore Piglet honey bear Disney",
+    imageScale: "scale-[1.2]",
   },
   {
     title: "Anime",
@@ -116,7 +139,6 @@ export default function WrapsPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      {/* Background */}
       <div
         aria-hidden="true"
         className="
@@ -131,14 +153,12 @@ export default function WrapsPage() {
         }}
       />
 
-      {/* Dark background tint */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-black/35"
       />
 
       <div className="relative z-10">
-        {/* Header */}
         <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
@@ -181,7 +201,6 @@ export default function WrapsPage() {
           </div>
         </nav>
 
-        {/* Page heading */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">
             <p
@@ -207,9 +226,7 @@ export default function WrapsPage() {
           </div>
         </section>
 
-        {/* Wrap categories */}
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-          {/* Category search */}
           <div className="mx-auto mb-10 max-w-2xl">
             <label htmlFor="wrap-category-search" className="sr-only">
               Search wrap categories
@@ -260,7 +277,6 @@ export default function WrapsPage() {
                   href={category.href}
                   className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
-                  {/* Category image */}
                   <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
                     <img
                       src={category.image}
@@ -268,6 +284,14 @@ export default function WrapsPage() {
                       loading="lazy"
                       decoding="async"
                       draggable={false}
+                      onError={(event) => {
+                        if (!category.fallbackImage) {
+                          return;
+                        }
+
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = category.fallbackImage;
+                      }}
                       className={`
                         h-full w-full object-contain
                         transition-transform duration-300
@@ -325,7 +349,6 @@ export default function WrapsPage() {
           )}
         </section>
 
-        {/* Footer */}
         <footer className="border-t border-red-900 bg-black/90 px-6 py-10 text-center backdrop-blur-md">
           <img
             src="/header-logo.png"

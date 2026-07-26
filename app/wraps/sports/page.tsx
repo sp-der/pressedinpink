@@ -7,6 +7,7 @@ type SportsCategory = {
   description: string;
   href: string;
   image: string;
+  fallbackImage: string;
   keywords: string;
   imageScale?: string;
 };
@@ -18,9 +19,76 @@ const sportsCategories: SportsCategory[] = [
       "Browse Los Angeles Dodgers-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/dodgers",
     image: "/wrap-categories/Sports/dodgers.png",
+    fallbackImage: "/wraps/dodgers/thumbnails/dodgers (1).webp",
     keywords:
       "Dodgers Los Angeles baseball MLB blue LA sports team",
     imageScale: "scale-[1.2]",
+  },
+  {
+    title: "Los Angeles Lakers",
+    description:
+      "Browse Los Angeles Lakers-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/lakers",
+    image: "/wrap-categories/Sports/lakers.png",
+    fallbackImage: "/wraps/lakers/thumbnails/lakers (1).webp",
+    keywords:
+      "Los Angeles Lakers LA basketball NBA purple gold sports team",
+    imageScale: "scale-[1.15]",
+  },
+  {
+    title: "Los Angeles Clippers",
+    description:
+      "Browse Los Angeles Clippers-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/clippers",
+    image: "/wrap-categories/Sports/clippers.png",
+    fallbackImage: "/wraps/clippers/thumbnails/clippers (1).webp",
+    keywords:
+      "Los Angeles Clippers LA basketball NBA red blue sports team",
+    imageScale: "scale-[1.15]",
+  },
+  {
+    title: "Boston Celtics",
+    description:
+      "Browse Boston Celtics-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/celtics",
+    image: "/wrap-categories/Sports/celtics.png",
+    fallbackImage: "/wraps/celtics/thumbnails/celtics (1).webp",
+    keywords:
+      "Boston Celtics basketball NBA green white sports team",
+    imageScale: "scale-[1.15]",
+  },
+  {
+    title: "Golden State Warriors",
+    description:
+      "Browse Golden State Warriors-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/goldenstate",
+    image: "/wrap-categories/Sports/goldenstate.png",
+    fallbackImage: "/wraps/goldenstate/thumbnails/goldenstate (1).webp",
+    keywords:
+      "Golden State Warriors basketball NBA blue gold Bay Area sports team",
+    imageScale: "scale-[1.15]",
+  },
+  {
+    title: "Denver Nuggets",
+    description:
+      "Browse Denver Nuggets-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/nuggets",
+    image: "/wrap-categories/Sports/nuggets.png",
+    fallbackImage: "/wraps/nuggets/thumbnails/nuggets (1).webp",
+    keywords:
+      "Denver Nuggets basketball NBA blue gold Colorado sports team",
+    imageScale: "scale-[1.15]",
+  },
+  {
+    title: "Chicago Bulls",
+    description:
+      "Browse Chicago Bulls-inspired UV-DTF wrap designs.",
+    href: "/wraps/sports/bulls",
+    image: "/wrap-categories/Sports/bulls.png",
+    fallbackImage: "/wraps/bulls/thumbnails/bulls (1).webp",
+    keywords:
+      "Chicago Bulls basketball NBA red black sports team",
+    imageScale: "scale-[1.15]",
   },
 ];
 
@@ -46,7 +114,6 @@ export default function SportsWrapsPage() {
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      {/* Background */}
       <div
         aria-hidden="true"
         className="
@@ -61,14 +128,12 @@ export default function SportsWrapsPage() {
         }}
       />
 
-      {/* Background tint */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-black/40"
       />
 
       <div className="relative z-10">
-        {/* Header */}
         <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
@@ -111,7 +176,6 @@ export default function SportsWrapsPage() {
           </div>
         </nav>
 
-        {/* Heading */}
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">
             <p
@@ -137,7 +201,6 @@ export default function SportsWrapsPage() {
           </div>
         </section>
 
-        {/* Sports categories */}
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
           <div className="mx-auto mb-10 max-w-2xl">
             <label htmlFor="sports-category-search" className="sr-only">
@@ -194,6 +257,10 @@ export default function SportsWrapsPage() {
                       loading="lazy"
                       decoding="async"
                       draggable={false}
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = category.fallbackImage;
+                      }}
                       className={`
                         h-full w-full object-contain
                         transition-transform duration-300
@@ -251,7 +318,6 @@ export default function SportsWrapsPage() {
           )}
         </section>
 
-        {/* Footer */}
         <footer className="border-t border-red-900 bg-black/90 px-6 py-10 text-center backdrop-blur-md">
           <img
             src="/header-logo.png"
