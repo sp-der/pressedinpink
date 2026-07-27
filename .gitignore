@@ -12,3 +12,4 @@ out/
 
 # Wrap images are stored in Cloudflare R2
 /public/wraps/
+.env.local
