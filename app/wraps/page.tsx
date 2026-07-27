@@ -49,7 +49,7 @@ const wrapCategories: WrapCategory[] = [
       "Browse spooky, festive, and character-inspired Nightmare Before Christmas wraps.",
     href: "/wraps/nightmare",
     image: "/wrap-categories/nightmare.png",
-    fallbackImage: "/wraps/nightmare/thumbnails/nightmare (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/nightmare/thumbnails/nightmare (1).webp",
     keywords:
       "Nightmare Before Christmas Jack Skellington Sally Zero Halloween Christmas spooky",
     imageScale: "scale-[1.2]",
@@ -60,7 +60,7 @@ const wrapCategories: WrapCategory[] = [
       "Browse Winnie the Pooh, Tigger, Eeyore, Piglet, and friends.",
     href: "/wraps/pooh",
     image: "/wrap-categories/pooh.png",
-    fallbackImage: "/wraps/pooh/thumbnails/pooh (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/pooh/thumbnails/pooh (1).webp",
     keywords:
       "Winnie the Pooh friends Tigger Eeyore Piglet honey bear Disney",
     imageScale: "scale-[1.2]",

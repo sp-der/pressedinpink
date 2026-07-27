@@ -19,7 +19,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Los Angeles Dodgers-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/dodgers",
     image: "/wrap-categories/Sports/dodgers.png",
-    fallbackImage: "/wraps/dodgers/thumbnails/dodgers (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/dodgers/thumbnails/dodgers (1).webp",
     keywords:
       "Dodgers Los Angeles baseball MLB blue LA sports team",
     imageScale: "scale-[1.2]",
@@ -30,7 +30,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Los Angeles Lakers-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/lakers",
     image: "/wrap-categories/Sports/lakers.png",
-    fallbackImage: "/wraps/lakers/thumbnails/lakers (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/lakers/thumbnails/lakers (1).webp",
     keywords:
       "Los Angeles Lakers LA basketball NBA purple gold sports team",
     imageScale: "scale-[1.15]",
@@ -41,7 +41,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Los Angeles Clippers-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/clippers",
     image: "/wrap-categories/Sports/clippers.png",
-    fallbackImage: "/wraps/clippers/thumbnails/clippers (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/clippers/thumbnails/clippers (1).webp",
     keywords:
       "Los Angeles Clippers LA basketball NBA red blue sports team",
     imageScale: "scale-[1.15]",
@@ -52,7 +52,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Boston Celtics-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/celtics",
     image: "/wrap-categories/Sports/celtics.png",
-    fallbackImage: "/wraps/celtics/thumbnails/celtics (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/celtics/thumbnails/celtics (1).webp",
     keywords:
       "Boston Celtics basketball NBA green white sports team",
     imageScale: "scale-[1.15]",
@@ -63,7 +63,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Golden State Warriors-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/goldenstate",
     image: "/wrap-categories/Sports/goldenstate.png",
-    fallbackImage: "/wraps/goldenstate/thumbnails/goldenstate (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/goldenstate/thumbnails/goldenstate (1).webp",
     keywords:
       "Golden State Warriors basketball NBA blue gold Bay Area sports team",
     imageScale: "scale-[1.15]",
@@ -74,10 +74,10 @@ const sportsCategories: SportsCategory[] = [
       "Browse Denver Nuggets-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/nuggets",
     image: "/wrap-categories/Sports/nuggets.png",
-    fallbackImage: "/wraps/nuggets/thumbnails/nuggets (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/nuggets/thumbnails/nuggets (1).webp",
     keywords:
       "Denver Nuggets basketball NBA blue gold Colorado sports team",
-    imageScale: "scale-[1.15]",
+    imageScale: "scale-[1.16] -translate-y-[8px]",
   },
   {
     title: "Chicago Bulls",
@@ -85,7 +85,7 @@ const sportsCategories: SportsCategory[] = [
       "Browse Chicago Bulls-inspired UV-DTF wrap designs.",
     href: "/wraps/sports/bulls",
     image: "/wrap-categories/Sports/bulls.png",
-    fallbackImage: "/wraps/bulls/thumbnails/bulls (1).webp",
+    fallbackImage: "https://images.pressedinpink.com/wraps/bulls/thumbnails/bulls (1).webp",
     keywords:
       "Chicago Bulls basketball NBA red black sports team",
     imageScale: "scale-[1.15]",

@@ -8,84 +8,102 @@ import {
   useState,
 } from "react";
 
+const R2_WRAP_BASE_URL = "https://images.pressedinpink.com/wraps";
 const TOTAL_IMAGES = 292;
 const WRAPS_PER_PAGE = 24;
 
-const helloKittyWraps = Array.from(
-  { length: TOTAL_IMAGES },
-  (_, index) => {
-    const number = index + 1;
+const wraps = Array.from({ length: TOTAL_IMAGES }, (_, index) => {
+  const number = index + 1;
+  const filename = `hellokitty (${number})`;
 
-    return {
-      number,
-      src: `/wraps/hellokitty/hellokitty (${number}).png`,
-      thumbnailSrc: `/wraps/hellokitty/thumbnails/hellokitty (${number}).webp`,
-    };
-  },
-);
+  return {
+    number,
+    src: `${R2_WRAP_BASE_URL}/hellokitty/originals/${filename}.png`,
+    thumbnailSrc:
+      `${R2_WRAP_BASE_URL}/hellokitty/thumbnails/${filename}.webp`,
+  };
+});
 
-const TOTAL_PAGES = Math.ceil(
-  helloKittyWraps.length / WRAPS_PER_PAGE,
-);
+const TOTAL_PAGES = Math.ceil(wraps.length / WRAPS_PER_PAGE);
+
+type PaginationItem =
+  | number
+  | "ellipsis-left"
+  | "ellipsis-right";
 
 const smokyTextShadow = {
   textShadow:
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
-type PaginationItem = number | "ellipsis-left" | "ellipsis-right";
+function getPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from(
+      { length: totalPages },
+      (_, index) => index + 1,
+    );
+  }
+
+  if (currentPage <= 4) {
+    return [
+      1,
+      2,
+      3,
+      4,
+      5,
+      "ellipsis-right",
+      totalPages,
+    ];
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [
+      1,
+      "ellipsis-left",
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
+  }
+
+  return [
+    1,
+    "ellipsis-left",
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    "ellipsis-right",
+    totalPages,
+  ];
+}
 
 export default function HelloKittyAndFriendsWrapsPage() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] =
+    useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const galleryRef = useRef<HTMLElement | null>(null);
-
-  const pageStartIndex = (currentPage - 1) * WRAPS_PER_PAGE;
+  const pageStartIndex =
+    (currentPage - 1) * WRAPS_PER_PAGE;
   const pageEndIndex = Math.min(
     pageStartIndex + WRAPS_PER_PAGE,
-    helloKittyWraps.length,
+    wraps.length,
   );
 
-  const visibleWraps = helloKittyWraps.slice(
+  const visibleWraps = wraps.slice(
     pageStartIndex,
     pageEndIndex,
   );
 
-  const paginationItems = useMemo<PaginationItem[]>(() => {
-    if (TOTAL_PAGES <= 7) {
-      return Array.from(
-        { length: TOTAL_PAGES },
-        (_, index) => index + 1,
-      );
-    }
-
-    if (currentPage <= 4) {
-      return [1, 2, 3, 4, 5, "ellipsis-right", TOTAL_PAGES];
-    }
-
-    if (currentPage >= TOTAL_PAGES - 3) {
-      return [
-        1,
-        "ellipsis-left",
-        TOTAL_PAGES - 4,
-        TOTAL_PAGES - 3,
-        TOTAL_PAGES - 2,
-        TOTAL_PAGES - 1,
-        TOTAL_PAGES,
-      ];
-    }
-
-    return [
-      1,
-      "ellipsis-left",
-      currentPage - 1,
-      currentPage,
-      currentPage + 1,
-      "ellipsis-right",
-      TOTAL_PAGES,
-    ];
-  }, [currentPage]);
+  const paginationItems = useMemo(
+    () => getPaginationItems(currentPage, TOTAL_PAGES),
+    [currentPage],
+  );
 
   const closeViewer = useCallback(() => {
     setSelectedIndex(null);
@@ -98,7 +116,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
       }
 
       return currentIndex === 0
-        ? helloKittyWraps.length - 1
+        ? wraps.length - 1
         : currentIndex - 1;
     });
   }, []);
@@ -109,7 +127,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
         return null;
       }
 
-      return currentIndex === helloKittyWraps.length - 1
+      return currentIndex === wraps.length - 1
         ? 0
         : currentIndex + 1;
     });
@@ -136,7 +154,9 @@ export default function HelloKittyAndFriendsWrapsPage() {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const previousOverflow =
+      document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -157,9 +177,17 @@ export default function HelloKittyAndFriendsWrapsPage() {
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
     };
-  }, [selectedIndex, closeViewer, showPrevious, showNext]);
+  }, [
+    selectedIndex,
+    closeViewer,
+    showPrevious,
+    showNext,
+  ]);
 
   useEffect(() => {
     if (selectedIndex === null) {
@@ -168,22 +196,28 @@ export default function HelloKittyAndFriendsWrapsPage() {
 
     const previousIndex =
       selectedIndex === 0
-        ? helloKittyWraps.length - 1
+        ? wraps.length - 1
         : selectedIndex - 1;
 
     const nextIndex =
-      selectedIndex === helloKittyWraps.length - 1
+      selectedIndex === wraps.length - 1
         ? 0
         : selectedIndex + 1;
 
     const previousImage = new Image();
-    previousImage.src = helloKittyWraps[previousIndex].src;
+    previousImage.src = wraps[previousIndex].src;
 
     const nextImage = new Image();
-    nextImage.src = helloKittyWraps[nextIndex].src;
+    nextImage.src = wraps[nextIndex].src;
   }, [selectedIndex]);
 
-  const renderPagination = (location: "top" | "bottom") => {
+  const renderPagination = (
+    location: "top" | "bottom",
+  ) => {
+    if (TOTAL_PAGES <= 1) {
+      return null;
+    }
+
     return (
       <div
         className="flex flex-wrap items-center justify-center gap-2"
@@ -212,7 +246,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
               <span
                 key={item}
                 aria-hidden="true"
-                className="flex h-10 min-w-6 items-center justify-center text-sm font-black text-white/60"
+                className="px-1 text-sm font-black text-white/70"
               >
                 …
               </span>
@@ -226,7 +260,9 @@ export default function HelloKittyAndFriendsWrapsPage() {
               key={item}
               type="button"
               onClick={() => goToPage(item)}
-              aria-current={isActive ? "page" : undefined}
+              aria-current={
+                isActive ? "page" : undefined
+              }
               aria-label={`Go to gallery page ${item}`}
               className={`
                 flex h-10 w-10 items-center justify-center
@@ -275,7 +311,8 @@ export default function HelloKittyAndFriendsWrapsPage() {
           md:bg-center
         "
         style={{
-          backgroundImage: "url('/homepage-background.jpg')",
+          backgroundImage:
+            "url('/homepage-background.jpg')",
         }}
       />
 
@@ -340,16 +377,16 @@ export default function HelloKittyAndFriendsWrapsPage() {
               className="mt-4 text-4xl font-black text-white sm:text-5xl md:text-6xl"
               style={smokyTextShadow}
             >
-              Hello Kitty and Friends
+              Hello Kitty and Friends Wraps
             </h1>
 
             <p
               className="mx-auto mt-5 max-w-2xl leading-7 text-white"
               style={smokyTextShadow}
             >
-              Browse Hello Kitty, Sanrio friends, and other cute character
-              designs. Use the gallery pages to browse faster, or use the
-              viewer arrows to move continuously through all 292 wraps.
+              Click any design to see the full wrap. Use the
+              gallery pages to browse faster, or use the viewer
+              arrows to move through all 292 designs continuously.
             </p>
           </div>
         </section>
@@ -364,8 +401,8 @@ export default function HelloKittyAndFriendsWrapsPage() {
                 className="text-sm font-bold text-white"
                 style={smokyTextShadow}
               >
-                Showing wraps {pageStartIndex + 1}–{pageEndIndex} of{" "}
-                {helloKittyWraps.length}
+                Showing wraps {pageStartIndex + 1}–
+                {pageEndIndex} of {wraps.length}
               </p>
 
               <p
@@ -381,21 +418,28 @@ export default function HelloKittyAndFriendsWrapsPage() {
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visibleWraps.map((wrap, localIndex) => {
-              const globalIndex = pageStartIndex + localIndex;
+              const globalIndex =
+                pageStartIndex + localIndex;
 
               return (
                 <button
                   key={wrap.src}
                   type="button"
-                  onClick={() => setSelectedIndex(globalIndex)}
-                  aria-label={`Open Hello Kitty and Friends wrap ${wrap.number}`}
+                  onClick={() =>
+                    setSelectedIndex(globalIndex)
+                  }
+                  aria-label={`Open hello kitty and friends wrap ${wrap.number}`}
                   className="group overflow-hidden rounded-3xl border border-red-900 bg-black shadow-xl transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:shadow-2xl"
                 >
                   <div className="relative aspect-[2/1] w-full overflow-hidden">
                     <img
                       src={wrap.thumbnailSrc}
                       alt={`Hello Kitty and Friends wrap design ${wrap.number}`}
-                      loading={localIndex < 3 ? "eager" : "lazy"}
+                      loading={
+                        localIndex < 3
+                          ? "eager"
+                          : "lazy"
+                      }
                       decoding="async"
                       draggable={false}
                       onError={(event) => {
@@ -417,16 +461,18 @@ export default function HelloKittyAndFriendsWrapsPage() {
             })}
           </div>
 
-          <div className="mt-10 flex flex-col items-center gap-4">
-            <p
-              className="text-sm font-bold text-white"
-              style={smokyTextShadow}
-            >
-              Page {currentPage} of {TOTAL_PAGES}
-            </p>
+          {TOTAL_PAGES > 1 && (
+            <div className="mt-10 flex flex-col items-center gap-4">
+              <p
+                className="text-sm font-bold text-white"
+                style={smokyTextShadow}
+              >
+                Page {currentPage} of {TOTAL_PAGES}
+              </p>
 
-            {renderPagination("bottom")}
-          </div>
+              {renderPagination("bottom")}
+            </div>
+          )}
         </section>
 
         <footer className="border-t border-red-900 bg-black/90 px-6 py-10 text-center backdrop-blur-md">
@@ -436,7 +482,10 @@ export default function HelloKittyAndFriendsWrapsPage() {
             className="mx-auto h-auto w-36 object-contain"
           />
 
-          <p className="mt-4 text-white" style={smokyTextShadow}>
+          <p
+            className="mt-4 text-white"
+            style={smokyTextShadow}
+          >
             Handmade with love in Rialto, California.
           </p>
 
@@ -476,7 +525,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
               event.stopPropagation();
               showPrevious();
             }}
-            aria-label="Previous Hello Kitty and Friends wrap"
+            aria-label="Previous hello kitty and friends wrap"
             className="absolute left-2 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-600 bg-black/90 text-4xl font-bold leading-none text-white shadow-xl transition hover:bg-red-600 sm:left-6 sm:h-14 sm:w-14"
           >
             ‹
@@ -484,12 +533,14 @@ export default function HelloKittyAndFriendsWrapsPage() {
 
           <div
             className="w-full max-w-6xl rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
             <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white">
               <img
-                src={helloKittyWraps[selectedIndex].src}
-                alt={`Hello Kitty and Friends wrap design ${helloKittyWraps[selectedIndex].number}`}
+                src={wraps[selectedIndex].src}
+                alt={`Hello Kitty and Friends wrap design ${wraps[selectedIndex].number}`}
                 draggable={false}
                 className="
                   absolute left-1/2 top-1/2
@@ -504,7 +555,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
               className="pt-4 text-center text-sm font-bold text-white"
               style={smokyTextShadow}
             >
-              {selectedIndex + 1} / {helloKittyWraps.length}
+              {selectedIndex + 1} / {wraps.length}
             </p>
           </div>
 
@@ -514,7 +565,7 @@ export default function HelloKittyAndFriendsWrapsPage() {
               event.stopPropagation();
               showNext();
             }}
-            aria-label="Next Hello Kitty and Friends wrap"
+            aria-label="Next hello kitty and friends wrap"
             className="absolute right-2 z-[60] flex h-12 w-12 items-center justify-center rounded-full border border-red-600 bg-black/90 text-4xl font-bold leading-none text-white shadow-xl transition hover:bg-red-600 sm:right-6 sm:h-14 sm:w-14"
           >
             ›

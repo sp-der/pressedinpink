@@ -3,43 +3,107 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 
+const R2_WRAP_BASE_URL = "https://images.pressedinpink.com/wraps";
 const TOTAL_IMAGES = 75;
 const WRAPS_PER_PAGE = 24;
 
 const wraps = Array.from({ length: TOTAL_IMAGES }, (_, index) => {
   const number = index + 1;
+  const filename = `Music (${number})`;
 
   return {
     number,
-    src: `/wraps/music/Music (${number}).png`,
-    thumbnailSrc: `/wraps/music/thumbnails/Music (${number}).webp`,
+    src: `${R2_WRAP_BASE_URL}/music/originals/${filename}.png`,
+    thumbnailSrc:
+      `${R2_WRAP_BASE_URL}/music/thumbnails/${filename}.webp`,
   };
 });
 
 const TOTAL_PAGES = Math.ceil(wraps.length / WRAPS_PER_PAGE);
+
+type PaginationItem =
+  | number
+  | "ellipsis-left"
+  | "ellipsis-right";
 
 const smokyTextShadow = {
   textShadow:
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
+function getPaginationItems(
+  currentPage: number,
+  totalPages: number,
+): PaginationItem[] {
+  if (totalPages <= 7) {
+    return Array.from(
+      { length: totalPages },
+      (_, index) => index + 1,
+    );
+  }
+
+  if (currentPage <= 4) {
+    return [
+      1,
+      2,
+      3,
+      4,
+      5,
+      "ellipsis-right",
+      totalPages,
+    ];
+  }
+
+  if (currentPage >= totalPages - 3) {
+    return [
+      1,
+      "ellipsis-left",
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
+  }
+
+  return [
+    1,
+    "ellipsis-left",
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    "ellipsis-right",
+    totalPages,
+  ];
+}
+
 export default function MusicWrapsPage() {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedIndex, setSelectedIndex] =
+    useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const galleryRef = useRef<HTMLElement | null>(null);
-
-  const pageStartIndex = (currentPage - 1) * WRAPS_PER_PAGE;
+  const pageStartIndex =
+    (currentPage - 1) * WRAPS_PER_PAGE;
   const pageEndIndex = Math.min(
     pageStartIndex + WRAPS_PER_PAGE,
     wraps.length,
   );
 
-  const visibleWraps = wraps.slice(pageStartIndex, pageEndIndex);
+  const visibleWraps = wraps.slice(
+    pageStartIndex,
+    pageEndIndex,
+  );
+
+  const paginationItems = useMemo(
+    () => getPaginationItems(currentPage, TOTAL_PAGES),
+    [currentPage],
+  );
 
   const closeViewer = useCallback(() => {
     setSelectedIndex(null);
@@ -70,7 +134,10 @@ export default function MusicWrapsPage() {
   }, []);
 
   const goToPage = useCallback((pageNumber: number) => {
-    const safePage = Math.min(Math.max(pageNumber, 1), TOTAL_PAGES);
+    const safePage = Math.min(
+      Math.max(pageNumber, 1),
+      TOTAL_PAGES,
+    );
 
     setCurrentPage(safePage);
 
@@ -87,7 +154,9 @@ export default function MusicWrapsPage() {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const previousOverflow =
+      document.body.style.overflow;
+
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -108,9 +177,17 @@ export default function MusicWrapsPage() {
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown,
+      );
     };
-  }, [selectedIndex, closeViewer, showPrevious, showNext]);
+  }, [
+    selectedIndex,
+    closeViewer,
+    showPrevious,
+    showNext,
+  ]);
 
   useEffect(() => {
     if (selectedIndex === null) {
@@ -134,7 +211,9 @@ export default function MusicWrapsPage() {
     nextImage.src = wraps[nextIndex].src;
   }, [selectedIndex]);
 
-  const renderPagination = (location: "top" | "bottom") => {
+  const renderPagination = (
+    location: "top" | "bottom",
+  ) => {
     if (TOTAL_PAGES <= 1) {
       return null;
     }
@@ -142,7 +221,7 @@ export default function MusicWrapsPage() {
     return (
       <div
         className="flex flex-wrap items-center justify-center gap-2"
-        aria-label={`music wrap gallery ${location} pages`}
+        aria-label={`Music wrap gallery ${location} pages`}
       >
         <button
           type="button"
@@ -161,17 +240,30 @@ export default function MusicWrapsPage() {
           ← Previous
         </button>
 
-        {Array.from({ length: TOTAL_PAGES }, (_, index) => {
-          const pageNumber = index + 1;
-          const isActive = pageNumber === currentPage;
+        {paginationItems.map((item) => {
+          if (typeof item !== "number") {
+            return (
+              <span
+                key={item}
+                aria-hidden="true"
+                className="px-1 text-sm font-black text-white/70"
+              >
+                …
+              </span>
+            );
+          }
+
+          const isActive = item === currentPage;
 
           return (
             <button
-              key={pageNumber}
+              key={item}
               type="button"
-              onClick={() => goToPage(pageNumber)}
-              aria-current={isActive ? "page" : undefined}
-              aria-label={`Go to gallery page ${pageNumber}`}
+              onClick={() => goToPage(item)}
+              aria-current={
+                isActive ? "page" : undefined
+              }
+              aria-label={`Go to gallery page ${item}`}
               className={`
                 flex h-10 w-10 items-center justify-center
                 rounded-full border text-sm font-black transition
@@ -182,7 +274,7 @@ export default function MusicWrapsPage() {
                 }
               `}
             >
-              {pageNumber}
+              {item}
             </button>
           );
         })}
@@ -219,7 +311,8 @@ export default function MusicWrapsPage() {
           md:bg-center
         "
         style={{
-          backgroundImage: "url('/homepage-background.jpg')",
+          backgroundImage:
+            "url('/homepage-background.jpg')",
         }}
       />
 
@@ -291,9 +384,9 @@ export default function MusicWrapsPage() {
               className="mx-auto mt-5 max-w-2xl leading-7 text-white"
               style={smokyTextShadow}
             >
-              Click any design to see the full wrap. Use the gallery pages to
-              browse faster, or use the viewer arrows to move through all
-              {" "}75 designs continuously.
+              Click any design to see the full wrap. Use the
+              gallery pages to browse faster, or use the viewer
+              arrows to move through all 75 designs continuously.
             </p>
           </div>
         </section>
@@ -308,8 +401,8 @@ export default function MusicWrapsPage() {
                 className="text-sm font-bold text-white"
                 style={smokyTextShadow}
               >
-                Showing wraps {pageStartIndex + 1}–{pageEndIndex} of{" "}
-                {wraps.length}
+                Showing wraps {pageStartIndex + 1}–
+                {pageEndIndex} of {wraps.length}
               </p>
 
               <p
@@ -325,13 +418,16 @@ export default function MusicWrapsPage() {
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visibleWraps.map((wrap, localIndex) => {
-              const globalIndex = pageStartIndex + localIndex;
+              const globalIndex =
+                pageStartIndex + localIndex;
 
               return (
                 <button
                   key={wrap.src}
                   type="button"
-                  onClick={() => setSelectedIndex(globalIndex)}
+                  onClick={() =>
+                    setSelectedIndex(globalIndex)
+                  }
                   aria-label={`Open music wrap ${wrap.number}`}
                   className="group overflow-hidden rounded-3xl border border-red-900 bg-black shadow-xl transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:shadow-2xl"
                 >
@@ -339,7 +435,11 @@ export default function MusicWrapsPage() {
                     <img
                       src={wrap.thumbnailSrc}
                       alt={`Music wrap design ${wrap.number}`}
-                      loading={localIndex < 3 ? "eager" : "lazy"}
+                      loading={
+                        localIndex < 3
+                          ? "eager"
+                          : "lazy"
+                      }
                       decoding="async"
                       draggable={false}
                       onError={(event) => {
@@ -382,7 +482,10 @@ export default function MusicWrapsPage() {
             className="mx-auto h-auto w-36 object-contain"
           />
 
-          <p className="mt-4 text-white" style={smokyTextShadow}>
+          <p
+            className="mt-4 text-white"
+            style={smokyTextShadow}
+          >
             Handmade with love in Rialto, California.
           </p>
 
@@ -400,7 +503,7 @@ export default function MusicWrapsPage() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="music wrap image viewer"
+          aria-label="Music wrap image viewer"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
           onClick={closeViewer}
         >
@@ -430,7 +533,9 @@ export default function MusicWrapsPage() {
 
           <div
             className="w-full max-w-6xl rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
             <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white">
               <img
