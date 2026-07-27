@@ -1,0 +1,34 @@
+{
+  "milestone": 1,
+  "new_files": [
+    "types/cart.ts",
+    "types/wraps.ts",
+    "data/wrapCategories.ts",
+    "components/CartProvider.tsx",
+    "components/CartButton.tsx",
+    "components/AddToCartControls.tsx",
+    "components/WrapGallery.tsx",
+    "app/cart/page.tsx"
+  ],
+  "replaced_files": [
+    "app/layout.tsx",
+    "app/wraps/420/page.tsx",
+    "app/wraps/90scartoons/page.tsx",
+    "app/wraps/anime/page.tsx",
+    "app/wraps/hello-kitty/page.tsx",
+    "app/wraps/kpop/page.tsx",
+    "app/wraps/labubu/page.tsx",
+    "app/wraps/music/page.tsx",
+    "app/wraps/nightmare/page.tsx",
+    "app/wraps/pooh/page.tsx",
+    "app/wraps/villians/page.tsx",
+    "app/wraps/sports/dodgers/page.tsx",
+    "app/wraps/sports/lakers/page.tsx",
+    "app/wraps/sports/clippers/page.tsx",
+    "app/wraps/sports/celtics/page.tsx",
+    "app/wraps/sports/goldenstate/page.tsx",
+    "app/wraps/sports/nuggets/page.tsx",
+    "app/wraps/sports/bulls/page.tsx"
+  ],
+  "dependencies_added": []
+}

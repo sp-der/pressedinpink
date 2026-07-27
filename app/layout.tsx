@@ -1,7 +1,15 @@
+
 import type { Metadata } from "next";
+
+import CartButton from "@/components/CartButton";
+import { CartProvider } from "@/components/CartProvider";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    "https://pressedinpink.com",
+  ),
   title: "Pressed In Pink",
   description:
     "Pressed In Pink offers custom cups, shirts, keychains, wraps, and personalized creations made with love.",
@@ -39,7 +47,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <CartProvider>
+          {children}
+          <CartButton />
+        </CartProvider>
+      </body>
     </html>
   );
 }
