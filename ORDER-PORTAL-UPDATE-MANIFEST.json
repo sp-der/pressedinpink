@@ -1,0 +1,22 @@
+{
+  "name": "Pressed In Pink order portal update",
+  "changes": [
+    "Horizontal full-wrap admin viewer",
+    "Required preferred contact selection",
+    "Admin preferred contact display",
+    "Secure token-backed private order page",
+    "Resend guest/account order-link email"
+  ],
+  "files": [
+    "README-ORDER-PORTAL-UPDATE.txt",
+    "app/account/page.tsx",
+    "app/admin/order/page.tsx",
+    "app/admin/orders/page.tsx",
+    "app/checkout/page.tsx",
+    "app/order-confirmation/page.tsx",
+    "app/order-status/page.tsx",
+    "supabase/functions/send-order-link/index.ts",
+    "supabase/order-portal-contact-migration.sql",
+    "types/orders.ts"
+  ]
+}

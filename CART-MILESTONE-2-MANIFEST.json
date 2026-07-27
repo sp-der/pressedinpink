@@ -1,0 +1,27 @@
+{
+  "milestone": 2,
+  "new_files": [
+    "lib/supabase.ts",
+    "types/auth.ts",
+    "types/orders.ts",
+    "components/AuthProvider.tsx",
+    "components/AccountButton.tsx",
+    "components/AuthPageShell.tsx",
+    "app/checkout/page.tsx",
+    "app/login/page.tsx",
+    "app/signup/page.tsx",
+    "app/account/page.tsx",
+    "app/order-confirmation/page.tsx",
+    "app/admin/login/page.tsx",
+    "app/admin/orders/page.tsx",
+    "app/admin/order/page.tsx",
+    "supabase/pressedinpink-orders.sql",
+    "supabase/make-admin.sql"
+  ],
+  "replaced_files": [
+    "app/layout.tsx",
+    "app/cart/page.tsx"
+  ],
+  "required_dependency": "@supabase/supabase-js",
+  "requires_database_sql": true
+}

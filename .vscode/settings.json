@@ -1,0 +1,8 @@
+{
+  "deno.enablePaths": [
+    "./supabase/functions"
+  ],
+  "deno.importMap": "./supabase/functions/deno.json",
+  "deno.path": "/home/codespace/.deno/bin/deno",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false
+}

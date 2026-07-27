@@ -301,23 +301,22 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  disabled
+                <a
+                  href="/checkout"
                   className="
-                    mt-6 w-full cursor-not-allowed
-                    rounded-full bg-white/15 px-5
-                    py-3 font-black text-white/55
+                    mt-6 block w-full rounded-full
+                    bg-red-600 px-5 py-3
+                    text-center font-black text-white
+                    transition hover:bg-red-500
                   "
                 >
                   Continue to Order Request
-                </button>
+                </a>
 
                 <p className="mt-3 text-center text-xs leading-5 text-white/60">
-                  Guest submission, customer
-                  accounts, and admin review
-                  are coming in the next
-                  milestone.
+                  Continue as a guest or sign
+                  in to save the order to your
+                  customer account.
                 </p>
 
                 <a
