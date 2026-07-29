@@ -71,6 +71,28 @@ function cleanPrefix(value: string): string {
     .slice(0, 100);
 }
 
+function cleanPublicBaseUrl(value: string | undefined): string {
+  const fallback = "https://images.pressedinpink.com";
+  const cleaned = (value ?? fallback)
+    .trim()
+    .replace(/^["']+|["']+$/g, "")
+    .replace(/\/+$/g, "");
+
+  return cleaned || fallback;
+}
+
+function buildPublicObjectUrl(
+  publicBaseUrl: string,
+  objectKey: string,
+): string {
+  const encodedKey = objectKey
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+
+  return `${publicBaseUrl}/${encodedKey}`;
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", {
@@ -109,10 +131,9 @@ Deno.serve(async (request) => {
     "R2_SECRET_ACCESS_KEY",
   );
   const bucketName = Deno.env.get("R2_BUCKET_NAME");
-  const publicBaseUrl = (
-    Deno.env.get("R2_PUBLIC_BASE_URL") ??
-    "https://images.pressedinpink.com"
-  ).replace(/\/$/, "");
+  const publicBaseUrl = cleanPublicBaseUrl(
+    Deno.env.get("R2_PUBLIC_BASE_URL"),
+  );
 
   if (
     !supabaseUrl ||
@@ -357,8 +378,14 @@ Deno.serve(async (request) => {
     `wraps/${typedCategory.image_folder}/originals/${sourceFilename}`;
   const thumbnailKey =
     `wraps/${typedCategory.image_folder}/thumbnails/${sourceFilename}`;
-  const fullImageUrl = `${publicBaseUrl}/${originalKey}`;
-  const thumbnailUrl = `${publicBaseUrl}/${thumbnailKey}`;
+  const fullImageUrl = buildPublicObjectUrl(
+    publicBaseUrl,
+    originalKey,
+  );
+  const thumbnailUrl = buildPublicObjectUrl(
+    publicBaseUrl,
+    thumbnailKey,
+  );
 
   const r2 = new S3Client({
     region: "auto",
