@@ -1,8 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  loadCatalogWrapCounts,
+} from "@/lib/catalogCounts";
+import type { CatalogWrapCounts } from "@/lib/catalogCounts";
 
 type SportsCategory = {
+  slug: string;
   title: string;
   description: string;
   href: string;
@@ -10,10 +20,12 @@ type SportsCategory = {
   fallbackImage: string;
   keywords: string;
   imageScale?: string;
+  baseCount: number;
 };
 
 const sportsCategories: SportsCategory[] = [
   {
+    slug: "dodgers",
     title: "Dodgers",
     description:
       "Browse Los Angeles Dodgers-inspired UV-DTF wrap designs.",
@@ -23,8 +35,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Dodgers Los Angeles baseball MLB blue LA sports team",
     imageScale: "scale-[1.2]",
+    baseCount: 83,
   },
   {
+    slug: "lakers",
     title: "Los Angeles Lakers",
     description:
       "Browse Los Angeles Lakers-inspired UV-DTF wrap designs.",
@@ -34,8 +48,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Los Angeles Lakers LA basketball NBA purple gold sports team",
     imageScale: "scale-[1.15]",
+    baseCount: 14,
   },
   {
+    slug: "clippers",
     title: "Los Angeles Clippers",
     description:
       "Browse Los Angeles Clippers-inspired UV-DTF wrap designs.",
@@ -45,8 +61,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Los Angeles Clippers LA basketball NBA red blue sports team",
     imageScale: "scale-[1.15]",
+    baseCount: 5,
   },
   {
+    slug: "celtics",
     title: "Boston Celtics",
     description:
       "Browse Boston Celtics-inspired UV-DTF wrap designs.",
@@ -56,8 +74,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Boston Celtics basketball NBA green white sports team",
     imageScale: "scale-[1.15]",
+    baseCount: 1,
   },
   {
+    slug: "goldenstate",
     title: "Golden State Warriors",
     description:
       "Browse Golden State Warriors-inspired UV-DTF wrap designs.",
@@ -67,8 +87,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Golden State Warriors basketball NBA blue gold Bay Area sports team",
     imageScale: "scale-[1.15]",
+    baseCount: 7,
   },
   {
+    slug: "nuggets",
     title: "Denver Nuggets",
     description:
       "Browse Denver Nuggets-inspired UV-DTF wrap designs.",
@@ -78,8 +100,10 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Denver Nuggets basketball NBA blue gold Colorado sports team",
     imageScale: "scale-[1.16] -translate-y-[8px]",
+    baseCount: 1,
   },
   {
+    slug: "bulls",
     title: "Chicago Bulls",
     description:
       "Browse Chicago Bulls-inspired UV-DTF wrap designs.",
@@ -89,6 +113,7 @@ const sportsCategories: SportsCategory[] = [
     keywords:
       "Chicago Bulls basketball NBA red black sports team",
     imageScale: "scale-[1.15]",
+    baseCount: 5,
   },
 ];
 
@@ -99,10 +124,44 @@ const smokyTextShadow = {
 
 export default function SportsWrapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveCounts, setLiveCounts] = useState<CatalogWrapCounts>({});
+
+  useEffect(() => {
+    let active = true;
+
+    void loadCatalogWrapCounts()
+      .then((counts) => {
+        if (active) {
+          setLiveCounts(counts);
+        }
+      })
+      .catch((error) => {
+        console.error("Could not load sports wrap counts.", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const sortedCategories = useMemo(
+    () =>
+      sportsCategories
+        .map((category) => ({
+          ...category,
+          wrapCount: liveCounts[category.slug] ?? category.baseCount,
+        }))
+        .sort(
+          (first, second) =>
+            second.wrapCount - first.wrapCount ||
+            first.title.localeCompare(second.title),
+        ),
+    [liveCounts],
+  );
 
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const filteredCategories = sportsCategories.filter((category) => {
+  const filteredCategories = sortedCategories.filter((category) => {
     const searchableText = `
       ${category.title}
       ${category.description}
@@ -196,7 +255,7 @@ export default function SportsWrapsPage() {
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
             >
-              Choose a team below to browse available sports wrap designs.
+              Choose a team below to browse available sports wrap designs. Teams automatically sort from the largest collection to the smallest.
             </p>
           </div>
         </section>
@@ -275,6 +334,10 @@ export default function SportsWrapsPage() {
                   >
                     {category.title}
                   </h2>
+
+                  <p className="mt-2 text-sm font-black text-red-400">
+                    {category.wrapCount.toLocaleString("en-US")} {category.wrapCount === 1 ? "design" : "designs"}
+                  </p>
 
                   <p
                     className="mt-4 text-sm leading-6 text-white"

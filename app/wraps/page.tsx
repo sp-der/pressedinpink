@@ -6,6 +6,10 @@ import {
   useState,
 } from "react";
 
+import {
+  loadCatalogWrapCounts,
+} from "@/lib/catalogCounts";
+import type { CatalogWrapCounts } from "@/lib/catalogCounts";
 import { supabase } from "@/lib/supabase";
 import type { CatalogCategoryRecord } from "@/types/catalog";
 
@@ -19,6 +23,11 @@ type WrapCategoryCard = {
   keywords: string;
   imageScale?: string;
   displayOrder: number;
+  baseCount: number;
+};
+
+type DisplayCategory = WrapCategoryCard & {
+  wrapCount: number;
 };
 
 const staticCategories: WrapCategoryCard[] = [
@@ -33,6 +42,7 @@ const staticCategories: WrapCategoryCard[] = [
       "90s cartoons retro nostalgic Nickelodeon Cartoon Network characters",
     imageScale: "scale-[1.65]",
     displayOrder: 10,
+    baseCount: 116,
   },
   {
     slug: "sports",
@@ -45,6 +55,7 @@ const staticCategories: WrapCategoryCard[] = [
       "sports football basketball baseball soccer teams game day athletes",
     imageScale: "scale-[1.25]",
     displayOrder: 20,
+    baseCount: 116,
   },
   {
     slug: "hello-kitty",
@@ -57,6 +68,7 @@ const staticCategories: WrapCategoryCard[] = [
       "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
     imageScale: "scale-[1.25]",
     displayOrder: 30,
+    baseCount: 292,
   },
   {
     slug: "nightmare",
@@ -71,6 +83,7 @@ const staticCategories: WrapCategoryCard[] = [
       "Nightmare Before Christmas Jack Skellington Sally Zero Halloween Christmas spooky",
     imageScale: "scale-[1.2]",
     displayOrder: 40,
+    baseCount: 48,
   },
   {
     slug: "pooh",
@@ -85,6 +98,7 @@ const staticCategories: WrapCategoryCard[] = [
       "Winnie the Pooh friends Tigger Eeyore Piglet honey bear Disney",
     imageScale: "scale-[1.2]",
     displayOrder: 50,
+    baseCount: 95,
   },
   {
     slug: "princesses",
@@ -93,10 +107,13 @@ const staticCategories: WrapCategoryCard[] = [
       "Browse colorful princess-inspired characters, castles, crowns, and fairytale designs.",
     href: "/wraps/princesses",
     image: "/wrap-categories/princesses.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/princesses/thumbnails/princesses%20(1).webp",
     keywords:
       "princess princesses fairytale castle royal crowns characters",
-    imageScale: "scale-[1.15]",
+    imageScale: "scale-[1.1]",
     displayOrder: 55,
+    baseCount: 158,
   },
   {
     slug: "anime",
@@ -109,6 +126,7 @@ const staticCategories: WrapCategoryCard[] = [
       "anime manga Japanese series characters cartoons colorful",
     imageScale: "scale-100",
     displayOrder: 60,
+    baseCount: 75,
   },
   {
     slug: "kpop",
@@ -121,6 +139,7 @@ const staticCategories: WrapCategoryCard[] = [
       "K-pop kpop Korean music groups idols artists albums",
     imageScale: "scale-[1.45]",
     displayOrder: 70,
+    baseCount: 68,
   },
   {
     slug: "labubu",
@@ -133,6 +152,7 @@ const staticCategories: WrapCategoryCard[] = [
       "Labubu Pop Mart monster collectible cute character toy",
     imageScale: "scale-[1.25]",
     displayOrder: 80,
+    baseCount: 84,
   },
   {
     slug: "music",
@@ -145,6 +165,7 @@ const staticCategories: WrapCategoryCard[] = [
       "music musicians artists singers rappers albums lyrics bands concerts",
     imageScale: "scale-[1.25]",
     displayOrder: 90,
+    baseCount: 75,
   },
   {
     slug: "420",
@@ -157,6 +178,7 @@ const staticCategories: WrapCategoryCard[] = [
       "420 cannabis weed marijuana smoke smoking green stoner",
     imageScale: "scale-[1.25]",
     displayOrder: 100,
+    baseCount: 15,
   },
   {
     slug: "villians",
@@ -170,10 +192,11 @@ const staticCategories: WrapCategoryCard[] = [
     keywords: "villains evil characters dark dramatic",
     imageScale: "scale-100",
     displayOrder: 110,
+    baseCount: 34,
   },
 ];
 
-const sportsChildSlugs = new Set([
+const sportsChildSlugs = [
   "dodgers",
   "lakers",
   "clippers",
@@ -181,7 +204,9 @@ const sportsChildSlugs = new Set([
   "goldenstate",
   "nuggets",
   "bulls",
-]);
+] as const;
+
+const sportsChildSlugSet = new Set<string>(sportsChildSlugs);
 
 const smokyTextShadow = {
   textShadow:
@@ -193,25 +218,38 @@ export default function WrapsPage() {
   const [liveCategories, setLiveCategories] = useState<
     CatalogCategoryRecord[]
   >([]);
+  const [liveCounts, setLiveCounts] = useState<CatalogWrapCounts>({});
 
   useEffect(() => {
     let active = true;
 
     const loadCategories = async () => {
-      const { data, error } = await supabase
-        .from("catalog_categories")
-        .select("*")
-        .eq("is_active", true)
-        .order("display_order", { ascending: true })
-        .order("display_name", { ascending: true });
+      const [categoryResult, countsResult] = await Promise.allSettled([
+        supabase
+          .from("catalog_categories")
+          .select("*")
+          .eq("is_active", true)
+          .order("display_order", { ascending: true })
+          .order("display_name", { ascending: true }),
+        loadCatalogWrapCounts(),
+      ]);
 
-      if (!active || error) {
+      if (!active) {
         return;
       }
 
-      setLiveCategories(
-        (data ?? []) as CatalogCategoryRecord[],
-      );
+      if (
+        categoryResult.status === "fulfilled" &&
+        !categoryResult.value.error
+      ) {
+        setLiveCategories(
+          (categoryResult.value.data ?? []) as CatalogCategoryRecord[],
+        );
+      }
+
+      if (countsResult.status === "fulfilled") {
+        setLiveCounts(countsResult.value);
+      }
     };
 
     void loadCategories();
@@ -221,28 +259,34 @@ export default function WrapsPage() {
     };
   }, []);
 
-  const categories = useMemo(() => {
+  const categories = useMemo<DisplayCategory[]>(() => {
     const liveBySlug = new Map(
-      liveCategories.map((category) => [
-        category.slug,
-        category,
-      ]),
+      liveCategories.map((category) => [category.slug, category]),
+    );
+
+    const sportsCount = sportsChildSlugs.reduce(
+      (sum, slug) => sum + (liveCounts[slug] ?? 0),
+      0,
     );
 
     const merged = staticCategories.map((category) => {
       const live = liveBySlug.get(category.slug);
+      const count =
+        category.slug === "sports"
+          ? sportsCount || category.baseCount
+          : liveCounts[category.slug] ??
+            live?.base_image_count ??
+            category.baseCount;
 
       return {
         ...category,
         title: live?.display_name || category.title,
-        description:
-          live?.description || category.description,
+        description: live?.description || category.description,
         image: live?.card_image_url || category.image,
         keywords: `${category.keywords} ${live?.keywords ?? ""}`,
-        imageScale:
-          live?.image_scale || category.imageScale,
-        displayOrder:
-          live?.display_order ?? category.displayOrder,
+        imageScale: live?.image_scale || category.imageScale,
+        displayOrder: live?.display_order ?? category.displayOrder,
+        wrapCount: count,
       };
     });
 
@@ -254,33 +298,34 @@ export default function WrapsPage() {
       .filter(
         (category) =>
           !knownSlugs.has(category.slug) &&
-          !sportsChildSlugs.has(category.slug),
+          !sportsChildSlugSet.has(category.slug),
       )
-      .map((category) => ({
+      .map((category): DisplayCategory => ({
         slug: category.slug,
         title: category.display_name,
         description:
           category.description ||
           "Browse newly published Pressed In Pink wrap designs.",
-        href: `/wraps/category/?slug=${encodeURIComponent(
-          category.slug,
-        )}`,
+        href: `/wraps/category/?slug=${encodeURIComponent(category.slug)}`,
         image: category.card_image_url || "/logo.png",
         fallbackImage: "/logo.png",
         keywords: category.keywords,
         imageScale: category.image_scale || "scale-100",
         displayOrder: category.display_order,
+        baseCount: category.base_image_count,
+        wrapCount:
+          liveCounts[category.slug] ?? category.base_image_count,
       }));
 
     return [...merged, ...dynamic].sort(
       (first, second) =>
+        second.wrapCount - first.wrapCount ||
         first.displayOrder - second.displayOrder ||
         first.title.localeCompare(second.title),
     );
-  }, [liveCategories]);
+  }, [liveCategories, liveCounts]);
 
-  const normalizedSearch =
-    searchQuery.trim().toLowerCase();
+  const normalizedSearch = searchQuery.trim().toLowerCase();
 
   const filteredCategories = categories.filter(
     (category) =>
@@ -296,8 +341,7 @@ export default function WrapsPage() {
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-cover bg-no-repeat bg-[position:62%_top] sm:bg-[position:58%_top] md:bg-center"
         style={{
-          backgroundImage:
-            "url('/homepage-background.jpg')",
+          backgroundImage: "url('/homepage-background.jpg')",
         }}
       />
       <div
@@ -365,7 +409,7 @@ export default function WrapsPage() {
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
             >
-              Choose a category below to browse available wrap designs.
+              Choose a category below to browse available wrap designs. Categories automatically sort from the largest collection to the smallest.
             </p>
           </div>
         </section>
@@ -383,9 +427,7 @@ export default function WrapsPage() {
                 id="wrap-category-search"
                 type="search"
                 value={searchQuery}
-                onChange={(event) =>
-                  setSearchQuery(event.target.value)
-                }
+                onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Search wrap categories..."
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/60"
@@ -405,9 +447,7 @@ export default function WrapsPage() {
               style={smokyTextShadow}
             >
               Showing {filteredCategories.length}{" "}
-              {filteredCategories.length === 1
-                ? "category"
-                : "categories"}
+              {filteredCategories.length === 1 ? "category" : "categories"}
             </p>
           </div>
 
@@ -442,6 +482,9 @@ export default function WrapsPage() {
                   >
                     {category.title}
                   </h2>
+                  <p className="mt-2 text-sm font-black text-red-400">
+                    {category.wrapCount.toLocaleString("en-US")} {category.wrapCount === 1 ? "design" : "designs"}
+                  </p>
                   <p
                     className="mt-4 text-sm leading-6"
                     style={smokyTextShadow}
