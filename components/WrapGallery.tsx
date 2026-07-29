@@ -675,7 +675,7 @@ export default function WrapGallery({
                           globalIndex,
                         )
                       }
-                      aria-label={`Open ${wrap.product.displayName}`}
+                      aria-label={`Open wrap design ${wrap.number}`}
                       className="group block w-full"
                     >
                       <div className="relative aspect-[2/1] w-full overflow-hidden">
@@ -684,7 +684,7 @@ export default function WrapGallery({
                             wrap.product
                               .thumbnailUrl
                           }
-                          alt={`${wrap.product.displayName} wrap design`}
+                          alt={`Wrap design ${wrap.number}`}
                           loading={
                             localIndex < 3
                               ? "eager"
@@ -702,10 +702,10 @@ export default function WrapGallery({
                           }}
                           className="
                             absolute left-1/2 top-1/2
-                            h-[204%] w-[52%]
+                            h-[200%] w-1/2
                             max-w-none -translate-x-1/2
                             -translate-y-1/2 rotate-90
-                            object-cover transition
+                            object-contain transition
                             duration-300
                             group-hover:scale-[1.03]
                           "
@@ -767,7 +767,7 @@ export default function WrapGallery({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`${selectedWrap.product.displayName} image viewer`}
+          aria-label="Wrap image viewer"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-6"
           onClick={closeViewer}
         >
@@ -807,7 +807,7 @@ export default function WrapGallery({
                   selectedWrap.product
                     .fullImageUrl
                 }
-                alt={`${selectedWrap.product.displayName} wrap design`}
+                alt={`Wrap design ${selectedWrap.number}`}
                 draggable={false}
                 className="
                   absolute left-1/2 top-1/2
@@ -823,10 +823,7 @@ export default function WrapGallery({
               className="pt-4 text-center text-sm font-bold text-white"
               style={smokyTextShadow}
             >
-              {selectedWrap.product.displayName}
-              {" • "}
-              {(selectedIndex ?? 0) + 1} /{" "}
-              {wraps.length}
+              Design {(selectedIndex ?? 0) + 1} of {wraps.length}
             </p>
 
             <AddToCartControls

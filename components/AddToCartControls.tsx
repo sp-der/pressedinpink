@@ -85,11 +85,7 @@ export default function AddToCartControls({
         }
       >
         <div>
-          <p className="text-base font-black text-white">
-            {product.displayName}
-          </p>
-
-          <p className="mt-1 text-xs text-white/70">
+          <p className="text-xs font-bold text-white/70">
             {currentCartQuantity > 0
               ? `Already in cart: ${currentCartQuantity}`
               : "Choose the quantity you want to request."}
@@ -115,7 +111,7 @@ export default function AddToCartControls({
               onClick={() =>
                 updateQuantity(quantity - 1)
               }
-              aria-label={`Decrease ${product.displayName} quantity`}
+              aria-label="Decrease wrap quantity"
               className="
                 flex h-10 w-10 items-center
                 justify-center text-xl font-black
@@ -136,7 +132,7 @@ export default function AddToCartControls({
                   Number(event.target.value),
                 )
               }
-              aria-label={`${product.displayName} quantity`}
+              aria-label="Wrap quantity"
               className="
                 h-10 w-14 border-x
                 border-red-900 bg-black
@@ -150,7 +146,7 @@ export default function AddToCartControls({
               onClick={() =>
                 updateQuantity(quantity + 1)
               }
-              aria-label={`Increase ${product.displayName} quantity`}
+              aria-label="Increase wrap quantity"
               className="
                 flex h-10 w-10 items-center
                 justify-center text-xl font-black
@@ -186,7 +182,7 @@ export default function AddToCartControls({
         className="sr-only"
       >
         {showAddedMessage
-          ? `${quantity} ${product.displayName} added to the cart.`
+          ? `${quantity} wrap${quantity === 1 ? "" : "s"} added to the cart.`
           : ""}
       </p>
     </div>
