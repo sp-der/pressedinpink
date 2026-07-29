@@ -8,6 +8,10 @@ import {
 
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
+import {
+  getRememberLogin,
+  setRememberLogin,
+} from "@/lib/authStorage";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
@@ -25,12 +29,18 @@ export default function LoginPage() {
     useState("/account");
   const [confirmed, setConfirmed] =
     useState(false);
+  const [rememberMe, setRememberMe] =
+    useState(true);
   const [submitting, setSubmitting] =
     useState(false);
   const [errorMessage, setErrorMessage] =
     useState("");
 
   useEffect(() => {
+    setRememberMe(
+      getRememberLogin(),
+    );
+
     const params =
       new URLSearchParams(
         window.location.search,
@@ -60,6 +70,10 @@ export default function LoginPage() {
       setSubmitting(true);
 
       try {
+        setRememberLogin(
+          rememberMe,
+        );
+
         if (isAnonymous) {
           const approved =
             window.confirm(
@@ -181,6 +195,23 @@ export default function LoginPage() {
             }
             className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none transition focus:border-red-500"
           />
+        </label>
+
+        <label className="mt-5 flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(event) =>
+              setRememberMe(
+                event.target.checked,
+              )
+            }
+            className="h-4 w-4 accent-red-600"
+          />
+
+          <span className="text-sm font-bold text-white/85">
+            Keep me signed in on this device
+          </span>
         </label>
 
         {errorMessage && (

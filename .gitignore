@@ -13,3 +13,8 @@ out/
 # Wrap images are stored in Cloudflare R2
 /public/wraps/
 .env.local
+
+# Temporary local image-conversion folders
+source-images/
+converted/
+upload-staging/

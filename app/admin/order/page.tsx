@@ -1,14 +1,19 @@
-
 "use client";
 
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
+import {
+  downloadInvoicePdf,
+  invoicePdfBase64,
+} from "@/lib/invoicePdf";
+import type { InvoicePdfData } from "@/lib/invoicePdf";
 import { supabase } from "@/lib/supabase";
 import {
   getContactHref,
@@ -17,138 +22,199 @@ import {
   ORDER_STATUSES,
 } from "@/types/orders";
 import type {
+  InvoiceItemRecord,
+  InvoiceRecord,
   OrderItemRecord,
   OrderRecord,
   OrderStatus,
 } from "@/types/orders";
 
-export default function AdminOrderPage() {
-  const {
-    user,
-    loading,
-    isAdmin,
-  } = useAuth();
+const currency = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
 
-  const [orderId, setOrderId] =
-    useState("");
-  const [order, setOrder] =
-    useState<OrderRecord | null>(null);
-  const [items, setItems] =
-    useState<OrderItemRecord[]>([]);
+function moneyValue(value: string | number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
+}
+
+function roundMoney(value: number): number {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+export default function AdminOrderPage() {
+  const { user, loading, isAdmin } = useAuth();
+  const [orderId, setOrderId] = useState("");
+  const [order, setOrder] = useState<OrderRecord | null>(null);
+  const [items, setItems] = useState<OrderItemRecord[]>([]);
   const [status, setStatus] =
     useState<OrderStatus>("submitted");
-  const [adminNotes, setAdminNotes] =
-    useState("");
-  const [
-    revisionMessage,
-    setRevisionMessage,
-  ] = useState("");
-  const [loadingOrder, setLoadingOrder] =
-    useState(false);
-  const [saving, setSaving] =
-    useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState("");
-  const [successMessage, setSuccessMessage] =
-    useState("");
+  const [adminNotes, setAdminNotes] = useState("");
+  const [revisionMessage, setRevisionMessage] = useState("");
+  const [invoice, setInvoice] =
+    useState<InvoiceRecord | null>(null);
+  const [unitPrices, setUnitPrices] = useState<
+    Record<string, string>
+  >({});
+  const [shipping, setShipping] = useState("0.00");
+  const [discount, setDiscount] = useState("0.00");
+  const [tax, setTax] = useState("0.00");
+  const [invoiceNotes, setInvoiceNotes] = useState("");
+  const [loadingOrder, setLoadingOrder] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [savingInvoice, setSavingInvoice] = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const params =
-      new URLSearchParams(
-        window.location.search,
-      );
-
-    setOrderId(
-      params.get("order") ?? "",
-    );
+    const params = new URLSearchParams(window.location.search);
+    setOrderId(params.get("order") ?? "");
   }, []);
 
-  const loadOrder =
-    useCallback(async () => {
-      if (!orderId || !isAdmin) {
-        return;
-      }
-
-      setLoadingOrder(true);
-      setErrorMessage("");
-
-      const { data, error } =
-        await supabase
-          .from("orders")
-          .select(
-            `
-              id,
-              order_number,
-              customer_id,
-              checkout_type,
-              customer_name,
-              customer_email,
-              customer_phone,
-              contact_method,
-              contact_value,
-              customer_notes,
-              status,
-              customer_approval_status,
-              revision_message,
-              admin_notes,
-              submitted_at,
-              updated_at,
-              order_items (
-                id,
-                order_id,
-                product_id,
-                display_name,
-                category_slug,
-                category_name,
-                image_number,
-                source_filename,
-                thumbnail_url,
-                full_image_url,
-                requested_quantity,
-                approved_quantity,
-                is_available,
-                admin_note,
-                created_at,
-                updated_at
-              )
-            `,
-          )
-          .eq("id", orderId)
-          .maybeSingle();
+  const loadInvoice = useCallback(
+    async (selectedOrderId: string, loadedItems: OrderItemRecord[]) => {
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("*")
+        .eq("order_id", selectedOrderId)
+        .maybeSingle();
 
       if (error) {
-        setErrorMessage(
-          error.message,
+        if (error.code !== "42P01") {
+          console.error("Could not load invoice.", error);
+        }
+        setInvoice(null);
+        setUnitPrices(
+          Object.fromEntries(
+            loadedItems.map((item) => [item.id, "0.00"]),
+          ),
         );
-        setLoadingOrder(false);
         return;
       }
 
       if (!data) {
-        setErrorMessage(
-          "Order not found.",
+        setInvoice(null);
+        setUnitPrices(
+          Object.fromEntries(
+            loadedItems.map((item) => [item.id, "0.00"]),
+          ),
         );
-        setLoadingOrder(false);
+        setShipping("0.00");
+        setDiscount("0.00");
+        setTax("0.00");
+        setInvoiceNotes("");
         return;
       }
 
-      const loaded =
-        data as unknown as OrderRecord;
+      const loadedInvoice = data as InvoiceRecord;
+      const { data: invoiceItems, error: itemError } =
+        await supabase
+          .from("invoice_items")
+          .select("*")
+          .eq("invoice_id", loadedInvoice.id);
 
-      setOrder(loaded);
-      setItems(
-        loaded.order_items ?? [],
+      if (itemError) {
+        console.error("Could not load invoice items.", itemError);
+      }
+
+      const priceMap = Object.fromEntries(
+        loadedItems.map((item) => [item.id, "0.00"]),
       );
-      setStatus(loaded.status);
-      setAdminNotes(
-        loaded.admin_notes ?? "",
-      );
-      setRevisionMessage(
-        loaded.revision_message ??
-          "",
-      );
+
+      for (const invoiceItem of (invoiceItems ?? []) as InvoiceItemRecord[]) {
+        if (invoiceItem.order_item_id) {
+          priceMap[invoiceItem.order_item_id] = Number(
+            invoiceItem.unit_price,
+          ).toFixed(2);
+        }
+      }
+
+      setInvoice({
+        ...loadedInvoice,
+        subtotal: Number(loadedInvoice.subtotal),
+        shipping: Number(loadedInvoice.shipping),
+        discount: Number(loadedInvoice.discount),
+        tax: Number(loadedInvoice.tax),
+        total: Number(loadedInvoice.total),
+      });
+      setUnitPrices(priceMap);
+      setShipping(Number(loadedInvoice.shipping).toFixed(2));
+      setDiscount(Number(loadedInvoice.discount).toFixed(2));
+      setTax(Number(loadedInvoice.tax).toFixed(2));
+      setInvoiceNotes(loadedInvoice.notes ?? "");
+    },
+    [],
+  );
+
+  const loadOrder = useCallback(async () => {
+    if (!orderId || !isAdmin) {
+      return;
+    }
+
+    setLoadingOrder(true);
+    setErrorMessage("");
+
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        `
+          id,
+          order_number,
+          customer_id,
+          checkout_type,
+          customer_name,
+          customer_email,
+          customer_phone,
+          contact_method,
+          contact_value,
+          customer_notes,
+          status,
+          customer_approval_status,
+          revision_message,
+          admin_notes,
+          submitted_at,
+          updated_at,
+          order_items (
+            id,
+            order_id,
+            product_id,
+            display_name,
+            category_slug,
+            category_name,
+            image_number,
+            source_filename,
+            thumbnail_url,
+            full_image_url,
+            requested_quantity,
+            approved_quantity,
+            is_available,
+            admin_note,
+            created_at,
+            updated_at
+          )
+        `,
+      )
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (error || !data) {
+      setErrorMessage(error?.message ?? "Order not found.");
       setLoadingOrder(false);
-    }, [orderId, isAdmin]);
+      return;
+    }
+
+    const loaded = data as unknown as OrderRecord;
+    const loadedItems = loaded.order_items ?? [];
+    setOrder(loaded);
+    setItems(loadedItems);
+    setStatus(loaded.status);
+    setAdminNotes(loaded.admin_notes ?? "");
+    setRevisionMessage(loaded.revision_message ?? "");
+    await loadInvoice(loaded.id, loadedItems);
+    setLoadingOrder(false);
+  }, [orderId, isAdmin, loadInvoice]);
 
   useEffect(() => {
     if (loading) {
@@ -156,178 +222,400 @@ export default function AdminOrderPage() {
     }
 
     if (!user || !isAdmin) {
-      window.location.replace(
-        "/admin/login",
-      );
+      window.location.replace("/admin/login");
       return;
     }
 
     if (orderId) {
       void loadOrder();
     }
-  }, [
-    loading,
-    user,
-    isAdmin,
-    orderId,
-    loadOrder,
-  ]);
+  }, [loading, user, isAdmin, orderId, loadOrder]);
 
   const updateItem = (
     itemId: string,
-    updates:
-      Partial<OrderItemRecord>,
+    updates: Partial<OrderItemRecord>,
   ) => {
     setItems((currentItems) =>
       currentItems.map((item) =>
-        item.id === itemId
-          ? {
-              ...item,
-              ...updates,
-            }
-          : item,
+        item.id === itemId ? { ...item, ...updates } : item,
       ),
     );
   };
 
-  const saveOrder =
-    async () => {
-      if (!order || !user) {
-        return;
-      }
+  const invoiceLines = useMemo(
+    () =>
+      items
+        .filter(
+          (item) => item.is_available && item.approved_quantity > 0,
+        )
+        .map((item) => {
+          const quantity = Math.max(
+            0,
+            Math.round(item.approved_quantity),
+          );
+          const unitPrice = moneyValue(unitPrices[item.id] ?? "0");
 
-      if (
-        status ===
-          "awaiting_customer_approval" &&
-        revisionMessage.trim().length ===
-          0
-      ) {
-        setErrorMessage(
-          "Add a revision message before sending the order for customer approval.",
-        );
-        return;
-      }
+          return {
+            orderItemId: item.id,
+            description: item.display_name,
+            quantity,
+            unitPrice,
+            lineTotal: roundMoney(quantity * unitPrice),
+          };
+        }),
+    [items, unitPrices],
+  );
 
-      setSaving(true);
-      setErrorMessage("");
+  const subtotal = useMemo(
+    () =>
+      roundMoney(
+        invoiceLines.reduce(
+          (total, line) => total + line.lineTotal,
+          0,
+        ),
+      ),
+    [invoiceLines],
+  );
+  const shippingAmount = moneyValue(shipping);
+  const discountAmount = moneyValue(discount);
+  const taxAmount = moneyValue(tax);
+  const total = roundMoney(
+    Math.max(
+      0,
+      subtotal + shippingAmount + taxAmount - discountAmount,
+    ),
+  );
+
+  const saveOrder = async (
+    showSuccess = true,
+  ): Promise<boolean> => {
+    if (!order || !user) {
+      return false;
+    }
+
+    if (
+      status === "awaiting_customer_approval" &&
+      revisionMessage.trim().length === 0
+    ) {
+      setErrorMessage(
+        "Add a revision message before sending the order for customer approval.",
+      );
+      return false;
+    }
+
+    setSavingOrder(true);
+    setErrorMessage("");
+    if (showSuccess) {
       setSuccessMessage("");
+    }
 
-      try {
-        let approvalStatus =
-          order.customer_approval_status;
+    try {
+      let approvalStatus = order.customer_approval_status;
 
-        if (
-          status ===
-          "awaiting_customer_approval"
-        ) {
-          approvalStatus = "pending";
-        } else if (
-          status === "approved"
-        ) {
-          approvalStatus = "approved";
-        } else if (
-          status ===
-          "changes_requested"
-        ) {
-          approvalStatus =
-            "changes_requested";
-        }
-
-        const {
-          error: orderError,
-        } = await supabase
-          .from("orders")
-          .update({
-            status,
-            admin_notes:
-              adminNotes.trim(),
-            revision_message:
-              revisionMessage.trim(),
-            customer_approval_status:
-              approvalStatus,
-          })
-          .eq("id", order.id);
-
-        if (orderError) {
-          throw orderError;
-        }
-
-        const results =
-          await Promise.all(
-            items.map((item) =>
-              supabase
-                .from("order_items")
-                .update({
-                  approved_quantity:
-                    item.is_available
-                      ? Math.max(
-                          0,
-                          Math.round(
-                            item.approved_quantity,
-                          ),
-                        )
-                      : 0,
-                  is_available:
-                    item.is_available,
-                  admin_note:
-                    item.admin_note.trim(),
-                })
-                .eq("id", item.id),
-            ),
-          );
-
-        const failedResult =
-          results.find(
-            (result) =>
-              Boolean(result.error),
-          );
-
-        if (failedResult?.error) {
-          throw failedResult.error;
-        }
-
-        const {
-          error: eventError,
-        } = await supabase
-          .from("order_events")
-          .insert({
-            order_id:
-              order.id,
-            event_type:
-              "admin_update",
-            message:
-              `Order updated to ${getOrderStatusLabel(
-                status,
-              )}.`,
-            created_by:
-              user.id,
-          });
-
-        if (eventError) {
-          throw eventError;
-        }
-
-        setSuccessMessage(
-          "Order changes saved.",
-        );
-
-        await loadOrder();
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : "Order changes could not be saved.",
-        );
-      } finally {
-        setSaving(false);
+      if (status === "awaiting_customer_approval") {
+        approvalStatus = "pending";
+      } else if (status === "approved") {
+        approvalStatus = "approved";
+      } else if (status === "changes_requested") {
+        approvalStatus = "changes_requested";
       }
-    };
 
-  if (
-    loading ||
-    !isAdmin ||
-    loadingOrder
-  ) {
+      const { error: orderError } = await supabase
+        .from("orders")
+        .update({
+          status,
+          admin_notes: adminNotes.trim(),
+          revision_message: revisionMessage.trim(),
+          customer_approval_status: approvalStatus,
+        })
+        .eq("id", order.id);
+
+      if (orderError) {
+        throw orderError;
+      }
+
+      const results = await Promise.all(
+        items.map((item) =>
+          supabase
+            .from("order_items")
+            .update({
+              approved_quantity: item.is_available
+                ? Math.max(0, Math.round(item.approved_quantity))
+                : 0,
+              is_available: item.is_available,
+              admin_note: item.admin_note.trim(),
+            })
+            .eq("id", item.id),
+        ),
+      );
+
+      const failedResult = results.find((result) => result.error);
+      if (failedResult?.error) {
+        throw failedResult.error;
+      }
+
+      const { error: eventError } = await supabase
+        .from("order_events")
+        .insert({
+          order_id: order.id,
+          event_type: "admin_update",
+          message: `Order updated to ${getOrderStatusLabel(status)}.`,
+          created_by: user.id,
+        });
+
+      if (eventError) {
+        throw eventError;
+      }
+
+      setOrder({
+        ...order,
+        status,
+        admin_notes: adminNotes.trim(),
+        revision_message: revisionMessage.trim(),
+        customer_approval_status: approvalStatus,
+        order_items: items,
+      });
+
+      if (showSuccess) {
+        setSuccessMessage("Order changes saved.");
+      }
+
+      return true;
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Order changes could not be saved.",
+      );
+      return false;
+    } finally {
+      setSavingOrder(false);
+    }
+  };
+
+  const saveInvoice = async (
+    showSuccess = true,
+  ): Promise<InvoiceRecord | null> => {
+    if (!order || !user) {
+      return null;
+    }
+
+    if (invoiceLines.length === 0) {
+      setErrorMessage(
+        "The invoice needs at least one available wrap with an approved quantity.",
+      );
+      return null;
+    }
+
+    setSavingInvoice(true);
+    setErrorMessage("");
+    if (showSuccess) {
+      setSuccessMessage("");
+    }
+
+    try {
+      const invoicePayload = {
+        order_id: order.id,
+        customer_name: order.customer_name,
+        customer_email: order.customer_email,
+        subtotal,
+        shipping: shippingAmount,
+        discount: discountAmount,
+        tax: taxAmount,
+        total,
+        notes: invoiceNotes.trim(),
+        created_by: user.id,
+      };
+
+      let savedInvoice: InvoiceRecord;
+
+      if (invoice) {
+        const { data, error } = await supabase
+          .from("invoices")
+          .update(invoicePayload)
+          .eq("id", invoice.id)
+          .select("*")
+          .single();
+
+        if (error || !data) {
+          throw error ?? new Error("Invoice could not be updated.");
+        }
+
+        savedInvoice = data as InvoiceRecord;
+      } else {
+        const { data, error } = await supabase
+          .from("invoices")
+          .insert({
+            ...invoicePayload,
+            status: "draft",
+          })
+          .select("*")
+          .single();
+
+        if (error || !data) {
+          throw error ?? new Error("Invoice could not be created.");
+        }
+
+        savedInvoice = data as InvoiceRecord;
+      }
+
+      const { error: deleteError } = await supabase
+        .from("invoice_items")
+        .delete()
+        .eq("invoice_id", savedInvoice.id);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      const { error: itemError } = await supabase
+        .from("invoice_items")
+        .insert(
+          invoiceLines.map((line) => ({
+            invoice_id: savedInvoice.id,
+            order_item_id: line.orderItemId,
+            description: line.description,
+            quantity: line.quantity,
+            unit_price: line.unitPrice,
+            line_total: line.lineTotal,
+          })),
+        );
+
+      if (itemError) {
+        throw itemError;
+      }
+
+      const normalized: InvoiceRecord = {
+        ...savedInvoice,
+        subtotal: Number(savedInvoice.subtotal),
+        shipping: Number(savedInvoice.shipping),
+        discount: Number(savedInvoice.discount),
+        tax: Number(savedInvoice.tax),
+        total: Number(savedInvoice.total),
+      };
+      setInvoice(normalized);
+
+      if (showSuccess) {
+        setSuccessMessage(
+          `Invoice ${normalized.invoice_number} saved as a draft.`,
+        );
+      }
+
+      return normalized;
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The invoice could not be saved.",
+      );
+      return null;
+    } finally {
+      setSavingInvoice(false);
+    }
+  };
+
+  const buildPdfData = (
+    savedInvoice: InvoiceRecord,
+  ): InvoicePdfData => ({
+    invoiceNumber: savedInvoice.invoice_number,
+    orderNumber: order?.order_number ?? "",
+    customerName: order?.customer_name ?? "",
+    customerEmail: order?.customer_email ?? "",
+    invoiceDate: new Date().toLocaleDateString("en-US"),
+    lines: invoiceLines.map((line) => ({
+      description: line.description,
+      quantity: line.quantity,
+      unitPrice: line.unitPrice,
+      lineTotal: line.lineTotal,
+    })),
+    subtotal,
+    shipping: shippingAmount,
+    discount: discountAmount,
+    tax: taxAmount,
+    total,
+    notes: invoiceNotes.trim(),
+  });
+
+  const downloadInvoice = async () => {
+    const savedInvoice = await saveInvoice(false);
+    if (!savedInvoice) {
+      return;
+    }
+
+    downloadInvoicePdf(buildPdfData(savedInvoice));
+    setSuccessMessage(
+      `Invoice ${savedInvoice.invoice_number} downloaded.`,
+    );
+  };
+
+  const emailInvoice = async () => {
+    if (!order) {
+      return;
+    }
+
+    setSendingInvoice(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      const orderSaved = await saveOrder(false);
+      if (!orderSaved) {
+        return;
+      }
+
+      const savedInvoice = await saveInvoice(false);
+      if (!savedInvoice) {
+        return;
+      }
+
+      const pdfBase64 = invoicePdfBase64(
+        buildPdfData(savedInvoice),
+      );
+      const { data, error } = await supabase.functions.invoke(
+        "send-invoice",
+        {
+          body: {
+            orderId: order.id,
+            invoiceId: savedInvoice.id,
+            pdfBase64,
+            siteOrigin: window.location.origin,
+          },
+        },
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      const result = data as { sent?: boolean; error?: string };
+      if (!result?.sent) {
+        throw new Error(
+          result?.error ?? "The invoice email was not sent.",
+        );
+      }
+
+      setStatus("invoice_sent");
+      setOrder({ ...order, status: "invoice_sent" });
+      setInvoice({
+        ...savedInvoice,
+        status: "sent",
+        sent_at: new Date().toISOString(),
+      });
+      setSuccessMessage(
+        `Invoice ${savedInvoice.invoice_number} emailed to ${order.customer_email}.`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The invoice email could not be sent.",
+      );
+    } finally {
+      setSendingInvoice(false);
+    }
+  };
+
+  if (loading || !isAdmin || loadingOrder) {
     return (
       <AuthPageShell
         eyebrow="Pressed In Pink Admin"
@@ -348,10 +636,7 @@ export default function AdminOrderPage() {
       <AuthPageShell
         eyebrow="Pressed In Pink Admin"
         title="Order Not Found"
-        description={
-          errorMessage ||
-          "No valid order was selected."
-        }
+        description={errorMessage || "No valid order was selected."}
         backHref="/admin/orders"
         backLabel="Back to Orders"
       >
@@ -367,11 +652,16 @@ export default function AdminOrderPage() {
     );
   }
 
+  const contactHref = getContactHref(
+    order.contact_method,
+    order.contact_value || order.customer_email,
+  );
+
   return (
     <AuthPageShell
       eyebrow="Pressed In Pink Admin"
       title={order.order_number}
-      description="Review the customer details, approve quantities, and move the order through its workflow."
+      description="Buyer information, order controls, and invoicing now stay above the wrap list."
       backHref="/admin/orders"
       backLabel="Back to Orders"
       maxWidthClass="max-w-7xl"
@@ -388,8 +678,336 @@ export default function AdminOrderPage() {
         </div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl sm:p-7">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-400">
+            Buyer Information
+          </p>
+          <h2 className="mt-3 text-3xl font-black">
+            {order.customer_name}
+          </h2>
+          <a
+            href={`mailto:${order.customer_email}`}
+            className="mt-3 block break-all text-sm font-bold text-white/80 underline decoration-red-600 underline-offset-4"
+          >
+            {order.customer_email}
+          </a>
+
+          <div className="mt-5 rounded-2xl border border-red-900/80 bg-red-950/20 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.15em] text-red-400">
+              Preferred Contact
+            </p>
+            {contactHref ? (
+              <a
+                href={contactHref}
+                target={
+                  order.contact_method === "instagram" ||
+                  order.contact_method === "tiktok"
+                    ? "_blank"
+                    : undefined
+                }
+                rel={
+                  order.contact_method === "instagram" ||
+                  order.contact_method === "tiktok"
+                    ? "noreferrer"
+                    : undefined
+                }
+                className="mt-2 block break-all font-black underline decoration-red-600 underline-offset-4"
+              >
+                {getContactMethodLabel(order.contact_method)}: {order.contact_value || order.customer_email}
+              </a>
+            ) : (
+              <p className="mt-2 break-all font-black">
+                {getContactMethodLabel(order.contact_method || "email")}: {order.contact_value || order.customer_email}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-white/50">Checkout</p>
+              <p className="mt-1 font-black capitalize">
+                {order.checkout_type}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-white/50">Submitted</p>
+              <p className="mt-1 font-black">
+                {new Date(order.submitted_at).toLocaleString("en-US")}
+              </p>
+            </div>
+          </div>
+
+          {order.customer_notes && (
+            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+              <p className="text-xs font-black uppercase tracking-[0.15em] text-white/60">
+                Customer Notes
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-white/80">
+                {order.customer_notes}
+              </p>
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl sm:p-7">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-400">
+            Order Review
+          </p>
+
+          <label className="mt-4 block">
+            <span className="text-sm font-bold">Order status</span>
+            <select
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as OrderStatus)
+              }
+              className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+            >
+              {ORDER_STATUSES.map((option) => (
+                <option key={option} value={option}>
+                  {getOrderStatusLabel(option)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="mt-4 block">
+            <span className="text-sm font-bold">
+              Revision message for customer
+            </span>
+            <textarea
+              value={revisionMessage}
+              onChange={(event) =>
+                setRevisionMessage(event.target.value)
+              }
+              rows={4}
+              className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+              placeholder="Explain quantity changes or unavailable items"
+            />
+          </label>
+
+          <label className="mt-4 block">
+            <span className="text-sm font-bold">
+              Private admin notes
+            </span>
+            <textarea
+              value={adminNotes}
+              onChange={(event) => setAdminNotes(event.target.value)}
+              rows={4}
+              className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+              placeholder="Internal notes not shown to the customer"
+            />
+          </label>
+
+          <button
+            type="button"
+            onClick={() => void saveOrder()}
+            disabled={savingOrder}
+            className="mt-5 w-full rounded-full bg-red-600 px-6 py-4 font-black transition hover:bg-red-500 disabled:opacity-60"
+          >
+            {savingOrder ? "Saving Changes…" : "Save Order Changes"}
+          </button>
+        </section>
+      </div>
+
+      <section className="mt-6 rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-400">
+              Invoice Builder
+            </p>
+            <h2 className="mt-2 text-2xl font-black">
+              {invoice?.invoice_number ?? "New Invoice"}
+            </h2>
+            <p className="mt-2 text-sm text-white/60">
+              Enter a unit price for each approved wrap. Quantities come from the order review below.
+            </p>
+          </div>
+          {invoice && (
+            <span className="rounded-full border border-red-600 px-4 py-2 text-xs font-black uppercase tracking-wide">
+              {invoice.status}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
+          <table className="w-full min-w-[700px] text-left text-sm">
+            <thead className="bg-red-950/40 text-xs uppercase tracking-wide text-white/70">
+              <tr>
+                <th className="px-4 py-3">Wrap</th>
+                <th className="px-4 py-3 text-center">Qty</th>
+                <th className="px-4 py-3">Unit Price</th>
+                <th className="px-4 py-3 text-right">Line Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => {
+                const quantity = item.is_available
+                  ? Math.max(0, Math.round(item.approved_quantity))
+                  : 0;
+                const unitPrice = moneyValue(unitPrices[item.id] ?? "0");
+
+                return (
+                  <tr key={item.id} className="border-t border-white/10">
+                    <td className="px-4 py-3 font-bold">
+                      {item.display_name}
+                      {!item.is_available && (
+                        <span className="ml-2 text-xs text-red-400">
+                          Unavailable
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center font-black">
+                      {quantity}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/55">$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={unitPrices[item.id] ?? "0.00"}
+                          disabled={!item.is_available || quantity === 0}
+                          onChange={(event) =>
+                            setUnitPrices((current) => ({
+                              ...current,
+                              [item.id]: event.target.value,
+                            }))
+                          }
+                          className="w-28 rounded-xl border border-red-900 bg-black px-3 py-2 text-white outline-none focus:border-red-500 disabled:opacity-35"
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right font-black">
+                      {currency.format(quantity * unitPrice)}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
+          <label>
+            <span className="text-sm font-bold">Invoice notes</span>
+            <textarea
+              value={invoiceNotes}
+              onChange={(event) => setInvoiceNotes(event.target.value)}
+              rows={6}
+              placeholder="Payment instructions, pickup details, or other notes"
+              className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+            />
+          </label>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+            <div className="grid grid-cols-2 gap-3">
+              <label>
+                <span className="text-xs font-bold text-white/60">Shipping</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={shipping}
+                  onChange={(event) => setShipping(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-red-900 bg-black px-3 py-2 outline-none focus:border-red-500"
+                />
+              </label>
+              <label>
+                <span className="text-xs font-bold text-white/60">Discount</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={discount}
+                  onChange={(event) => setDiscount(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-red-900 bg-black px-3 py-2 outline-none focus:border-red-500"
+                />
+              </label>
+              <label className="col-span-2">
+                <span className="text-xs font-bold text-white/60">Tax amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={tax}
+                  onChange={(event) => setTax(event.target.value)}
+                  className="mt-2 w-full rounded-xl border border-red-900 bg-black px-3 py-2 outline-none focus:border-red-500"
+                />
+              </label>
+            </div>
+
+            <div className="mt-5 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-white/60">Wrap total</span>
+                <strong>{currency.format(subtotal)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/60">Shipping</span>
+                <strong>{currency.format(shippingAmount)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/60">Discount</span>
+                <strong>-{currency.format(discountAmount)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-white/60">Tax</span>
+                <strong>{currency.format(taxAmount)}</strong>
+              </div>
+              <div className="mt-3 flex justify-between border-t border-red-700 pt-3 text-xl">
+                <span className="font-black">Total</span>
+                <strong>{currency.format(total)}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => void saveInvoice()}
+            disabled={savingInvoice || sendingInvoice}
+            className="rounded-full border border-red-600 px-5 py-3 font-black transition hover:bg-red-600 disabled:opacity-50"
+          >
+            {savingInvoice ? "Saving…" : "Save Draft"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void downloadInvoice()}
+            disabled={savingInvoice || sendingInvoice}
+            className="rounded-full border border-red-600 px-5 py-3 font-black transition hover:bg-red-600 disabled:opacity-50"
+          >
+            Download PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => void emailInvoice()}
+            disabled={savingInvoice || sendingInvoice || savingOrder}
+            className="rounded-full bg-red-600 px-5 py-3 font-black transition hover:bg-red-500 disabled:opacity-50"
+          >
+            {sendingInvoice ? "Sending Invoice…" : "Email Invoice to Customer"}
+          </button>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-400">
+              Requested Designs
+            </p>
+            <h2 className="mt-2 text-3xl font-black">
+              {items.length} Wrap{items.length === 1 ? "" : "s"}
+            </h2>
+          </div>
+          <p className="text-sm text-white/60">
+            Adjust quantities and availability, then save the order above.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <article
               key={item.id}
@@ -402,328 +1020,84 @@ export default function AdminOrderPage() {
                 className="relative block aspect-[2/1] w-full overflow-hidden bg-black/80 p-4"
               >
                 <img
-                  src={
-                    item.thumbnail_url
-                  }
-                  alt={
-                    item.display_name
-                  }
+                  src={item.thumbnail_url}
+                  alt={item.display_name}
                   onError={(event) => {
-                    event.currentTarget.onerror =
-                      null;
-
-                    event.currentTarget.src =
-                      item.full_image_url;
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = item.full_image_url;
                   }}
                   className="absolute left-1/2 top-1/2 h-[200%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
                 />
               </a>
 
-              <div className="p-5 sm:p-7">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">
-                      {
-                        item.category_name
-                      }
-                    </p>
+              <div className="p-5">
+                <h3 className="text-xl font-black">
+                  {item.display_name}
+                </h3>
+                <p className="mt-1 text-xs text-white/50">
+                  Requested quantity: {item.requested_quantity}
+                </p>
 
-                    <h2 className="mt-1 text-2xl font-black">
-                      {
-                        item.display_name
-                      }
-                    </h2>
-                  </div>
-
-                  <a
-                    href={
-                      item.full_image_url
+                <label className="mt-4 block">
+                  <span className="text-sm font-bold">Approved quantity</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="999"
+                    value={item.approved_quantity}
+                    disabled={!item.is_available}
+                    onChange={(event) =>
+                      updateItem(item.id, {
+                        approved_quantity: Math.max(
+                          0,
+                          Number(event.target.value) || 0,
+                        ),
+                      })
                     }
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-bold text-white/70 underline decoration-red-600 underline-offset-4 transition hover:text-red-500"
-                  >
-                    Open Image
-                  </a>
-                </div>
+                    className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 outline-none focus:border-red-500 disabled:opacity-40"
+                  />
+                </label>
 
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs text-white/60">
-                      Requested
-                    </p>
-
-                    <p className="mt-1 text-3xl font-black">
-                      {
-                        item.requested_quantity
-                      }
-                    </p>
-                  </div>
-
-                  <label>
-                    <span className="text-xs font-bold text-white/70">
-                      Approved quantity
-                    </span>
-
-                    <input
-                      type="number"
-                      min={0}
-                      max={999}
-                      disabled={
-                        !item.is_available
-                      }
-                      value={
-                        item.approved_quantity
-                      }
-                      onChange={(event) =>
-                        updateItem(
-                          item.id,
-                          {
-                            approved_quantity:
-                              Number(
-                                event
-                                  .target
-                                  .value,
-                              ),
-                          },
-                        )
-                      }
-                      className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-xl font-black text-white outline-none focus:border-red-500 disabled:opacity-40"
-                    />
-                  </label>
-                </div>
-
-                <label className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
                   <input
                     type="checkbox"
-                    checked={
-                      item.is_available
-                    }
+                    checked={item.is_available}
                     onChange={(event) =>
-                      updateItem(
-                        item.id,
-                        {
-                          is_available:
-                            event.target
-                              .checked,
-                          approved_quantity:
-                            event.target
-                              .checked
-                              ? Math.max(
-                                  1,
-                                  item.requested_quantity,
-                                )
-                              : 0,
-                        },
-                      )
+                      updateItem(item.id, {
+                        is_available: event.target.checked,
+                        approved_quantity: event.target.checked
+                          ? Math.max(1, item.approved_quantity || item.requested_quantity)
+                          : 0,
+                      })
                     }
-                    className="h-5 w-5 accent-red-600"
+                    className="h-4 w-4 accent-red-600"
                   />
-
-                  <span className="font-bold">
-                    Item is available
+                  <span className="text-sm font-black">
+                    Design is available
                   </span>
                 </label>
 
                 <label className="mt-4 block">
-                  <span className="text-xs font-bold text-white/70">
+                  <span className="text-sm font-bold">
                     Item note for customer
                   </span>
-
                   <textarea
-                    value={
-                      item.admin_note
-                    }
+                    value={item.admin_note}
                     onChange={(event) =>
-                      updateItem(
-                        item.id,
-                        {
-                          admin_note:
-                            event.target
-                              .value,
-                        },
-                      )
+                      updateItem(item.id, {
+                        admin_note: event.target.value,
+                      })
                     }
                     rows={3}
-                    className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
-                    placeholder="Optional availability or quantity note"
+                    className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 outline-none focus:border-red-500"
+                    placeholder="Optional note about this wrap"
                   />
                 </label>
               </div>
             </article>
           ))}
         </div>
-
-        <aside className="h-fit rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl lg:sticky lg:top-6">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">
-            Customer
-          </p>
-
-          <h2 className="mt-2 text-2xl font-black">
-            {order.customer_name}
-          </h2>
-
-          <p className="mt-3 break-all text-sm text-white/75">
-            {order.customer_email}
-          </p>
-
-          <div className="mt-5 rounded-2xl border border-red-900/80 bg-red-950/20 p-4">
-            <p className="text-xs font-black uppercase tracking-[0.15em] text-red-400">
-              Preferred Contact
-            </p>
-
-            {getContactHref(
-              order.contact_method,
-              order.contact_value,
-            ) ? (
-              <a
-                href={
-                  getContactHref(
-                    order.contact_method,
-                    order.contact_value,
-                  ) ?? undefined
-                }
-                target={
-                  order.contact_method ===
-                    "instagram" ||
-                  order.contact_method ===
-                    "tiktok"
-                    ? "_blank"
-                    : undefined
-                }
-                rel={
-                  order.contact_method ===
-                    "instagram" ||
-                  order.contact_method ===
-                    "tiktok"
-                    ? "noreferrer"
-                    : undefined
-                }
-                className="mt-2 block break-all font-black text-white underline decoration-red-600 underline-offset-4"
-              >
-                {getContactMethodLabel(
-                  order.contact_method,
-                )}
-                {": "}
-                {order.contact_value ||
-                  order.customer_email}
-              </a>
-            ) : (
-              <p className="mt-2 break-all font-black text-white">
-                {getContactMethodLabel(
-                  order.contact_method ||
-                    "email",
-                )}
-                {": "}
-                {order.contact_value ||
-                  order.customer_email}
-              </p>
-            )}
-          </div>
-
-          <p className="mt-4 text-xs uppercase tracking-[0.15em] text-white/45">
-            {order.checkout_type} checkout
-          </p>
-
-          {order.customer_notes && (
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.15em] text-white/60">
-                Customer Notes
-              </p>
-
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-white/80">
-                {order.customer_notes}
-              </p>
-            </div>
-          )}
-
-          <label className="mt-5 block">
-            <span className="text-sm font-bold">
-              Order status
-            </span>
-
-            <select
-              value={status}
-              onChange={(event) =>
-                setStatus(
-                  event.target
-                    .value as OrderStatus,
-                )
-              }
-              className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
-            >
-              {ORDER_STATUSES.map(
-                (option) => (
-                  <option
-                    key={option}
-                    value={option}
-                  >
-                    {getOrderStatusLabel(
-                      option,
-                    )}
-                  </option>
-                ),
-              )}
-            </select>
-          </label>
-
-          <label className="mt-5 block">
-            <span className="text-sm font-bold">
-              Revision message for customer
-            </span>
-
-            <textarea
-              value={revisionMessage}
-              onChange={(event) =>
-                setRevisionMessage(
-                  event.target.value,
-                )
-              }
-              rows={5}
-              className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
-              placeholder="Explain quantity changes or unavailable items"
-            />
-          </label>
-
-          <label className="mt-5 block">
-            <span className="text-sm font-bold">
-              Private admin notes
-            </span>
-
-            <textarea
-              value={adminNotes}
-              onChange={(event) =>
-                setAdminNotes(
-                  event.target.value,
-                )
-              }
-              rows={5}
-              className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
-              placeholder="Internal notes not shown to the customer"
-            />
-          </label>
-
-          <button
-            type="button"
-            onClick={() => {
-              void saveOrder();
-            }}
-            disabled={saving}
-            className="mt-6 w-full rounded-full bg-red-600 px-6 py-4 font-black text-white transition hover:bg-red-500 disabled:opacity-60"
-          >
-            {saving
-              ? "Saving Changes…"
-              : "Save Order Changes"}
-          </button>
-
-          <p className="mt-3 text-center text-xs leading-5 text-white/55">
-            Choose “Awaiting Your
-            Approval” when revised
-            quantities are ready for the
-            customer to approve.
-          </p>
-        </aside>
-      </div>
+      </section>
     </AuthPageShell>
   );
 }

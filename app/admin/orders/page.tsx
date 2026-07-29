@@ -203,6 +203,19 @@ export default function AdminOrdersPage() {
       backLabel="Back to Website"
       maxWidthClass="max-w-7xl"
     >
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-900 bg-black/90 p-4">
+        <p className="text-sm text-white/65">
+          Manage incoming orders or publish new R2 wrap designs.
+        </p>
+
+        <a
+          href="/admin/catalog"
+          className="rounded-full bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-500"
+        >
+          Open Wrap Uploader
+        </a>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-red-900 bg-black/90 p-5">
           <p className="text-sm text-white/65">

@@ -205,3 +205,39 @@ export function getOrderStatusClasses(
       return "border-white/30 bg-white/10 text-white";
   }
 }
+
+export type InvoiceStatus =
+  | "draft"
+  | "sent"
+  | "paid"
+  | "void";
+
+export type InvoiceRecord = {
+  id: string;
+  invoice_number: string;
+  order_id: string;
+  customer_name: string;
+  customer_email: string;
+  subtotal: number;
+  shipping: number;
+  discount: number;
+  tax: number;
+  total: number;
+  notes: string;
+  status: InvoiceStatus;
+  created_by: string | null;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoiceItemRecord = {
+  id: string;
+  invoice_id: string;
+  order_item_id: string | null;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  line_total: number;
+  created_at: string;
+};

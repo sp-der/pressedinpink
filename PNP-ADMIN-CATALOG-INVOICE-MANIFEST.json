@@ -1,0 +1,26 @@
+{
+  "name": "Pressed In Pink admin catalog and invoice update",
+  "base_confirmed": "Current ZIP contains cart, checkout, accounts, admin orders, Supabase order schema, and order portal email function.",
+  "features": [
+    "Persistent remember-me authentication",
+    "Buyer and order controls above wrap list",
+    "PNP new-order email notification",
+    "Versioned favicon and Open Graph preview",
+    "Princesses category",
+    "Admin WebP and R2 wrap uploader",
+    "Live database-backed new categories",
+    "Invoice drafts, PDF downloads, and customer invoice email"
+  ],
+  "database_migration": "supabase/pnp-admin-catalog-invoices.sql",
+  "edge_functions": [
+    "supabase/functions/send-order-link/index.ts",
+    "supabase/functions/upload-wrap/index.ts",
+    "supabase/functions/send-invoice/index.ts"
+  ],
+  "verification": [
+    "All TypeScript and TSX files passed syntax transpilation",
+    "Generated invoice validated as a PDF 1.4 multi-page document",
+    "No new npm dependency required",
+    "Full Next.js build must be run in the user's Codespace because the sandbox package mirror did not contain the existing lockfile packages"
+  ]
+}

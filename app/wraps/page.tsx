@@ -1,8 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-type WrapCategory = {
+import { supabase } from "@/lib/supabase";
+import type { CatalogCategoryRecord } from "@/types/catalog";
+
+type WrapCategoryCard = {
+  slug: string;
   title: string;
   description: string;
   href: string;
@@ -10,10 +18,12 @@ type WrapCategory = {
   fallbackImage?: string;
   keywords: string;
   imageScale?: string;
+  displayOrder: number;
 };
 
-const wrapCategories: WrapCategory[] = [
+const staticCategories: WrapCategoryCard[] = [
   {
+    slug: "90scartoons",
     title: "90s Cartoons",
     description:
       "Browse nostalgic designs inspired by classic cartoons and characters.",
@@ -22,8 +32,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "90s cartoons retro nostalgic Nickelodeon Cartoon Network characters",
     imageScale: "scale-[1.65]",
+    displayOrder: 10,
   },
   {
+    slug: "sports",
     title: "Sports",
     description:
       "Browse team-inspired, game-day, and sports-themed UV-DTF wraps.",
@@ -32,8 +44,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "sports football basketball baseball soccer teams game day athletes",
     imageScale: "scale-[1.25]",
+    displayOrder: 20,
   },
   {
+    slug: "hello-kitty",
     title: "Hello Kitty and Friends",
     description:
       "Browse Hello Kitty, Sanrio friends, and other cute character wrap designs.",
@@ -42,30 +56,50 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
     imageScale: "scale-[1.25]",
+    displayOrder: 30,
   },
   {
+    slug: "nightmare",
     title: "Nightmare Before Christmas",
     description:
       "Browse spooky, festive, and character-inspired Nightmare Before Christmas wraps.",
     href: "/wraps/nightmare",
     image: "/wrap-categories/nightmare.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/nightmare/thumbnails/nightmare (1).webp",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/nightmare/thumbnails/nightmare (1).webp",
     keywords:
       "Nightmare Before Christmas Jack Skellington Sally Zero Halloween Christmas spooky",
     imageScale: "scale-[1.2]",
+    displayOrder: 40,
   },
   {
+    slug: "pooh",
     title: "Winnie the Pooh & Friends",
     description:
       "Browse Winnie the Pooh, Tigger, Eeyore, Piglet, and friends.",
     href: "/wraps/pooh",
     image: "/wrap-categories/pooh.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/pooh/thumbnails/pooh (1).webp",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/pooh/thumbnails/pooh (1).webp",
     keywords:
       "Winnie the Pooh friends Tigger Eeyore Piglet honey bear Disney",
     imageScale: "scale-[1.2]",
+    displayOrder: 50,
   },
   {
+    slug: "princesses",
+    title: "Princesses",
+    description:
+      "Browse colorful princess-inspired characters, castles, crowns, and fairytale designs.",
+    href: "/wraps/princesses",
+    image: "/logo.png",
+    keywords:
+      "princess princesses fairytale castle royal crowns characters",
+    imageScale: "scale-[0.9]",
+    displayOrder: 55,
+  },
+  {
+    slug: "anime",
     title: "Anime",
     description:
       "Browse anime-inspired characters, series, artwork, and colorful UV-DTF wraps.",
@@ -74,8 +108,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "anime manga Japanese series characters cartoons colorful",
     imageScale: "scale-100",
+    displayOrder: 60,
   },
   {
+    slug: "kpop",
     title: "K-Pop",
     description:
       "Browse K-pop-inspired groups, artists, albums, and fan-favorite UV-DTF wraps.",
@@ -84,8 +120,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "K-pop kpop Korean music groups idols artists albums",
     imageScale: "scale-[1.45]",
+    displayOrder: 70,
   },
   {
+    slug: "labubu",
     title: "Labubu",
     description:
       "Browse playful Labubu-inspired characters, colors, and collectible-style designs.",
@@ -94,8 +132,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "Labubu Pop Mart monster collectible cute character toy",
     imageScale: "scale-[1.25]",
+    displayOrder: 80,
   },
   {
+    slug: "music",
     title: "Music",
     description:
       "Browse music-inspired artists, albums, lyrics, and fan-favorite designs.",
@@ -104,8 +144,10 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "music musicians artists singers rappers albums lyrics bands concerts",
     imageScale: "scale-[1.25]",
+    displayOrder: 90,
   },
   {
+    slug: "420",
     title: "420",
     description:
       "Browse bold, colorful, and laid-back 420-inspired wrap designs.",
@@ -114,8 +156,32 @@ const wrapCategories: WrapCategory[] = [
     keywords:
       "420 cannabis weed marijuana smoke smoking green stoner",
     imageScale: "scale-[1.25]",
+    displayOrder: 100,
+  },
+  {
+    slug: "villians",
+    title: "Villains",
+    description:
+      "Browse bold, dramatic, and character-inspired villain wrap designs.",
+    href: "/wraps/villians",
+    image: "/wrap-categories/villians.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/villains/thumbnails/villians (1).webp",
+    keywords: "villains evil characters dark dramatic",
+    imageScale: "scale-100",
+    displayOrder: 110,
   },
 ];
+
+const sportsChildSlugs = new Set([
+  "dodgers",
+  "lakers",
+  "clippers",
+  "celtics",
+  "goldenstate",
+  "nuggets",
+  "bulls",
+]);
 
 const smokyTextShadow = {
   textShadow:
@@ -124,38 +190,119 @@ const smokyTextShadow = {
 
 export default function WrapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveCategories, setLiveCategories] = useState<
+    CatalogCategoryRecord[]
+  >([]);
 
-  const normalizedSearch = searchQuery.trim().toLowerCase();
+  useEffect(() => {
+    let active = true;
 
-  const filteredCategories = wrapCategories.filter((category) => {
-    const searchableText = `
-      ${category.title}
-      ${category.description}
-      ${category.keywords}
-    `.toLowerCase();
+    const loadCategories = async () => {
+      const { data, error } = await supabase
+        .from("catalog_categories")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true })
+        .order("display_name", { ascending: true });
 
-    return searchableText.includes(normalizedSearch);
-  });
+      if (!active || error) {
+        return;
+      }
+
+      setLiveCategories(
+        (data ?? []) as CatalogCategoryRecord[],
+      );
+    };
+
+    void loadCategories();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const categories = useMemo(() => {
+    const liveBySlug = new Map(
+      liveCategories.map((category) => [
+        category.slug,
+        category,
+      ]),
+    );
+
+    const merged = staticCategories.map((category) => {
+      const live = liveBySlug.get(category.slug);
+
+      return {
+        ...category,
+        title: live?.display_name || category.title,
+        description:
+          live?.description || category.description,
+        image: live?.card_image_url || category.image,
+        keywords: `${category.keywords} ${live?.keywords ?? ""}`,
+        imageScale:
+          live?.image_scale || category.imageScale,
+        displayOrder:
+          live?.display_order ?? category.displayOrder,
+      };
+    });
+
+    const knownSlugs = new Set(
+      staticCategories.map((category) => category.slug),
+    );
+
+    const dynamic = liveCategories
+      .filter(
+        (category) =>
+          !knownSlugs.has(category.slug) &&
+          !sportsChildSlugs.has(category.slug),
+      )
+      .map((category) => ({
+        slug: category.slug,
+        title: category.display_name,
+        description:
+          category.description ||
+          "Browse newly published Pressed In Pink wrap designs.",
+        href: `/wraps/category/?slug=${encodeURIComponent(
+          category.slug,
+        )}`,
+        image: category.card_image_url || "/logo.png",
+        fallbackImage: "/logo.png",
+        keywords: category.keywords,
+        imageScale: category.image_scale || "scale-100",
+        displayOrder: category.display_order,
+      }));
+
+    return [...merged, ...dynamic].sort(
+      (first, second) =>
+        first.displayOrder - second.displayOrder ||
+        first.title.localeCompare(second.title),
+    );
+  }, [liveCategories]);
+
+  const normalizedSearch =
+    searchQuery.trim().toLowerCase();
+
+  const filteredCategories = categories.filter(
+    (category) =>
+      !normalizedSearch ||
+      `${category.title} ${category.description} ${category.keywords}`
+        .toLowerCase()
+        .includes(normalizedSearch),
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         aria-hidden="true"
-        className="
-          pointer-events-none fixed inset-0
-          bg-cover bg-no-repeat
-          bg-[position:62%_top]
-          sm:bg-[position:58%_top]
-          md:bg-center
-        "
+        className="pointer-events-none fixed inset-0 bg-cover bg-no-repeat bg-[position:62%_top] sm:bg-[position:58%_top] md:bg-center"
         style={{
-          backgroundImage: "url('/homepage-background.jpg')",
+          backgroundImage:
+            "url('/homepage-background.jpg')",
         }}
       />
-
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-black/35"
+        className="pointer-events-none fixed inset-0 bg-black/45"
       />
 
       <div className="relative z-10">
@@ -188,7 +335,6 @@ export default function WrapsPage() {
               >
                 Instagram
               </a>
-
               <a
                 href="https://www.tiktok.com/@pressedinpink23?lang=en"
                 target="_blank"
@@ -209,14 +355,12 @@ export default function WrapsPage() {
             >
               Pressed In Pink Collection
             </p>
-
             <h1
               className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl"
               style={smokyTextShadow}
             >
               UV-DTF Wraps
             </h1>
-
             <p
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
@@ -231,35 +375,33 @@ export default function WrapsPage() {
             <label htmlFor="wrap-category-search" className="sr-only">
               Search wrap categories
             </label>
-
             <div className="flex items-center gap-3 rounded-full border border-red-900 bg-black/90 px-5 py-3 shadow-xl backdrop-blur-md transition focus-within:border-red-600">
-              <span aria-hidden="true" className="text-xl text-white">
+              <span aria-hidden="true" className="text-xl">
                 🔍
               </span>
-
               <input
                 id="wrap-category-search"
                 type="search"
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={(event) =>
+                  setSearchQuery(event.target.value)
+                }
                 placeholder="Search wrap categories..."
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/60"
               />
-
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="rounded-full border border-red-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-red-600"
+                  className="rounded-full border border-red-600 px-3 py-1 text-xs font-bold transition hover:bg-red-600"
                 >
                   Clear
                 </button>
               )}
             </div>
-
             <p
-              className="mt-3 text-center text-sm text-white"
+              className="mt-3 text-center text-sm"
               style={smokyTextShadow}
             >
               Showing {filteredCategories.length}{" "}
@@ -273,7 +415,7 @@ export default function WrapsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredCategories.map((category) => (
                 <a
-                  key={category.title}
+                  key={category.slug}
                   href={category.href}
                   className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
@@ -285,38 +427,30 @@ export default function WrapsPage() {
                       decoding="async"
                       draggable={false}
                       onError={(event) => {
-                        if (!category.fallbackImage) {
-                          return;
-                        }
-
                         event.currentTarget.onerror = null;
-                        event.currentTarget.src = category.fallbackImage;
+                        event.currentTarget.src =
+                          category.fallbackImage || "/logo.png";
                       }}
-                      className={`
-                        h-full w-full object-contain
-                        transition-transform duration-300
-                        ${category.imageScale ?? "scale-100"}
-                      `}
+                      className={`h-full w-full object-contain transition-transform duration-300 ${
+                        category.imageScale ?? "scale-100"
+                      }`}
                     />
                   </div>
-
                   <h2
-                    className="text-2xl font-black text-white"
+                    className="text-2xl font-black"
                     style={smokyTextShadow}
                   >
                     {category.title}
                   </h2>
-
                   <p
-                    className="mt-4 text-sm leading-6 text-white"
+                    className="mt-4 text-sm leading-6"
                     style={smokyTextShadow}
                   >
                     {category.description}
                   </p>
-
                   <div className="mt-auto pt-7">
                     <span
-                      className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition group-hover:bg-red-600"
+                      className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition group-hover:bg-red-600"
                       style={smokyTextShadow}
                     >
                       View Designs →
@@ -327,21 +461,16 @@ export default function WrapsPage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-red-900 bg-black/90 px-6 py-12 text-center shadow-xl backdrop-blur-md">
-              <h2
-                className="text-2xl font-black text-white"
-                style={smokyTextShadow}
-              >
+              <h2 className="text-2xl font-black">
                 No matching categories found
               </h2>
-
-              <p className="mt-3 text-white" style={smokyTextShadow}>
+              <p className="mt-3 text-white/75">
                 Try another character, theme, team, artist, or style.
               </p>
-
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-600"
+                className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold transition hover:bg-red-600"
               >
                 View All Categories
               </button>
@@ -355,14 +484,12 @@ export default function WrapsPage() {
             alt="Pressed In Pink"
             className="mx-auto h-auto w-36 object-contain"
           />
-
-          <p className="mt-4 text-white" style={smokyTextShadow}>
+          <p className="mt-4" style={smokyTextShadow}>
             Handmade with love in Rialto, California.
           </p>
-
           <a
             href="/"
-            className="mt-5 inline-block text-sm font-bold text-white transition hover:text-red-500"
+            className="mt-5 inline-block text-sm font-bold transition hover:text-red-500"
             style={smokyTextShadow}
           >
             Return Home

@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 
 import AccountButton from "@/components/AccountButton";
@@ -8,28 +7,39 @@ import { CartProvider } from "@/components/CartProvider";
 
 import "./globals.css";
 
+const socialImage =
+  "https://pressedinpink.com/pnp-social-preview-v2.png";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    "https://pressedinpink.com",
-  ),
+  metadataBase: new URL("https://pressedinpink.com"),
   title: "Pressed In Pink",
   description:
     "Pressed In Pink offers custom cups, shirts, keychains, wraps, and personalized creations made with love.",
+  manifest: "/site.webmanifest",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      {
+        url: "/favicon-v2.png",
+        type: "image/png",
+        sizes: "512x512",
+      },
+    ],
+    shortcut: "/favicon-v2.png",
+    apple: "/favicon-v2.png",
   },
   openGraph: {
+    type: "website",
+    url: "https://pressedinpink.com",
+    siteName: "Pressed In Pink",
     title: "Pressed In Pink",
     description:
-      "Pressed In Pink offers custom cups, shirts, keychains, wraps, and personalized creations made with love.",
+      "Custom cups, shirts, keychains, UV-DTF wraps, and personalized creations made with love.",
     images: [
       {
-        url: "/logo.png",
-        width: 600,
-        height: 600,
-        alt: "Pressed In Pink",
+        url: socialImage,
+        width: 1200,
+        height: 630,
+        alt: "Pressed In Pink logo",
       },
     ],
   },
@@ -37,8 +47,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pressed In Pink",
     description:
-      "Pressed In Pink offers custom cups, shirts, keychains, wraps, and personalized creations made with love.",
-    images: ["/logo.png"],
+      "Custom cups, shirts, keychains, UV-DTF wraps, and personalized creations made with love.",
+    images: [socialImage],
   },
 };
 

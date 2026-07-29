@@ -307,22 +307,18 @@ export default function CheckoutPage() {
 
         try {
           const {
+            data: emailResult,
             error: emailError,
-          } =
-            await supabase.functions
-              .invoke(
-                "send-order-link",
-                {
-                  body: {
-                    orderId:
-                      submitted.order_id,
-                    accessToken:
-                      submitted.access_token,
-                    siteOrigin:
-                      window.location.origin,
-                  },
-                },
-              );
+          } = await supabase.functions.invoke(
+            "send-order-link",
+            {
+              body: {
+                orderId: submitted.order_id,
+                accessToken: submitted.access_token,
+                siteOrigin: window.location.origin,
+              },
+            },
+          );
 
           if (emailError) {
             console.error(
@@ -330,7 +326,17 @@ export default function CheckoutPage() {
               emailError,
             );
           } else {
-            emailSent = true;
+            emailSent =
+              emailResult?.customerSent === true;
+
+            if (
+              emailResult?.adminNotified !== true
+            ) {
+              console.error(
+                "PNP order notification email failed.",
+                emailResult?.adminError,
+              );
+            }
           }
         } catch (emailError) {
           console.error(

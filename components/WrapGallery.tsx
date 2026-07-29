@@ -10,6 +10,8 @@ import {
 } from "react";
 
 import AddToCartControls from "@/components/AddToCartControls";
+import { supabase } from "@/lib/supabase";
+import type { CatalogWrapRecord } from "@/types/catalog";
 import type { WrapProduct } from "@/types/cart";
 import type { WrapCategoryConfig } from "@/types/wraps";
 
@@ -83,7 +85,7 @@ function getPaginationItems(
   ];
 }
 
-function createWraps(
+function createBaseWraps(
   category: WrapCategoryConfig,
 ): GalleryWrap[] {
   return Array.from(
@@ -124,19 +126,122 @@ function createWraps(
 export default function WrapGallery({
   category,
 }: WrapGalleryProps) {
-  const wraps = useMemo(
-    () => createWraps(category),
+  const baseWraps = useMemo(
+    () => createBaseWraps(category),
     [category],
   );
-
-  const totalPages = Math.ceil(
-    wraps.length / WRAPS_PER_PAGE,
-  );
-
+  const [uploadedWraps, setUploadedWraps] =
+    useState<CatalogWrapRecord[]>([]);
+  const [loadingCatalog, setLoadingCatalog] =
+    useState(true);
+  const [catalogMessage, setCatalogMessage] =
+    useState("");
   const [selectedIndex, setSelectedIndex] =
     useState<number | null>(null);
   const [currentPage, setCurrentPage] =
     useState(1);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadUploadedWraps = async () => {
+      setLoadingCatalog(true);
+      setCatalogMessage("");
+
+      const { data: catalogCategory, error: categoryError } =
+        await supabase
+          .from("catalog_categories")
+          .select("id")
+          .eq("slug", category.slug)
+          .maybeSingle();
+
+      if (!active) {
+        return;
+      }
+
+      if (categoryError) {
+        setCatalogMessage(
+          category.totalImages === 0
+            ? "The live catalog is not configured yet."
+            : "Dashboard uploads could not be checked.",
+        );
+        setUploadedWraps([]);
+        setLoadingCatalog(false);
+        return;
+      }
+
+      if (!catalogCategory?.id) {
+        setUploadedWraps([]);
+        setLoadingCatalog(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("catalog_wraps")
+        .select("*")
+        .eq("category_id", catalogCategory.id)
+        .eq("is_active", true)
+        .order("image_number", { ascending: true });
+
+      if (!active) {
+        return;
+      }
+
+      if (error) {
+        setCatalogMessage(
+          category.totalImages === 0
+            ? "The uploaded wraps could not be loaded."
+            : "Dashboard uploads could not be loaded.",
+        );
+        setUploadedWraps([]);
+      } else {
+        setUploadedWraps(
+          (data ?? []) as CatalogWrapRecord[],
+        );
+      }
+
+      setLoadingCatalog(false);
+    };
+
+    void loadUploadedWraps();
+
+    return () => {
+      active = false;
+    };
+  }, [category.slug, category.totalImages]);
+
+  const wraps = useMemo(() => {
+    const merged = new Map<number, GalleryWrap>();
+
+    for (const wrap of baseWraps) {
+      merged.set(wrap.number, wrap);
+    }
+
+    for (const wrap of uploadedWraps) {
+      merged.set(wrap.image_number, {
+        number: wrap.image_number,
+        product: {
+          id: `${category.slug}-${wrap.image_number}`,
+          displayName: wrap.display_name,
+          categorySlug: category.slug,
+          categoryName: category.displayName,
+          imageNumber: wrap.image_number,
+          sourceFilename: wrap.source_filename,
+          thumbnailUrl: wrap.thumbnail_url,
+          fullImageUrl: wrap.full_image_url,
+        },
+      });
+    }
+
+    return Array.from(merged.values()).sort(
+      (first, second) => first.number - second.number,
+    );
+  }, [baseWraps, uploadedWraps, category]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(wraps.length / WRAPS_PER_PAGE),
+  );
 
   const galleryRef =
     useRef<HTMLElement | null>(null);
@@ -510,9 +615,10 @@ export default function WrapGallery({
                 style={smokyTextShadow}
               >
                 Showing wraps{" "}
-                {pageStartIndex + 1}–
-                {pageEndIndex} of{" "}
-                {wraps.length}
+                {wraps.length === 0
+                  ? 0
+                  : pageStartIndex + 1}
+                –{pageEndIndex} of {wraps.length}
               </p>
 
               <p
@@ -527,6 +633,21 @@ export default function WrapGallery({
             {renderPagination("top")}
           </div>
 
+          {wraps.length === 0 ? (
+            <div className="rounded-3xl border border-red-900 bg-black/90 px-6 py-12 text-center shadow-xl backdrop-blur-md">
+              <h2 className="text-2xl font-black text-white">
+                {loadingCatalog
+                  ? "Loading published wraps…"
+                  : "No wraps published yet"}
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/70">
+                {loadingCatalog
+                  ? "Checking the live PNP catalog."
+                  : catalogMessage ||
+                    "PNP can publish the first designs from the admin catalog uploader."}
+              </p>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {visibleWraps.map(
               (wrap, localIndex) => {
@@ -600,6 +721,7 @@ export default function WrapGallery({
               },
             )}
           </div>
+          )}
 
           {totalPages > 1 && (
             <div className="mt-10 flex flex-col items-center gap-4">
