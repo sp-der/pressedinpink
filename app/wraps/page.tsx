@@ -92,10 +92,10 @@ const staticCategories: WrapCategoryCard[] = [
     description:
       "Browse colorful princess-inspired characters, castles, crowns, and fairytale designs.",
     href: "/wraps/princesses",
-    image: "/logo.png",
+    image: "/wrap-categories/princesses.png",
     keywords:
       "princess princesses fairytale castle royal crowns characters",
-    imageScale: "scale-[0.9]",
+    imageScale: "scale-[1.15]",
     displayOrder: 55,
   },
   {
