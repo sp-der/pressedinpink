@@ -11,6 +11,9 @@ export type InvoicePdfData = {
   customerName: string;
   customerEmail: string;
   invoiceDate: string;
+  totalWrapQuantity: number;
+  unitPrice: number;
+  pricingLabel: string;
   lines: InvoicePdfLine[];
   subtotal: number;
   shipping: number;
@@ -77,21 +80,22 @@ function buildPageContent(
   pageCount: number,
 ): string {
   let stream = "";
-  stream += "0 0 0 rg 0 688 612 104 re f\n";
+
+  // Redesigned PNP banner. The rest of the invoice layout stays clean and familiar.
+  stream += "0 0 0 rg 0 674 612 118 re f\n";
+  stream += "0.92 0.14 0.16 rg 0 674 18 118 re f\n";
   stream += "1 1 1 rg\n";
-  stream += text("PRESSED IN PINK", 44, 744, 23, true);
-  stream += text(
-    "CUSTOM CREATIONS MADE TO STAND OUT",
-    44,
-    722,
-    9,
-    true,
-  );
-  stream += rightText("INVOICE", 568, 744, 19, true);
-  stream += rightText(invoice.invoiceNumber, 568, 722, 9, false);
+  stream += text("PRESSED IN PINK", 44, 744, 25, true);
+  stream += text("WRAP ORDER INVOICE", 44, 716, 10, true);
+  stream += text("CUSTOM CREATIONS MADE TO STAND OUT", 44, 697, 8, false);
+
+  stream += "0.92 0.14 0.16 rg 406 702 162 58 re f\n";
+  stream += "0 0 0 rg\n";
+  stream += text("INVOICE", 420, 738, 10, true);
+  stream += text(truncate(invoice.invoiceNumber, 25), 420, 718, 10, true);
   stream += "0 0 0 rg\n";
 
-  let y = 655;
+  let y = 646;
 
   if (pageNumber === 1) {
     stream += text("BILL TO", 44, y, 10, true);
@@ -120,7 +124,19 @@ function buildPageContent(
       y - 38,
       10,
     );
-    y -= 72;
+    stream += text(
+      `Wraps: ${invoice.totalWrapQuantity} at ${currency.format(invoice.unitPrice)} each`,
+      377,
+      y - 56,
+      9,
+    );
+    stream += text(
+      truncate(invoice.pricingLabel, 38),
+      377,
+      y - 72,
+      8,
+    );
+    y -= 96;
   } else {
     stream += text(
       `Invoice items continued - page ${pageNumber} of ${pageCount}`,

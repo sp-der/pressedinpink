@@ -22,7 +22,6 @@ import {
   ORDER_STATUSES,
 } from "@/types/orders";
 import type {
-  InvoiceItemRecord,
   InvoiceRecord,
   OrderItemRecord,
   OrderRecord,
@@ -33,6 +32,19 @@ const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
+
+
+const STANDARD_WRAP_PRICE = 2;
+const BULK_WRAP_PRICE = 1.25;
+const BULK_WRAP_MINIMUM = 50;
+
+type GroupedInvoiceLine = {
+  categorySlug: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+};
 
 function moneyValue(value: string | number): number {
   const parsed = Number(value);
@@ -54,9 +66,6 @@ export default function AdminOrderPage() {
   const [revisionMessage, setRevisionMessage] = useState("");
   const [invoice, setInvoice] =
     useState<InvoiceRecord | null>(null);
-  const [unitPrices, setUnitPrices] = useState<
-    Record<string, string>
-  >({});
   const [shipping, setShipping] = useState("0.00");
   const [discount, setDiscount] = useState("0.00");
   const [tax, setTax] = useState("0.00");
@@ -74,7 +83,7 @@ export default function AdminOrderPage() {
   }, []);
 
   const loadInvoice = useCallback(
-    async (selectedOrderId: string, loadedItems: OrderItemRecord[]) => {
+    async (selectedOrderId: string) => {
       const { data, error } = await supabase
         .from("invoices")
         .select("*")
@@ -86,21 +95,11 @@ export default function AdminOrderPage() {
           console.error("Could not load invoice.", error);
         }
         setInvoice(null);
-        setUnitPrices(
-          Object.fromEntries(
-            loadedItems.map((item) => [item.id, "0.00"]),
-          ),
-        );
         return;
       }
 
       if (!data) {
         setInvoice(null);
-        setUnitPrices(
-          Object.fromEntries(
-            loadedItems.map((item) => [item.id, "0.00"]),
-          ),
-        );
         setShipping("0.00");
         setDiscount("0.00");
         setTax("0.00");
@@ -109,27 +108,6 @@ export default function AdminOrderPage() {
       }
 
       const loadedInvoice = data as InvoiceRecord;
-      const { data: invoiceItems, error: itemError } =
-        await supabase
-          .from("invoice_items")
-          .select("*")
-          .eq("invoice_id", loadedInvoice.id);
-
-      if (itemError) {
-        console.error("Could not load invoice items.", itemError);
-      }
-
-      const priceMap = Object.fromEntries(
-        loadedItems.map((item) => [item.id, "0.00"]),
-      );
-
-      for (const invoiceItem of (invoiceItems ?? []) as InvoiceItemRecord[]) {
-        if (invoiceItem.order_item_id) {
-          priceMap[invoiceItem.order_item_id] = Number(
-            invoiceItem.unit_price,
-          ).toFixed(2);
-        }
-      }
 
       setInvoice({
         ...loadedInvoice,
@@ -139,7 +117,6 @@ export default function AdminOrderPage() {
         tax: Number(loadedInvoice.tax),
         total: Number(loadedInvoice.total),
       });
-      setUnitPrices(priceMap);
       setShipping(Number(loadedInvoice.shipping).toFixed(2));
       setDiscount(Number(loadedInvoice.discount).toFixed(2));
       setTax(Number(loadedInvoice.tax).toFixed(2));
@@ -212,7 +189,7 @@ export default function AdminOrderPage() {
     setStatus(loaded.status);
     setAdminNotes(loaded.admin_notes ?? "");
     setRevisionMessage(loaded.revision_message ?? "");
-    await loadInvoice(loaded.id, loadedItems);
+    await loadInvoice(loaded.id);
     setLoadingOrder(false);
   }, [orderId, isAdmin, loadInvoice]);
 
@@ -242,35 +219,78 @@ export default function AdminOrderPage() {
     );
   };
 
-  const invoiceLines = useMemo(
+  const approvedWrapQuantity = useMemo(
     () =>
-      items
-        .filter(
-          (item) => item.is_available && item.approved_quantity > 0,
-        )
-        .map((item) => {
-          const quantity = Math.max(
-            0,
-            Math.round(item.approved_quantity),
-          );
-          const unitPrice = moneyValue(unitPrices[item.id] ?? "0");
+      items.reduce((totalQuantity, item) => {
+        if (!item.is_available) {
+          return totalQuantity;
+        }
 
-          return {
-            orderItemId: item.id,
-            description: item.display_name,
-            quantity,
-            unitPrice,
-            lineTotal: roundMoney(quantity * unitPrice),
-          };
-        }),
-    [items, unitPrices],
+        return (
+          totalQuantity +
+          Math.max(0, Math.round(item.approved_quantity))
+        );
+      }, 0),
+    [items],
   );
+
+  const automaticUnitPrice =
+    approvedWrapQuantity >= BULK_WRAP_MINIMUM
+      ? BULK_WRAP_PRICE
+      : STANDARD_WRAP_PRICE;
+
+  const pricingLabel =
+    approvedWrapQuantity >= BULK_WRAP_MINIMUM
+      ? `Bulk rate applied: ${BULK_WRAP_MINIMUM}+ wraps at ${currency.format(BULK_WRAP_PRICE)} each.`
+      : `Standard rate: ${currency.format(STANDARD_WRAP_PRICE)} each. The bulk rate begins at ${BULK_WRAP_MINIMUM} wraps.`;
+
+  const invoiceLines = useMemo<GroupedInvoiceLine[]>(() => {
+    const grouped = new Map<string, GroupedInvoiceLine>();
+
+    for (const item of items) {
+      if (!item.is_available) {
+        continue;
+      }
+
+      const quantity = Math.max(
+        0,
+        Math.round(item.approved_quantity),
+      );
+
+      if (quantity === 0) {
+        continue;
+      }
+
+      const categorySlug = item.category_slug || "other";
+      const current = grouped.get(categorySlug);
+
+      if (current) {
+        current.quantity += quantity;
+        current.lineTotal = roundMoney(
+          current.quantity * automaticUnitPrice,
+        );
+        continue;
+      }
+
+      grouped.set(categorySlug, {
+        categorySlug,
+        description: item.category_name || "Other Wraps",
+        quantity,
+        unitPrice: automaticUnitPrice,
+        lineTotal: roundMoney(quantity * automaticUnitPrice),
+      });
+    }
+
+    return Array.from(grouped.values()).sort((first, second) =>
+      first.description.localeCompare(second.description),
+    );
+  }, [items, automaticUnitPrice]);
 
   const subtotal = useMemo(
     () =>
       roundMoney(
         invoiceLines.reduce(
-          (total, line) => total + line.lineTotal,
+          (totalAmount, line) => totalAmount + line.lineTotal,
           0,
         ),
       ),
@@ -473,7 +493,7 @@ export default function AdminOrderPage() {
         .insert(
           invoiceLines.map((line) => ({
             invoice_id: savedInvoice.id,
-            order_item_id: line.orderItemId,
+            order_item_id: null,
             description: line.description,
             quantity: line.quantity,
             unit_price: line.unitPrice,
@@ -522,6 +542,12 @@ export default function AdminOrderPage() {
     customerName: order?.customer_name ?? "",
     customerEmail: order?.customer_email ?? "",
     invoiceDate: new Date().toLocaleDateString("en-US"),
+    totalWrapQuantity: approvedWrapQuantity,
+    unitPrice: automaticUnitPrice,
+    pricingLabel:
+      approvedWrapQuantity >= BULK_WRAP_MINIMUM
+        ? "Bulk pricing applied (50+ wraps)"
+        : "Standard pricing applied (under 50 wraps)",
     lines: invoiceLines.map((line) => ({
       description: line.description,
       quantity: line.quantity,
@@ -821,7 +847,7 @@ export default function AdminOrderPage() {
               {invoice?.invoice_number ?? "New Invoice"}
             </h2>
             <p className="mt-2 text-sm text-white/60">
-              Enter a unit price for each approved wrap. Quantities come from the order review below.
+              Pricing is automatic and the invoice groups wraps by category. Shipping, tax, and discounts stay editable.
             </p>
           </div>
           {invoice && (
@@ -831,61 +857,63 @@ export default function AdminOrderPage() {
           )}
         </div>
 
+        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-white/50">
+              Approved Wraps
+            </p>
+            <p className="mt-2 text-2xl font-black">
+              {approvedWrapQuantity}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-red-800 bg-red-950/25 p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-red-300">
+              Active Price
+            </p>
+            <p className="mt-2 text-2xl font-black">
+              {currency.format(automaticUnitPrice)} each
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:col-span-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-white/50">
+              Pricing Rule
+            </p>
+            <p className="mt-2 text-sm font-bold leading-6 text-white/80">
+              {pricingLabel}
+            </p>
+          </div>
+        </div>
+
         <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
           <table className="w-full min-w-[700px] text-left text-sm">
             <thead className="bg-red-950/40 text-xs uppercase tracking-wide text-white/70">
               <tr>
-                <th className="px-4 py-3">Wrap</th>
+                <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3 text-center">Qty</th>
-                <th className="px-4 py-3">Unit Price</th>
+                <th className="px-4 py-3">Automatic Rate</th>
                 <th className="px-4 py-3 text-right">Line Total</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => {
-                const quantity = item.is_available
-                  ? Math.max(0, Math.round(item.approved_quantity))
-                  : 0;
-                const unitPrice = moneyValue(unitPrices[item.id] ?? "0");
-
-                return (
-                  <tr key={item.id} className="border-t border-white/10">
-                    <td className="px-4 py-3 font-bold">
-                      {item.display_name}
-                      {!item.is_available && (
-                        <span className="ml-2 text-xs text-red-400">
-                          Unavailable
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-center font-black">
-                      {quantity}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-white/55">$</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={unitPrices[item.id] ?? "0.00"}
-                          disabled={!item.is_available || quantity === 0}
-                          onChange={(event) =>
-                            setUnitPrices((current) => ({
-                              ...current,
-                              [item.id]: event.target.value,
-                            }))
-                          }
-                          className="w-28 rounded-xl border border-red-900 bg-black px-3 py-2 text-white outline-none focus:border-red-500 disabled:opacity-35"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right font-black">
-                      {currency.format(quantity * unitPrice)}
-                    </td>
-                  </tr>
-                );
-              })}
+              {invoiceLines.map((line) => (
+                <tr
+                  key={line.categorySlug}
+                  className="border-t border-white/10"
+                >
+                  <td className="px-4 py-3 font-bold">
+                    {line.description}
+                  </td>
+                  <td className="px-4 py-3 text-center font-black">
+                    {line.quantity}
+                  </td>
+                  <td className="px-4 py-3 font-black text-red-300">
+                    {currency.format(line.unitPrice)} each
+                  </td>
+                  <td className="px-4 py-3 text-right font-black">
+                    {currency.format(line.lineTotal)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -941,7 +969,7 @@ export default function AdminOrderPage() {
 
             <div className="mt-5 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-white/60">Wrap total</span>
+                <span className="text-white/60">Grouped wrap subtotal</span>
                 <strong>{currency.format(subtotal)}</strong>
               </div>
               <div className="flex justify-between">
