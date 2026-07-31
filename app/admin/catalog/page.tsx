@@ -35,6 +35,11 @@ type UploadProgress = {
   message: string;
 };
 
+type CategoryImageUploadResult = {
+  category: CatalogCategoryRecord;
+  categoryImageUploaded?: boolean;
+};
+
 function slugify(value: string): string {
   return value
     .trim()
@@ -138,6 +143,14 @@ export default function AdminCatalogPage() {
   const [description, setDescription] =
     useState("");
   const [keywords, setKeywords] = useState("");
+  const [categoryImageFile, setCategoryImageFile] =
+    useState<File | null>(null);
+  const [categoryImagePreview, setCategoryImagePreview] =
+    useState("");
+  const [categoryImageInputKey, setCategoryImageInputKey] =
+    useState(0);
+  const [savingCategoryImage, setSavingCategoryImage] =
+    useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [progress, setProgress] = useState<
     UploadProgress[]
@@ -217,6 +230,22 @@ export default function AdminCatalogPage() {
     );
   }, [categoryName, creatingCategory]);
 
+  useEffect(() => {
+    if (!categoryImageFile) {
+      setCategoryImagePreview("");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(
+      categoryImageFile,
+    );
+    setCategoryImagePreview(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [categoryImageFile]);
+
   const selectedCategory = useMemo(
     () =>
       categories.find(
@@ -224,6 +253,158 @@ export default function AdminCatalogPage() {
       ) ?? null,
     [categories, selectedSlug],
   );
+
+  const categoryCardPreview =
+    categoryImagePreview ||
+    (!creatingCategory
+      ? selectedCategory?.card_image_url ?? ""
+      : "");
+
+  const appendNewCategoryFields = (
+    formData: FormData,
+  ) => {
+    if (!creatingCategory) {
+      return;
+    }
+
+    formData.append(
+      "displayName",
+      categoryName.trim(),
+    );
+    formData.append("itemLabel", itemLabel.trim());
+    formData.append(
+      "filenamePrefix",
+      filenamePrefix.trim(),
+    );
+    formData.append(
+      "imageFolder",
+      slugify(categorySlug || categoryName),
+    );
+    formData.append(
+      "description",
+      description.trim(),
+    );
+    formData.append("keywords", keywords.trim());
+  };
+
+  const validateNewCategory = (): string | null => {
+    if (!creatingCategory) {
+      return null;
+    }
+
+    if (
+      categoryName.trim().length < 2 ||
+      itemLabel.trim().length < 1 ||
+      filenamePrefix.trim().length < 1
+    ) {
+      return (
+        "Enter the new category name, item label, and filename prefix."
+      );
+    }
+
+    return null;
+  };
+
+  const uploadCategoryImage = async (
+    uploadSlug: string,
+  ): Promise<CatalogCategoryRecord> => {
+    if (!categoryImageFile) {
+      throw new Error(
+        "Choose a category image first.",
+      );
+    }
+
+    const categoryWebp = await convertToWebp(
+      categoryImageFile,
+      1600,
+      0.9,
+    );
+    const formData = new FormData();
+
+    formData.append("action", "category-image");
+    formData.append("categorySlug", uploadSlug);
+    formData.append(
+      "categoryImage",
+      new File([categoryWebp], "category-card.webp", {
+        type: "image/webp",
+      }),
+    );
+    appendNewCategoryFields(formData);
+
+    const { data, error } =
+      await supabase.functions.invoke(
+        "upload-wrap",
+        { body: formData },
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    const uploaded = data as CategoryImageUploadResult;
+
+    if (!uploaded?.category?.id) {
+      throw new Error(
+        "The upload function did not return a category record.",
+      );
+    }
+
+    return uploaded.category;
+  };
+
+  const saveCategoryImageOnly = async () => {
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    if (!categoryImageFile) {
+      setErrorMessage(
+        "Choose a PNG, JPG, or WebP category image.",
+      );
+      return;
+    }
+
+    const uploadSlug = creatingCategory
+      ? slugify(categorySlug || categoryName)
+      : selectedSlug;
+
+    if (!uploadSlug) {
+      setErrorMessage("Choose or name a category.");
+      return;
+    }
+
+    const validationMessage = validateNewCategory();
+
+    if (validationMessage) {
+      setErrorMessage(validationMessage);
+      return;
+    }
+
+    setSavingCategoryImage(true);
+
+    try {
+      const uploadedCategory =
+        await uploadCategoryImage(uploadSlug);
+
+      setSelectedSlug(uploadedCategory.slug);
+      setCreatingCategory(false);
+      setCategoryImageFile(null);
+      setCategoryImageInputKey((current) =>
+        current + 1,
+      );
+      await loadCatalog();
+      setSuccessMessage(
+        `${uploadedCategory.display_name} category image saved to R2.`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The category image could not be saved.",
+      );
+    } finally {
+      setSavingCategoryImage(false);
+    }
+  };
 
   const setProgressItem = (
     index: number,
@@ -258,15 +439,10 @@ export default function AdminCatalogPage() {
       return;
     }
 
-    if (
-      creatingCategory &&
-      (categoryName.trim().length < 2 ||
-        itemLabel.trim().length < 1 ||
-        filenamePrefix.trim().length < 1)
-    ) {
-      setErrorMessage(
-        "Enter the new category name, item label, and filename prefix.",
-      );
+    const validationMessage = validateNewCategory();
+
+    if (validationMessage) {
+      setErrorMessage(validationMessage);
       return;
     }
 
@@ -281,6 +457,33 @@ export default function AdminCatalogPage() {
 
     let completed = 0;
     let failed = 0;
+    let categoryImageSaved = false;
+
+    if (categoryImageFile) {
+      setSavingCategoryImage(true);
+
+      try {
+        const uploadedCategory =
+          await uploadCategoryImage(uploadSlug);
+        setSelectedSlug(uploadedCategory.slug);
+        categoryImageSaved = true;
+        setCategoryImageFile(null);
+        setCategoryImageInputKey((current) =>
+          current + 1,
+        );
+      } catch (error) {
+        setUploading(false);
+        setSavingCategoryImage(false);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "The category image could not be saved.",
+        );
+        return;
+      } finally {
+        setSavingCategoryImage(false);
+      }
+    }
 
     for (let index = 0; index < files.length; index += 1) {
       const file = files[index];
@@ -317,23 +520,7 @@ export default function AdminCatalogPage() {
         );
         formData.append("categorySlug", uploadSlug);
 
-        if (creatingCategory) {
-          formData.append(
-            "displayName",
-            categoryName.trim(),
-          );
-          formData.append("itemLabel", itemLabel.trim());
-          formData.append(
-            "filenamePrefix",
-            filenamePrefix.trim(),
-          );
-          formData.append("imageFolder", uploadSlug);
-          formData.append(
-            "description",
-            description.trim(),
-          );
-          formData.append("keywords", keywords.trim());
-        }
+        appendNewCategoryFields(formData);
 
         const { data, error } =
           await supabase.functions.invoke(
@@ -371,11 +558,17 @@ export default function AdminCatalogPage() {
     }
 
     setUploading(false);
+
+    if (creatingCategory && completed > 0) {
+      setCreatingCategory(false);
+      setSelectedSlug(uploadSlug);
+    }
+
     await loadCatalog();
 
     if (completed > 0) {
       setSuccessMessage(
-        `${completed} wrap${completed === 1 ? "" : "s"} converted to WebP, uploaded to R2, and published.`,
+        `${completed} wrap${completed === 1 ? "" : "s"} converted to WebP, uploaded to R2, and published${categoryImageSaved ? " with the category image" : ""}.`,
       );
       setFiles([]);
     }
@@ -452,6 +645,10 @@ export default function AdminCatalogPage() {
               type="button"
               onClick={() => {
                 setCreatingCategory((current) => !current);
+                setCategoryImageFile(null);
+                setCategoryImageInputKey((current) =>
+                  current + 1,
+                );
                 setErrorMessage("");
               }}
               className="rounded-full border border-red-600 px-5 py-2 text-sm font-black transition hover:bg-red-600"
@@ -467,9 +664,13 @@ export default function AdminCatalogPage() {
               <span className="text-sm font-bold">Category</span>
               <select
                 value={selectedSlug}
-                onChange={(event) =>
-                  setSelectedSlug(event.target.value)
-                }
+                onChange={(event) => {
+                  setSelectedSlug(event.target.value);
+                  setCategoryImageFile(null);
+                  setCategoryImageInputKey((current) =>
+                    current + 1,
+                  );
+                }}
                 className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
               >
                 {categories.map((category) => (
@@ -559,6 +760,77 @@ export default function AdminCatalogPage() {
               </label>
             </div>
           )}
+
+          <section className="mt-6 rounded-3xl border border-red-900 bg-red-950/10 p-5 sm:p-6">
+            <div className="grid gap-5 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
+              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-red-800 bg-black">
+                {categoryCardPreview ? (
+                  <img
+                    src={categoryCardPreview}
+                    alt="Category card preview"
+                    className="h-full w-full object-contain p-3"
+                  />
+                ) : (
+                  <span className="px-4 text-center text-sm font-bold text-white/45">
+                    Category image preview
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black">
+                  Category Card Image
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-white/60">
+                  Upload the artwork shown on the main wrap category page. Square PNG, JPG, or WebP images work best. The browser converts it to WebP before R2 upload.
+                </p>
+
+                <input
+                  key={categoryImageInputKey}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  disabled={uploading || savingCategoryImage}
+                  onChange={(event) =>
+                    setCategoryImageFile(
+                      event.target.files?.[0] ?? null,
+                    )
+                  }
+                  className="mt-4 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-red-600 file:px-5 file:py-3 file:font-black file:text-white hover:file:bg-red-500"
+                />
+
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void saveCategoryImageOnly()
+                    }
+                    disabled={
+                      !categoryImageFile ||
+                      uploading ||
+                      savingCategoryImage
+                    }
+                    className="rounded-full border border-red-600 px-5 py-3 text-sm font-black transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {savingCategoryImage
+                      ? "Saving Category Image…"
+                      : creatingCategory
+                        ? "Create Category & Save Image"
+                        : "Upload / Replace Category Image"}
+                  </button>
+
+                  {categoryImageFile && (
+                    <span className="text-xs font-bold text-white/55">
+                      {categoryImageFile.name}
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-3 text-xs leading-5 text-white/45">
+                  You can save the image by itself, or leave it selected and publish wraps below. The category image will be saved first.
+                </p>
+              </div>
+            </div>
+          </section>
 
           <label className="mt-6 block rounded-3xl border border-dashed border-red-700 bg-red-950/15 p-6 text-center transition hover:border-red-500">
             <span className="block text-lg font-black">Choose wrap images</span>

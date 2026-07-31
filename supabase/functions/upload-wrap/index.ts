@@ -71,18 +71,10 @@ function cleanPrefix(value: string): string {
     .slice(0, 100);
 }
 
-function cleanPublicBaseUrl(value: string | undefined): string {
-  const fallback = "https://images.pressedinpink.com";
-  const cleaned = (value ?? fallback)
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/\/+$/g, "");
-
-  return cleaned || fallback;
-}
+const PUBLIC_IMAGE_ORIGIN =
+  "https://images.pressedinpink.com";
 
 function buildPublicObjectUrl(
-  publicBaseUrl: string,
   objectKey: string,
 ): string {
   const encodedKey = objectKey
@@ -90,7 +82,25 @@ function buildPublicObjectUrl(
     .map((segment) => encodeURIComponent(segment))
     .join("/");
 
-  return `${publicBaseUrl}/${encodedKey}`;
+  return `${PUBLIC_IMAGE_ORIGIN}/${encodedKey}`;
+}
+
+function objectKeyFromPublicUrl(
+  value: string,
+): string | null {
+  try {
+    const url = new URL(value);
+
+    if (url.origin !== PUBLIC_IMAGE_ORIGIN) {
+      return null;
+    }
+
+    return decodeURIComponent(
+      url.pathname.replace(/^\/+/, ""),
+    );
+  } catch {
+    return null;
+  }
 }
 
 Deno.serve(async (request) => {
@@ -131,9 +141,6 @@ Deno.serve(async (request) => {
     "R2_SECRET_ACCESS_KEY",
   );
   const bucketName = Deno.env.get("R2_BUCKET_NAME");
-  const publicBaseUrl = cleanPublicBaseUrl(
-    Deno.env.get("R2_PUBLIC_BASE_URL"),
-  );
 
   if (
     !supabaseUrl ||
@@ -216,37 +223,35 @@ Deno.serve(async (request) => {
     );
   }
 
-  const file = formData.get("file");
-  const thumbnail = formData.get("thumbnail");
+  const action = String(
+    formData.get("action") ?? "upload-wrap",
+  );
+  const fileValue = formData.get("file");
+  const thumbnailValue = formData.get("thumbnail");
+  const categoryImageValue =
+    formData.get("categoryImage");
+  const wrapFile =
+    fileValue instanceof File ? fileValue : null;
+  const wrapThumbnail =
+    thumbnailValue instanceof File
+      ? thumbnailValue
+      : null;
+  const categoryImage =
+    categoryImageValue instanceof File
+      ? categoryImageValue
+      : null;
+  const categoryImageOnly =
+    action === "category-image";
   const requestedSlug = cleanSlug(
     String(formData.get("categorySlug") ?? ""),
   );
 
   if (
-    !(file instanceof File) ||
-    !(thumbnail instanceof File) ||
-    file.type !== "image/webp" ||
-    thumbnail.type !== "image/webp"
+    action !== "upload-wrap" &&
+    action !== "category-image"
   ) {
     return jsonResponse(
-      {
-        error:
-          "Both the full image and thumbnail must be WebP files.",
-      },
-      400,
-    );
-  }
-
-  if (file.size > 18 * 1024 * 1024) {
-    return jsonResponse(
-      { error: "The converted wrap is larger than 18 MB." },
-      400,
-    );
-  }
-
-  if (thumbnail.size > 3 * 1024 * 1024) {
-    return jsonResponse(
-      { error: "The thumbnail is larger than 3 MB." },
+      { error: "The requested upload action is invalid." },
       400,
     );
   }
@@ -256,6 +261,69 @@ Deno.serve(async (request) => {
       { error: "Choose or create a category." },
       400,
     );
+  }
+
+  if (categoryImageOnly && !categoryImage) {
+    return jsonResponse(
+      { error: "Choose a category image." },
+      400,
+    );
+  }
+
+  if (categoryImage) {
+    if (categoryImage.type !== "image/webp") {
+      return jsonResponse(
+        {
+          error:
+            "The category image must be converted to WebP.",
+        },
+        400,
+      );
+    }
+
+    if (categoryImage.size > 8 * 1024 * 1024) {
+      return jsonResponse(
+        {
+          error:
+            "The converted category image is larger than 8 MB.",
+        },
+        400,
+      );
+    }
+  }
+
+  if (!categoryImageOnly) {
+    if (
+      !wrapFile ||
+      !wrapThumbnail ||
+      wrapFile.type !== "image/webp" ||
+      wrapThumbnail.type !== "image/webp"
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "Both the full image and thumbnail must be WebP files.",
+        },
+        400,
+      );
+    }
+
+    if (wrapFile.size > 18 * 1024 * 1024) {
+      return jsonResponse(
+        {
+          error:
+            "The converted wrap is larger than 18 MB.",
+        },
+        400,
+      );
+    }
+
+    if (wrapThumbnail.size > 3 * 1024 * 1024) {
+      return jsonResponse(
+        { error: "The thumbnail is larger than 3 MB." },
+        400,
+      );
+    }
   }
 
   let { data: category, error: categoryError } =
@@ -349,6 +417,122 @@ Deno.serve(async (request) => {
   }
 
   const typedCategory = category as CategoryRecord;
+  let updatedCategory = typedCategory;
+
+  const r2 = new S3Client({
+    region: "auto",
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+
+  if (categoryImage) {
+    const categoryImageKey = [
+      "category-cards",
+      `${requestedSlug}-${Date.now()}-${crypto
+        .randomUUID()
+        .slice(0, 8)}.webp`,
+    ].join("/");
+    const categoryImageUrl =
+      buildPublicObjectUrl(categoryImageKey);
+    const previousCategoryImageKey =
+      objectKeyFromPublicUrl(
+        updatedCategory.card_image_url ?? "",
+      );
+
+    try {
+      await r2.send(
+        new PutObjectCommand({
+          Bucket: bucketName,
+          Key: categoryImageKey,
+          Body: new Uint8Array(
+            await categoryImage.arrayBuffer(),
+          ),
+          ContentType: "image/webp",
+          CacheControl:
+            "public, max-age=31536000, immutable",
+        }),
+      );
+    } catch (uploadError) {
+      console.error(
+        "R2 category image upload error:",
+        uploadError,
+      );
+
+      return jsonResponse(
+        {
+          error:
+            "The category image could not be uploaded to R2.",
+        },
+        502,
+      );
+    }
+
+    const {
+      data: categoryWithImage,
+      error: categoryImageError,
+    } = await adminClient
+      .from("catalog_categories")
+      .update({
+        card_image_url: categoryImageUrl,
+      })
+      .eq("id", typedCategory.id)
+      .select("*")
+      .single();
+
+    if (categoryImageError || !categoryWithImage) {
+      await r2.send(
+        new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: categoryImageKey,
+        }),
+      ).catch(() => undefined);
+
+      return jsonResponse(
+        {
+          error:
+            categoryImageError?.message ??
+            "The category image record could not be updated.",
+        },
+        500,
+      );
+    }
+
+    updatedCategory =
+      categoryWithImage as CategoryRecord;
+
+    if (
+      previousCategoryImageKey &&
+      previousCategoryImageKey.startsWith(
+        "category-cards/",
+      ) &&
+      previousCategoryImageKey !== categoryImageKey
+    ) {
+      await r2.send(
+        new DeleteObjectCommand({
+          Bucket: bucketName,
+          Key: previousCategoryImageKey,
+        }),
+      ).catch(() => undefined);
+    }
+  }
+
+  if (categoryImageOnly) {
+    return jsonResponse({
+      uploaded: true,
+      categoryImageUploaded: true,
+      category: updatedCategory,
+    });
+  }
+
+  if (!wrapFile || !wrapThumbnail) {
+    return jsonResponse(
+      { error: "Choose the wrap files to upload." },
+      400,
+    );
+  }
 
   const { data: latestWrap, error: latestWrapError } =
     await adminClient
@@ -378,30 +562,17 @@ Deno.serve(async (request) => {
     `wraps/${typedCategory.image_folder}/originals/${sourceFilename}`;
   const thumbnailKey =
     `wraps/${typedCategory.image_folder}/thumbnails/${sourceFilename}`;
-  const fullImageUrl = buildPublicObjectUrl(
-    publicBaseUrl,
-    originalKey,
-  );
-  const thumbnailUrl = buildPublicObjectUrl(
-    publicBaseUrl,
-    thumbnailKey,
-  );
-
-  const r2 = new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  });
+  const fullImageUrl =
+    buildPublicObjectUrl(originalKey);
+  const thumbnailUrl =
+    buildPublicObjectUrl(thumbnailKey);
 
   try {
     await r2.send(
       new PutObjectCommand({
         Bucket: bucketName,
         Key: originalKey,
-        Body: new Uint8Array(await file.arrayBuffer()),
+        Body: new Uint8Array(await wrapFile.arrayBuffer()),
         ContentType: "image/webp",
         CacheControl: "public, max-age=31536000, immutable",
       }),
@@ -412,7 +583,7 @@ Deno.serve(async (request) => {
         Bucket: bucketName,
         Key: thumbnailKey,
         Body: new Uint8Array(
-          await thumbnail.arrayBuffer(),
+          await wrapThumbnail.arrayBuffer(),
         ),
         ContentType: "image/webp",
         CacheControl: "public, max-age=31536000, immutable",
@@ -471,11 +642,9 @@ Deno.serve(async (request) => {
     );
   }
 
-  let updatedCategory = typedCategory;
-
   if (
-    !typedCategory.card_image_url &&
-    typedCategory.base_image_count === 0
+    !updatedCategory.card_image_url &&
+    updatedCategory.base_image_count === 0
   ) {
     const { data: categoryWithCard } = await adminClient
       .from("catalog_categories")
