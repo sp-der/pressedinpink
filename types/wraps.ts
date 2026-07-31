@@ -11,4 +11,6 @@ export type WrapCategoryConfig = {
   backLabel: string;
   footerHref: string;
   footerLabel: string;
+  baseThumbnailsAlreadyRotated?: boolean;
+  baseImagesAlreadyRotated?: boolean;
 };

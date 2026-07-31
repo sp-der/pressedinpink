@@ -140,6 +140,7 @@ export const wrapCategories = {
     filenamePrefix: "villians",
     imageFolder: "villains",
     totalImages: 34,
+    baseThumbnailsAlreadyRotated: true,
     backHref: "/wraps",
     backLabel: "Back to Wraps",
     footerHref: "/wraps",

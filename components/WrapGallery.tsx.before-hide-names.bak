@@ -27,8 +27,6 @@ type WrapGalleryProps = {
 type GalleryWrap = {
   number: number;
   product: WrapProduct;
-  thumbnailNeedsRotation: boolean;
-  viewerNeedsRotation: boolean;
 };
 
 type PaginationItem =
@@ -108,10 +106,6 @@ function createBaseWraps(
 
       return {
         number,
-        thumbnailNeedsRotation:
-          category.baseThumbnailsAlreadyRotated !== true,
-        viewerNeedsRotation:
-          category.baseImagesAlreadyRotated !== true,
         product: {
           id: `${category.slug}-${number}`,
           displayName:
@@ -226,8 +220,6 @@ export default function WrapGallery({
     for (const wrap of uploadedWraps) {
       merged.set(wrap.image_number, {
         number: wrap.image_number,
-        thumbnailNeedsRotation: true,
-        viewerNeedsRotation: true,
         product: {
           id: `${category.slug}-${wrap.image_number}`,
           displayName: wrap.display_name,
@@ -708,24 +700,15 @@ export default function WrapGallery({
                               wrap.product
                                 .fullImageUrl;
                           }}
-                          className={
-                            wrap.thumbnailNeedsRotation
-                              ? `
-                                absolute left-1/2 top-1/2
-                                h-[204%] w-[52%]
-                                max-w-none -translate-x-1/2
-                                -translate-y-1/2 rotate-90
-                                object-cover transition
-                                duration-300
-                                group-hover:scale-[1.03]
-                              `
-                              : `
-                                absolute inset-0 h-full w-full
-                                object-cover transition
-                                duration-300
-                                group-hover:scale-[1.03]
-                              `
-                          }
+                          className="
+                            absolute left-1/2 top-1/2
+                            h-[200%] w-1/2
+                            max-w-none -translate-x-1/2
+                            -translate-y-1/2 rotate-90
+                            object-contain transition
+                            duration-300
+                            group-hover:scale-[1.03]
+                          "
                         />
                       </div>
                     </button>
@@ -826,20 +809,13 @@ export default function WrapGallery({
                 }
                 alt={`${selectedWrap.product.displayName} wrap design`}
                 draggable={false}
-                className={
-                  selectedWrap.viewerNeedsRotation
-                    ? `
-                      absolute left-1/2 top-1/2
-                      h-[200%] w-1/2 max-w-none
-                      -translate-x-1/2
-                      -translate-y-1/2 rotate-90
-                      object-contain
-                    `
-                    : `
-                      absolute inset-0 h-full w-full
-                      object-contain
-                    `
-                }
+                className="
+                  absolute left-1/2 top-1/2
+                  h-[200%] w-1/2 max-w-none
+                  -translate-x-1/2
+                  -translate-y-1/2 rotate-90
+                  object-contain
+                "
               />
             </div>
 
@@ -847,10 +823,7 @@ export default function WrapGallery({
               className="pt-4 text-center text-sm font-bold text-white"
               style={smokyTextShadow}
             >
-              {selectedWrap.product.displayName}
-              {" • "}
-              {(selectedIndex ?? 0) + 1} /{" "}
-              {wraps.length}
+              Design {(selectedIndex ?? 0) + 1} of {wraps.length}
             </p>
 
             <AddToCartControls
