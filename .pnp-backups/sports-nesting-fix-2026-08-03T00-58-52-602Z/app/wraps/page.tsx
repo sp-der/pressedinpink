@@ -13,134 +13,222 @@ import type { CatalogWrapCounts } from "@/lib/catalogCounts";
 import { supabase } from "@/lib/supabase";
 import type { CatalogCategoryRecord } from "@/types/catalog";
 
-type SportsCategory = {
+type WrapCategoryCard = {
   slug: string;
   title: string;
   description: string;
   href: string;
   image: string;
-  fallbackImage: string;
+  fallbackImage?: string;
   keywords: string;
   imageScale?: string;
+  displayOrder: number;
   baseCount: number;
 };
 
-const sportsCategories: SportsCategory[] = [
+type DisplayCategory = WrapCategoryCard & {
+  wrapCount: number;
+};
+
+const staticCategories: WrapCategoryCard[] = [
   {
-    slug: "dodgers",
-    title: "Dodgers",
+    slug: "90scartoons",
+    title: "90s Cartoons",
     description:
-      "Browse Los Angeles Dodgers-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/dodgers",
-    image: "/wrap-categories/Sports/dodgers.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/dodgers/thumbnails/dodgers (1).webp",
+      "Browse nostalgic designs inspired by classic cartoons and characters.",
+    href: "/wraps/90scartoons",
+    image: "/wrap-categories/90s Cartoons.png",
     keywords:
-      "Dodgers Los Angeles baseball MLB blue LA sports team",
+      "90s cartoons retro nostalgic Nickelodeon Cartoon Network characters",
+    imageScale: "scale-[1.65]",
+    displayOrder: 10,
+    baseCount: 116,
+  },
+  {
+    slug: "sports",
+    title: "Sports",
+    description:
+      "Browse team-inspired, game-day, and sports-themed UV-DTF wraps.",
+    href: "/wraps/sports",
+    image: "/wrap-categories/Sports.png",
+    keywords:
+      "sports football basketball baseball soccer teams game day athletes",
+    imageScale: "scale-[1.25]",
+    displayOrder: 20,
+    baseCount: 116,
+  },
+  {
+    slug: "hello-kitty",
+    title: "Hello Kitty and Friends",
+    description:
+      "Browse Hello Kitty, Sanrio friends, and other cute character wrap designs.",
+    href: "/wraps/hello-kitty",
+    image: "/wrap-categories/Hello Kitty.png",
+    keywords:
+      "Hello Kitty Sanrio friends cute kawaii pink characters Kuromi My Melody Cinnamoroll",
+    imageScale: "scale-[1.25]",
+    displayOrder: 30,
+    baseCount: 292,
+  },
+  {
+    slug: "nightmare",
+    title: "Nightmare Before Christmas",
+    description:
+      "Browse spooky, festive, and character-inspired Nightmare Before Christmas wraps.",
+    href: "/wraps/nightmare",
+    image: "/wrap-categories/nightmare.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/nightmare/thumbnails/nightmare (1).webp",
+    keywords:
+      "Nightmare Before Christmas Jack Skellington Sally Zero Halloween Christmas spooky",
     imageScale: "scale-[1.2]",
-    baseCount: 83,
+    displayOrder: 40,
+    baseCount: 48,
   },
   {
-    slug: "lakers",
-    title: "Los Angeles Lakers",
+    slug: "pooh",
+    title: "Winnie the Pooh & Friends",
     description:
-      "Browse Los Angeles Lakers-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/lakers",
-    image: "/wrap-categories/Sports/lakers.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/lakers/thumbnails/lakers (1).webp",
+      "Browse Winnie the Pooh, Tigger, Eeyore, Piglet, and friends.",
+    href: "/wraps/pooh",
+    image: "/wrap-categories/pooh.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/pooh/thumbnails/pooh (1).webp",
     keywords:
-      "Los Angeles Lakers LA basketball NBA purple gold sports team",
-    imageScale: "scale-[1.15]",
-    baseCount: 14,
+      "Winnie the Pooh friends Tigger Eeyore Piglet honey bear Disney",
+    imageScale: "scale-[1.2]",
+    displayOrder: 50,
+    baseCount: 95,
   },
   {
-    slug: "clippers",
-    title: "Los Angeles Clippers",
+    slug: "princesses",
+    title: "Princesses",
     description:
-      "Browse Los Angeles Clippers-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/clippers",
-    image: "/wrap-categories/Sports/clippers.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/clippers/thumbnails/clippers (1).webp",
+      "Browse colorful princess-inspired characters, castles, crowns, and fairytale designs.",
+    href: "/wraps/princesses",
+    image: "/wrap-categories/princesses.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/princesses/thumbnails/princesses%20(1).webp",
     keywords:
-      "Los Angeles Clippers LA basketball NBA red blue sports team",
-    imageScale: "scale-[1.15]",
-    baseCount: 5,
+      "princess princesses fairytale castle royal crowns characters",
+    imageScale: "scale-[1.1]",
+    displayOrder: 55,
+    baseCount: 158,
   },
   {
-    slug: "celtics",
-    title: "Boston Celtics",
+    slug: "anime",
+    title: "Anime",
     description:
-      "Browse Boston Celtics-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/celtics",
-    image: "/wrap-categories/Sports/celtics.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/celtics/thumbnails/celtics (1).webp",
+      "Browse anime-inspired characters, series, artwork, and colorful UV-DTF wraps.",
+    href: "/wraps/anime",
+    image: "/wrap-categories/Anime.png",
     keywords:
-      "Boston Celtics basketball NBA green white sports team",
-    imageScale: "scale-[1.15]",
-    baseCount: 1,
+      "anime manga Japanese series characters cartoons colorful",
+    imageScale: "scale-100",
+    displayOrder: 60,
+    baseCount: 75,
   },
   {
-    slug: "goldenstate",
-    title: "Golden State Warriors",
+    slug: "kpop",
+    title: "K-Pop",
     description:
-      "Browse Golden State Warriors-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/goldenstate",
-    image: "/wrap-categories/Sports/goldenstate.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/goldenstate/thumbnails/goldenstate (1).webp",
+      "Browse K-pop-inspired groups, artists, albums, and fan-favorite UV-DTF wraps.",
+    href: "/wraps/kpop",
+    image: "/wrap-categories/K-pop.png",
     keywords:
-      "Golden State Warriors basketball NBA blue gold Bay Area sports team",
-    imageScale: "scale-[1.15]",
-    baseCount: 7,
+      "K-pop kpop Korean music groups idols artists albums",
+    imageScale: "scale-[1.45]",
+    displayOrder: 70,
+    baseCount: 68,
   },
   {
-    slug: "nuggets",
-    title: "Denver Nuggets",
+    slug: "labubu",
+    title: "Labubu",
     description:
-      "Browse Denver Nuggets-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/nuggets",
-    image: "/wrap-categories/Sports/nuggets.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/nuggets/thumbnails/nuggets (1).webp",
+      "Browse playful Labubu-inspired characters, colors, and collectible-style designs.",
+    href: "/wraps/labubu",
+    image: "/wrap-categories/labubu.png",
     keywords:
-      "Denver Nuggets basketball NBA blue gold Colorado sports team",
-    imageScale: "scale-[1.16] -translate-y-[8px]",
-    baseCount: 1,
+      "Labubu Pop Mart monster collectible cute character toy",
+    imageScale: "scale-[1.25]",
+    displayOrder: 80,
+    baseCount: 84,
   },
   {
-    slug: "bulls",
-    title: "Chicago Bulls",
+    slug: "music",
+    title: "Music",
     description:
-      "Browse Chicago Bulls-inspired UV-DTF wrap designs.",
-    href: "/wraps/sports/bulls",
-    image: "/wrap-categories/Sports/bulls.png",
-    fallbackImage: "https://images.pressedinpink.com/wraps/bulls/thumbnails/bulls (1).webp",
+      "Browse music-inspired artists, albums, lyrics, and fan-favorite designs.",
+    href: "/wraps/music",
+    image: "/wrap-categories/music.png",
     keywords:
-      "Chicago Bulls basketball NBA red black sports team",
-    imageScale: "scale-[1.15]",
-    baseCount: 5,
+      "music musicians artists singers rappers albums lyrics bands concerts",
+    imageScale: "scale-[1.25]",
+    displayOrder: 90,
+    baseCount: 75,
+  },
+  {
+    slug: "420",
+    title: "420",
+    description:
+      "Browse bold, colorful, and laid-back 420-inspired wrap designs.",
+    href: "/wraps/420",
+    image: "/wrap-categories/420.png",
+    keywords:
+      "420 cannabis weed marijuana smoke smoking green stoner",
+    imageScale: "scale-[1.25]",
+    displayOrder: 100,
+    baseCount: 15,
+  },
+  {
+    slug: "villians",
+    title: "Villains",
+    description:
+      "Browse bold, dramatic, and character-inspired villain wrap designs.",
+    href: "/wraps/villians",
+    image: "/wrap-categories/villians.png",
+    fallbackImage:
+      "https://images.pressedinpink.com/wraps/villains/thumbnails/villians (1).webp",
+    keywords: "villains evil characters dark dramatic",
+    imageScale: "scale-100",
+    displayOrder: 110,
+    baseCount: 34,
   },
 ];
+
+const sportsChildSlugs = [
+  "dodgers",
+  "lakers",
+  "clippers",
+  "celtics",
+  "goldenstate",
+  "nuggets",
+  "bulls",
+] as const;
+
+const sportsChildSlugSet = new Set<string>(sportsChildSlugs);
 
 const smokyTextShadow = {
   textShadow:
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
-export default function SportsWrapsPage() {
+export default function WrapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [liveCounts, setLiveCounts] = useState<CatalogWrapCounts>({});
   const [liveCategories, setLiveCategories] = useState<
     CatalogCategoryRecord[]
   >([]);
+  const [liveCounts, setLiveCounts] = useState<CatalogWrapCounts>({});
 
   useEffect(() => {
     let active = true;
 
-    const loadSportsCatalog = async () => {
+    const loadCategories = async () => {
       const [categoryResult, countsResult] = await Promise.allSettled([
         supabase
           .from("catalog_categories")
           .select("*")
           .eq("is_active", true)
-          .eq("parent_slug", "sports")
           .order("display_order", { ascending: true })
           .order("display_name", { ascending: true }),
         loadCatalogWrapCounts(),
@@ -157,39 +245,38 @@ export default function SportsWrapsPage() {
         setLiveCategories(
           (categoryResult.value.data ?? []) as CatalogCategoryRecord[],
         );
-      } else {
-        console.error(
-          "Could not load sports team categories.",
-          categoryResult.status === "rejected"
-            ? categoryResult.reason
-            : categoryResult.value.error,
-        );
       }
 
       if (countsResult.status === "fulfilled") {
         setLiveCounts(countsResult.value);
-      } else {
-        console.error(
-          "Could not load sports wrap counts.",
-          countsResult.reason,
-        );
       }
     };
 
-    void loadSportsCatalog();
+    void loadCategories();
 
     return () => {
       active = false;
     };
   }, []);
 
-  const sortedCategories = useMemo(() => {
+  const categories = useMemo<DisplayCategory[]>(() => {
     const liveBySlug = new Map(
       liveCategories.map((category) => [category.slug, category]),
     );
 
-    const mergedStatic = sportsCategories.map((category) => {
+    const sportsCount = sportsChildSlugs.reduce(
+      (sum, slug) => sum + (liveCounts[slug] ?? 0),
+      0,
+    );
+
+    const merged = staticCategories.map((category) => {
       const live = liveBySlug.get(category.slug);
+      const count =
+        category.slug === "sports"
+          ? sportsCount || category.baseCount
+          : liveCounts[category.slug] ??
+            live?.base_image_count ??
+            category.baseCount;
 
       return {
         ...category,
@@ -198,73 +285,68 @@ export default function SportsWrapsPage() {
         image: live?.card_image_url || category.image,
         keywords: `${category.keywords} ${live?.keywords ?? ""}`,
         imageScale: live?.image_scale || category.imageScale,
-        baseCount: live?.base_image_count ?? category.baseCount,
-        wrapCount:
-          liveCounts[category.slug] ??
-          live?.base_image_count ??
-          category.baseCount,
+        displayOrder: live?.display_order ?? category.displayOrder,
+        wrapCount: count,
       };
     });
 
     const knownSlugs = new Set(
-      sportsCategories.map((category) => category.slug),
+      staticCategories.map((category) => category.slug),
     );
 
-    const dynamicCategories = liveCategories
-      .filter((category) => !knownSlugs.has(category.slug))
-      .map((category): SportsCategory & { wrapCount: number } => ({
+    const dynamic = liveCategories
+      .filter(
+        (category) =>
+          !knownSlugs.has(category.slug) &&
+          !sportsChildSlugSet.has(category.slug),
+      )
+      .map((category): DisplayCategory => ({
         slug: category.slug,
         title: category.display_name,
         description:
           category.description ||
-          `Browse ${category.display_name}-inspired UV-DTF wrap designs.`,
+          "Browse newly published Pressed In Pink wrap designs.",
         href: `/wraps/category/?slug=${encodeURIComponent(category.slug)}`,
         image: category.card_image_url || "/logo.png",
         fallbackImage: "/logo.png",
         keywords: category.keywords,
         imageScale: category.image_scale || "scale-100",
+        displayOrder: category.display_order,
         baseCount: category.base_image_count,
         wrapCount:
           liveCounts[category.slug] ?? category.base_image_count,
       }));
 
-    return [...mergedStatic, ...dynamicCategories].sort(
+    return [...merged, ...dynamic].sort(
       (first, second) =>
         second.wrapCount - first.wrapCount ||
+        first.displayOrder - second.displayOrder ||
         first.title.localeCompare(second.title),
     );
   }, [liveCategories, liveCounts]);
+
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
-  const filteredCategories = sortedCategories.filter((category) => {
-    const searchableText = `
-      ${category.title}
-      ${category.description}
-      ${category.keywords}
-    `.toLowerCase();
-
-    return searchableText.includes(normalizedSearch);
-  });
+  const filteredCategories = categories.filter(
+    (category) =>
+      !normalizedSearch ||
+      `${category.title} ${category.description} ${category.keywords}`
+        .toLowerCase()
+        .includes(normalizedSearch),
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         aria-hidden="true"
-        className="
-          pointer-events-none fixed inset-0
-          bg-cover bg-no-repeat
-          bg-[position:62%_top]
-          sm:bg-[position:58%_top]
-          md:bg-center
-        "
+        className="pointer-events-none fixed inset-0 bg-cover bg-no-repeat bg-[position:62%_top] sm:bg-[position:58%_top] md:bg-center"
         style={{
           backgroundImage: "url('/homepage-background.jpg')",
         }}
       />
-
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-black/40"
+        className="pointer-events-none fixed inset-0 bg-black/45"
       />
 
       <div className="relative z-10">
@@ -272,11 +354,11 @@ export default function SportsWrapsPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
               <a
-                href="/wraps"
+                href="/"
                 className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
                 style={smokyTextShadow}
               >
-                ← Back to Wraps
+                ← Back Home
               </a>
             </div>
 
@@ -297,7 +379,6 @@ export default function SportsWrapsPage() {
               >
                 Instagram
               </a>
-
               <a
                 href="https://www.tiktok.com/@pressedinpink23?lang=en"
                 target="_blank"
@@ -318,61 +399,55 @@ export default function SportsWrapsPage() {
             >
               Pressed In Pink Collection
             </p>
-
             <h1
               className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl"
               style={smokyTextShadow}
             >
-              Sports Wraps
+              UV-DTF Wraps
             </h1>
-
             <p
               className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
               style={smokyTextShadow}
             >
-              Choose a team below to browse available sports wrap designs. Teams automatically sort from the largest collection to the smallest.
+              Choose a category below to browse available wrap designs. Categories automatically sort from the largest collection to the smallest.
             </p>
           </div>
         </section>
 
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
           <div className="mx-auto mb-10 max-w-2xl">
-            <label htmlFor="sports-category-search" className="sr-only">
-              Search sports categories
+            <label htmlFor="wrap-category-search" className="sr-only">
+              Search wrap categories
             </label>
-
             <div className="flex items-center gap-3 rounded-full border border-red-900 bg-black/90 px-5 py-3 shadow-xl backdrop-blur-md transition focus-within:border-red-600">
-              <span aria-hidden="true" className="text-xl text-white">
+              <span aria-hidden="true" className="text-xl">
                 🔍
               </span>
-
               <input
-                id="sports-category-search"
+                id="wrap-category-search"
                 type="search"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search teams..."
+                placeholder="Search wrap categories..."
                 autoComplete="off"
                 className="min-w-0 flex-1 bg-transparent text-base text-white outline-none placeholder:text-white/60"
               />
-
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="rounded-full border border-red-600 px-3 py-1 text-xs font-bold text-white transition hover:bg-red-600"
+                  className="rounded-full border border-red-600 px-3 py-1 text-xs font-bold transition hover:bg-red-600"
                 >
                   Clear
                 </button>
               )}
             </div>
-
             <p
-              className="mt-3 text-center text-sm text-white"
+              className="mt-3 text-center text-sm"
               style={smokyTextShadow}
             >
               Showing {filteredCategories.length}{" "}
-              {filteredCategories.length === 1 ? "team" : "teams"}
+              {filteredCategories.length === 1 ? "category" : "categories"}
             </p>
           </div>
 
@@ -380,50 +455,45 @@ export default function SportsWrapsPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredCategories.map((category) => (
                 <a
-                  key={category.title}
+                  key={category.slug}
                   href={category.href}
                   className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
                   <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
                     <img
                       src={category.image}
-                      alt={`${category.title} team category`}
+                      alt={`${category.title} category`}
                       loading="lazy"
                       decoding="async"
                       draggable={false}
                       onError={(event) => {
                         event.currentTarget.onerror = null;
-                        event.currentTarget.src = category.fallbackImage;
+                        event.currentTarget.src =
+                          category.fallbackImage || "/logo.png";
                       }}
-                      className={`
-                        h-full w-full object-contain
-                        transition-transform duration-300
-                        ${category.imageScale ?? "scale-100"}
-                      `}
+                      className={`h-full w-full object-contain transition-transform duration-300 ${
+                        category.imageScale ?? "scale-100"
+                      }`}
                     />
                   </div>
-
                   <h2
-                    className="text-2xl font-black text-white"
+                    className="text-2xl font-black"
                     style={smokyTextShadow}
                   >
                     {category.title}
                   </h2>
-
                   <p className="mt-2 text-sm font-black text-red-400">
                     {category.wrapCount.toLocaleString("en-US")} {category.wrapCount === 1 ? "design" : "designs"}
                   </p>
-
                   <p
-                    className="mt-4 text-sm leading-6 text-white"
+                    className="mt-4 text-sm leading-6"
                     style={smokyTextShadow}
                   >
                     {category.description}
                   </p>
-
                   <div className="mt-auto pt-7">
                     <span
-                      className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition group-hover:bg-red-600"
+                      className="inline-block rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition group-hover:bg-red-600"
                       style={smokyTextShadow}
                     >
                       View Designs →
@@ -434,23 +504,18 @@ export default function SportsWrapsPage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-red-900 bg-black/90 px-6 py-12 text-center shadow-xl backdrop-blur-md">
-              <h2
-                className="text-2xl font-black text-white"
-                style={smokyTextShadow}
-              >
-                No matching teams found
+              <h2 className="text-2xl font-black">
+                No matching categories found
               </h2>
-
-              <p className="mt-3 text-white" style={smokyTextShadow}>
-                Try another team, city, league, or sport.
+              <p className="mt-3 text-white/75">
+                Try another character, theme, team, artist, or style.
               </p>
-
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-600"
+                className="mt-6 rounded-full border border-red-600 px-6 py-3 text-sm font-bold transition hover:bg-red-600"
               >
-                View All Teams
+                View All Categories
               </button>
             </div>
           )}
@@ -462,17 +527,15 @@ export default function SportsWrapsPage() {
             alt="Pressed In Pink"
             className="mx-auto h-auto w-36 object-contain"
           />
-
-          <p className="mt-4 text-white" style={smokyTextShadow}>
+          <p className="mt-4" style={smokyTextShadow}>
             Handmade with love in Rialto, California.
           </p>
-
           <a
-            href="/wraps"
-            className="mt-5 inline-block text-sm font-bold text-white transition hover:text-red-500"
+            href="/"
+            className="mt-5 inline-block text-sm font-bold transition hover:text-red-500"
             style={smokyTextShadow}
           >
-            Return to Wraps
+            Return Home
           </a>
         </footer>
       </div>

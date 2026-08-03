@@ -10,8 +10,6 @@ import {
   loadCatalogWrapCounts,
 } from "@/lib/catalogCounts";
 import type { CatalogWrapCounts } from "@/lib/catalogCounts";
-import { supabase } from "@/lib/supabase";
-import type { CatalogCategoryRecord } from "@/types/catalog";
 
 type SportsCategory = {
   slug: string;
@@ -127,113 +125,40 @@ const smokyTextShadow = {
 export default function SportsWrapsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [liveCounts, setLiveCounts] = useState<CatalogWrapCounts>({});
-  const [liveCategories, setLiveCategories] = useState<
-    CatalogCategoryRecord[]
-  >([]);
 
   useEffect(() => {
     let active = true;
 
-    const loadSportsCatalog = async () => {
-      const [categoryResult, countsResult] = await Promise.allSettled([
-        supabase
-          .from("catalog_categories")
-          .select("*")
-          .eq("is_active", true)
-          .eq("parent_slug", "sports")
-          .order("display_order", { ascending: true })
-          .order("display_name", { ascending: true }),
-        loadCatalogWrapCounts(),
-      ]);
-
-      if (!active) {
-        return;
-      }
-
-      if (
-        categoryResult.status === "fulfilled" &&
-        !categoryResult.value.error
-      ) {
-        setLiveCategories(
-          (categoryResult.value.data ?? []) as CatalogCategoryRecord[],
-        );
-      } else {
-        console.error(
-          "Could not load sports team categories.",
-          categoryResult.status === "rejected"
-            ? categoryResult.reason
-            : categoryResult.value.error,
-        );
-      }
-
-      if (countsResult.status === "fulfilled") {
-        setLiveCounts(countsResult.value);
-      } else {
-        console.error(
-          "Could not load sports wrap counts.",
-          countsResult.reason,
-        );
-      }
-    };
-
-    void loadSportsCatalog();
+    void loadCatalogWrapCounts()
+      .then((counts) => {
+        if (active) {
+          setLiveCounts(counts);
+        }
+      })
+      .catch((error) => {
+        console.error("Could not load sports wrap counts.", error);
+      });
 
     return () => {
       active = false;
     };
   }, []);
 
-  const sortedCategories = useMemo(() => {
-    const liveBySlug = new Map(
-      liveCategories.map((category) => [category.slug, category]),
-    );
+  const sortedCategories = useMemo(
+    () =>
+      sportsCategories
+        .map((category) => ({
+          ...category,
+          wrapCount: liveCounts[category.slug] ?? category.baseCount,
+        }))
+        .sort(
+          (first, second) =>
+            second.wrapCount - first.wrapCount ||
+            first.title.localeCompare(second.title),
+        ),
+    [liveCounts],
+  );
 
-    const mergedStatic = sportsCategories.map((category) => {
-      const live = liveBySlug.get(category.slug);
-
-      return {
-        ...category,
-        title: live?.display_name || category.title,
-        description: live?.description || category.description,
-        image: live?.card_image_url || category.image,
-        keywords: `${category.keywords} ${live?.keywords ?? ""}`,
-        imageScale: live?.image_scale || category.imageScale,
-        baseCount: live?.base_image_count ?? category.baseCount,
-        wrapCount:
-          liveCounts[category.slug] ??
-          live?.base_image_count ??
-          category.baseCount,
-      };
-    });
-
-    const knownSlugs = new Set(
-      sportsCategories.map((category) => category.slug),
-    );
-
-    const dynamicCategories = liveCategories
-      .filter((category) => !knownSlugs.has(category.slug))
-      .map((category): SportsCategory & { wrapCount: number } => ({
-        slug: category.slug,
-        title: category.display_name,
-        description:
-          category.description ||
-          `Browse ${category.display_name}-inspired UV-DTF wrap designs.`,
-        href: `/wraps/category/?slug=${encodeURIComponent(category.slug)}`,
-        image: category.card_image_url || "/logo.png",
-        fallbackImage: "/logo.png",
-        keywords: category.keywords,
-        imageScale: category.image_scale || "scale-100",
-        baseCount: category.base_image_count,
-        wrapCount:
-          liveCounts[category.slug] ?? category.base_image_count,
-      }));
-
-    return [...mergedStatic, ...dynamicCategories].sort(
-      (first, second) =>
-        second.wrapCount - first.wrapCount ||
-        first.title.localeCompare(second.title),
-    );
-  }, [liveCategories, liveCounts]);
   const normalizedSearch = searchQuery.trim().toLowerCase();
 
   const filteredCategories = sortedCategories.filter((category) => {

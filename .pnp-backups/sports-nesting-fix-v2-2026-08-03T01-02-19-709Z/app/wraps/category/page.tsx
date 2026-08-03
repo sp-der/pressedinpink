@@ -51,8 +51,6 @@ export default function DynamicWrapCategoryPage() {
 
       const record =
         data as CatalogCategoryRecord;
-      const isSportsCategory =
-        record.parent_slug === "sports";
 
       setCategory({
         slug: record.slug,
@@ -66,18 +64,10 @@ export default function DynamicWrapCategoryPage() {
         imageFolder: record.image_folder,
         totalImages:
           record.base_image_count,
-        backHref: isSportsCategory
-          ? "/wraps/sports"
-          : "/wraps",
-        backLabel: isSportsCategory
-          ? "Back to Sports"
-          : "Back to Wraps",
-        footerHref: isSportsCategory
-          ? "/wraps/sports"
-          : "/wraps",
-        footerLabel: isSportsCategory
-          ? "Return to Sports"
-          : "Return to Wraps",
+        backHref: "/wraps",
+        backLabel: "Back to Wraps",
+        footerHref: "/wraps",
+        footerLabel: "Return to Wraps",
       });
 
       setLoading(false);

@@ -16,7 +16,6 @@ const corsHeaders = {
 type CategoryRecord = {
   id: string;
   slug: string;
-  parent_slug: string | null;
   display_name: string;
   heading: string;
   item_label: string;
@@ -246,11 +245,6 @@ Deno.serve(async (request) => {
   const requestedSlug = cleanSlug(
     String(formData.get("categorySlug") ?? ""),
   );
-  const hasParentSlugField = formData.has("parentSlug");
-  const requestedParentSlug = cleanSlug(
-    String(formData.get("parentSlug") ?? ""),
-  );
-  const parentSlug = requestedParentSlug || null;
 
   if (
     action !== "upload-wrap" &&
@@ -346,31 +340,6 @@ Deno.serve(async (request) => {
     );
   }
 
-  if (category && hasParentSlugField) {
-    const {
-      data: categoryWithParent,
-      error: parentCategoryError,
-    } = await adminClient
-      .from("catalog_categories")
-      .update({ parent_slug: parentSlug })
-      .eq("id", category.id)
-      .select("*")
-      .single();
-
-    if (parentCategoryError || !categoryWithParent) {
-      return jsonResponse(
-        {
-          error:
-            parentCategoryError?.message ??
-            "The category location could not be saved.",
-        },
-        500,
-      );
-    }
-
-    category = categoryWithParent;
-  }
-
   if (!category) {
     const displayName = String(
       formData.get("displayName") ?? "",
@@ -419,7 +388,6 @@ Deno.serve(async (request) => {
         .from("catalog_categories")
         .insert({
           slug: requestedSlug,
-          parent_slug: parentSlug,
           display_name: displayName.slice(0, 120),
           heading: `${displayName.slice(0, 110)} Wraps`,
           item_label: itemLabel.slice(0, 100),
