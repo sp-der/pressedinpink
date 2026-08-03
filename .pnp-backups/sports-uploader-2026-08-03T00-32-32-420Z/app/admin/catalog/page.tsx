@@ -133,8 +133,6 @@ export default function AdminCatalogPage() {
     useState("princesses");
   const [creatingCategory, setCreatingCategory] =
     useState(false);
-  const [categoryParentSlug, setCategoryParentSlug] =
-    useState("");
   const [categoryName, setCategoryName] =
     useState("");
   const [categorySlug, setCategorySlug] =
@@ -287,7 +285,6 @@ export default function AdminCatalogPage() {
       description.trim(),
     );
     formData.append("keywords", keywords.trim());
-    formData.append("parentSlug", categoryParentSlug);
   };
 
   const validateNewCategory = (): string | null => {
@@ -390,7 +387,6 @@ export default function AdminCatalogPage() {
 
       setSelectedSlug(uploadedCategory.slug);
       setCreatingCategory(false);
-      setCategoryParentSlug("");
       setCategoryImageFile(null);
       setCategoryImageInputKey((current) =>
         current + 1,
@@ -565,7 +561,6 @@ export default function AdminCatalogPage() {
 
     if (creatingCategory && completed > 0) {
       setCreatingCategory(false);
-      setCategoryParentSlug("");
       setSelectedSlug(uploadSlug);
     }
 
@@ -650,7 +645,6 @@ export default function AdminCatalogPage() {
               type="button"
               onClick={() => {
                 setCreatingCategory((current) => !current);
-                setCategoryParentSlug("");
                 setCategoryImageFile(null);
                 setCategoryImageInputKey((current) =>
                   current + 1,
@@ -681,9 +675,7 @@ export default function AdminCatalogPage() {
               >
                 {categories.map((category) => (
                   <option key={category.id} value={category.slug}>
-                    {category.parent_slug === "sports"
-                      ? `Sports • ${category.display_name}`
-                      : category.display_name}
+                    {category.display_name}
                   </option>
                 ))}
               </select>
@@ -696,22 +688,6 @@ export default function AdminCatalogPage() {
             </label>
           ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <label className="sm:col-span-2">
-                <span className="text-sm font-bold">Where should this category appear?</span>
-                <select
-                  value={categoryParentSlug}
-                  onChange={(event) =>
-                    setCategoryParentSlug(event.target.value)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
-                >
-                  <option value="">Main Wrap Categories</option>
-                  <option value="sports">Sports Team Categories</option>
-                </select>
-                <p className="mt-2 text-xs leading-5 text-white/55">
-                  Sports Team Categories appear inside Sports and stay hidden from the main category grid.
-                </p>
-              </label>
               <label>
                 <span className="text-sm font-bold">Category name</span>
                 <input

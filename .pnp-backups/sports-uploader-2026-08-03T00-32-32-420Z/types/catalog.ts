@@ -1,7 +1,6 @@
 export type CatalogCategoryRecord = {
   id: string;
   slug: string;
-  parent_slug: string | null;
   display_name: string;
   heading: string;
   item_label: string;
