@@ -18,3 +18,7 @@ out/
 source-images/
 converted/
 upload-staging/
+
+# Local PNP update files
+.pnp-backups/
+pnp-invoice-category-update/
