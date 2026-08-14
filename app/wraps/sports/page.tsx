@@ -239,7 +239,6 @@ export default function SportsWrapsPage() {
   const filteredCategories = sortedCategories.filter((category) => {
     const searchableText = `
       ${category.title}
-      ${category.description}
       ${category.keywords}
     `.toLowerCase();
 
@@ -414,12 +413,6 @@ export default function SportsWrapsPage() {
                     {category.wrapCount.toLocaleString("en-US")} {category.wrapCount === 1 ? "design" : "designs"}
                   </p>
 
-                  <p
-                    className="mt-4 text-sm leading-6 text-white"
-                    style={smokyTextShadow}
-                  >
-                    {category.description}
-                  </p>
 
                   <div className="mt-auto pt-7">
                     <span

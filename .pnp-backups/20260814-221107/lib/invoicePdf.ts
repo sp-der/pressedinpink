@@ -1133,7 +1133,7 @@ function buildHeader(
   stream += strokeRect(422, 686, 150, 72, "0.88 0.06 0.08", 1.25);
   stream += text("INVOICE", 438, 738, 15, "F3", "1 1 1");
   stream += text(
-    truncate(invoice.orderNumber || invoice.invoiceNumber, 24),
+    truncate(invoice.invoiceNumber, 24),
     438,
     716,
     10,
@@ -1157,7 +1157,7 @@ function buildFooter(pageNumber: number, pageCount: number): string {
   stream += fillRect(0, 0, 612, 42, "0.025 0.025 0.025");
   stream += fillRect(0, 42, 612, 2, "0.88 0.06 0.08");
   stream += centeredText(
-    "Thank you for supporting Pressed In Pink.",
+    "Thank you for choosing Pressed In Pink",
     306,
     24,
     9,
@@ -1289,6 +1289,27 @@ function buildPageContent(
   if (isLastPage) {
     const boxTop = y - 12;
     const boxY = boxTop - 112;
+
+    stream += fillRect(44, boxY, 278, 112, "0.965 0.965 0.965");
+    stream += strokeRect(44, boxY, 278, 112, "0.88 0.06 0.08", 0.8);
+    stream += text("NOTES", 58, boxTop - 20, 8, "F2", "0.55 0.04 0.05");
+
+    const noteLines = wrapWords(
+      invoice.notes.trim() || "Thank you for supporting Pressed In Pink.",
+      52,
+      4,
+    );
+
+    noteLines.forEach((noteLine, index) => {
+      stream += text(
+        noteLine,
+        58,
+        boxTop - 40 - index * 16,
+        8,
+        index === 0 ? "F2" : "F1",
+        "0.28 0.28 0.28",
+      );
+    });
 
     stream += fillRect(342, boxY, 226, 112, "0.075 0.075 0.075");
     stream += strokeRect(342, boxY, 226, 112, "0.88 0.06 0.08", 1);

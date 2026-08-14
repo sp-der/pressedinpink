@@ -337,7 +337,7 @@ export default function WrapsPage() {
   const filteredCategories = categories.filter(
     (category) =>
       !normalizedSearch ||
-      `${category.title} ${category.keywords}`
+      `${category.title} ${category.description} ${category.keywords}`
         .toLowerCase()
         .includes(normalizedSearch),
   );
@@ -491,6 +491,12 @@ export default function WrapsPage() {
                   </h2>
                   <p className="mt-2 text-sm font-black text-red-400">
                     {category.wrapCount.toLocaleString("en-US")} {category.wrapCount === 1 ? "design" : "designs"}
+                  </p>
+                  <p
+                    className="mt-4 text-sm leading-6"
+                    style={smokyTextShadow}
+                  >
+                    {category.description}
                   </p>
                   <div className="mt-auto pt-7">
                     <span

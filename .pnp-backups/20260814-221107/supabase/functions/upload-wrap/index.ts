@@ -388,6 +388,11 @@ Deno.serve(async (request) => {
         formData.get("imageFolder") ?? requestedSlug,
       ),
     );
+    const description = String(
+      formData.get("description") ?? "",
+    )
+      .trim()
+      .slice(0, 500);
     const keywords = String(
       formData.get("keywords") ?? "",
     )
@@ -420,7 +425,7 @@ Deno.serve(async (request) => {
           item_label: itemLabel.slice(0, 100),
           filename_prefix: filenamePrefix,
           image_folder: imageFolder,
-          description: "",
+          description,
           keywords,
           base_image_count: 0,
           display_order: 1000,
@@ -504,7 +509,6 @@ Deno.serve(async (request) => {
       .from("catalog_categories")
       .update({
         card_image_url: categoryImageUrl,
-        image_scale: "scale-100",
       })
       .eq("id", typedCategory.id)
       .select("*")

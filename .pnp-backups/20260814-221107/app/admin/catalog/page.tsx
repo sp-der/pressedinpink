@@ -109,68 +109,6 @@ async function convertToWebp(
   return webp;
 }
 
-
-async function convertCategoryImageToWebp(
-  file: File,
-  sizePercent: number,
-  canvasSize = 1600,
-  quality = 0.9,
-): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const fitScale = Math.min(
-    canvasSize / bitmap.width,
-    canvasSize / bitmap.height,
-  );
-  const finalScale = fitScale * (sizePercent / 100);
-  const drawWidth = Math.max(
-    1,
-    Math.round(bitmap.width * finalScale),
-  );
-  const drawHeight = Math.max(
-    1,
-    Math.round(bitmap.height * finalScale),
-  );
-
-  const canvas = document.createElement("canvas");
-  canvas.width = canvasSize;
-  canvas.height = canvasSize;
-
-  const context = canvas.getContext("2d", {
-    alpha: true,
-  });
-
-  if (!context) {
-    bitmap.close();
-    throw new Error(
-      "This browser could not prepare the category image.",
-    );
-  }
-
-  context.clearRect(0, 0, canvasSize, canvasSize);
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
-  context.drawImage(
-    bitmap,
-    Math.round((canvasSize - drawWidth) / 2),
-    Math.round((canvasSize - drawHeight) / 2),
-    drawWidth,
-    drawHeight,
-  );
-  bitmap.close();
-
-  const webp = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, "image/webp", quality);
-  });
-
-  if (!webp) {
-    throw new Error(
-      "This browser could not convert the category image to WebP.",
-    );
-  }
-
-  return webp;
-}
-
 function categoryLabel(
   recent: RecentWrap,
 ): string {
@@ -204,13 +142,13 @@ export default function AdminCatalogPage() {
   const [itemLabel, setItemLabel] = useState("");
   const [filenamePrefix, setFilenamePrefix] =
     useState("");
+  const [description, setDescription] =
+    useState("");
   const [keywords, setKeywords] = useState("");
   const [categoryImageFile, setCategoryImageFile] =
     useState<File | null>(null);
   const [categoryImagePreview, setCategoryImagePreview] =
     useState("");
-  const [categoryImageScale, setCategoryImageScale] =
-    useState(100);
   const [categoryImageInputKey, setCategoryImageInputKey] =
     useState(0);
   const [savingCategoryImage, setSavingCategoryImage] =
@@ -344,6 +282,10 @@ export default function AdminCatalogPage() {
       "imageFolder",
       slugify(categorySlug || categoryName),
     );
+    formData.append(
+      "description",
+      description.trim(),
+    );
     formData.append("keywords", keywords.trim());
     formData.append("parentSlug", categoryParentSlug);
   };
@@ -375,9 +317,8 @@ export default function AdminCatalogPage() {
       );
     }
 
-    const categoryWebp = await convertCategoryImageToWebp(
+    const categoryWebp = await convertToWebp(
       categoryImageFile,
-      categoryImageScale,
       1600,
       0.9,
     );
@@ -821,6 +762,16 @@ export default function AdminCatalogPage() {
                 />
               </label>
 
+              <label className="sm:col-span-2">
+                <span className="text-sm font-bold">Category description</span>
+                <textarea
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  rows={3}
+                  placeholder="Browse playful character-inspired wrap designs."
+                  className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+                />
+              </label>
 
               <label className="sm:col-span-2">
                 <span className="text-sm font-bold">Search keywords</span>
@@ -841,10 +792,7 @@ export default function AdminCatalogPage() {
                   <img
                     src={categoryCardPreview}
                     alt="Category card preview"
-                    className="h-full w-full object-contain transition-transform duration-200"
-                    style={{
-                      transform: `scale(${categoryImageScale / 100})`,
-                    }}
+                    className="h-full w-full object-contain p-3"
                   />
                 ) : (
                   <span className="px-4 text-center text-sm font-bold text-white/45">
@@ -866,56 +814,13 @@ export default function AdminCatalogPage() {
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   disabled={uploading || savingCategoryImage}
-                  onChange={(event) => {
+                  onChange={(event) =>
                     setCategoryImageFile(
                       event.target.files?.[0] ?? null,
-                    );
-                    setCategoryImageScale(100);
-                  }}
+                    )
+                  }
                   className="mt-4 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-red-600 file:px-5 file:py-3 file:font-black file:text-white hover:file:bg-red-500"
                 />
-
-                {categoryImageFile && (
-                  <div className="mt-4 rounded-2xl border border-red-900 bg-black/70 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-sm font-black">
-                        Category image size
-                      </span>
-                      <span className="rounded-full border border-red-700 px-3 py-1 text-xs font-black text-red-300">
-                        {categoryImageScale}%
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="50"
-                      max="200"
-                      step="5"
-                      value={categoryImageScale}
-                      disabled={uploading || savingCategoryImage}
-                      onChange={(event) =>
-                        setCategoryImageScale(
-                          Number(event.target.value),
-                        )
-                      }
-                      className="mt-4 w-full accent-red-600"
-                    />
-                    <div className="mt-2 flex items-center justify-between text-xs font-bold text-white/50">
-                      <span>Smaller</span>
-                      <button
-                        type="button"
-                        onClick={() => setCategoryImageScale(100)}
-                        disabled={uploading || savingCategoryImage}
-                        className="rounded-full border border-red-800 px-3 py-1 text-white/75 transition hover:border-red-500 hover:text-white disabled:opacity-50"
-                      >
-                        Reset to 100%
-                      </button>
-                      <span>Larger</span>
-                    </div>
-                    <p className="mt-3 text-xs leading-5 text-white/55">
-                      Use the preview to fit the artwork. This size is baked into the uploaded square WebP so the live category card matches it.
-                    </p>
-                  </div>
-                )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <button
