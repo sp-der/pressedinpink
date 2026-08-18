@@ -1,10 +1,10 @@
 const sizes = {
-  small: "Small",
-  medium: "Medium",
-  large: "Large",
-  "x-large": "X-Large",
-  "2x-large": "2X-Large",
-  "3x-large": "3X-Large",
+  small: { name: "Small", count: 6 },
+  medium: { name: "Medium", count: 7 },
+  large: { name: "Large", count: 0 },
+  "x-large": { name: "X-Large", count: 12 },
+  "2x-large": { name: "2X-Large", count: 0 },
+  "3x-large": { name: "3X-Large", count: 3 },
 } as const;
 
 type SizeSlug = keyof typeof sizes;
@@ -18,12 +18,12 @@ const smokyTextShadow = {
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
-export default function PremadeShirtSizePage({
-  params,
-}: {
-  params: { size: SizeSlug };
-}) {
-  const sizeName = sizes[params.size];
+export default function PremadeShirtSizePage({ params }: { params: { size: SizeSlug } }) {
+  const size = sizes[params.size];
+  const shirts = Array.from(
+    { length: size.count },
+    (_, index) => `/shirts/premade/${params.size}/shirt-${String(index + 1).padStart(2, "0")}.webp`,
+  );
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -43,16 +43,38 @@ export default function PremadeShirtSizePage({
           </div>
         </nav>
 
-        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
-          <div className="rounded-[2rem] border border-red-900 bg-black/90 p-8 text-center shadow-2xl backdrop-blur-md sm:p-12">
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+          <div className="rounded-[2rem] border border-red-900 bg-black/90 p-7 text-center shadow-2xl backdrop-blur-md sm:p-10">
             <p className="text-xs font-black uppercase tracking-[0.3em]" style={smokyTextShadow}>Premade Shirts</p>
-            <h1 className="mt-4 text-4xl font-black sm:text-6xl" style={smokyTextShadow}>{sizeName}</h1>
-            <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-red-600 bg-red-950/40 p-5">
+            <h1 className="mt-4 text-4xl font-black sm:text-6xl" style={smokyTextShadow}>{size.name}</h1>
+            <div className="mx-auto mt-7 max-w-2xl rounded-2xl border border-red-600 bg-red-950/40 p-5">
               <p className="font-bold leading-7" style={smokyTextShadow}>If any premade shirts are not in your size, they are also made to order</p>
             </div>
-            <p className="mx-auto mt-8 max-w-xl leading-7 text-white/80">Premade shirts in this size will appear here as they are added.</p>
-            <a href="https://www.instagram.com/pressed_in_pink/" target="_blank" rel="noreferrer" className="mt-8 inline-flex rounded-full border-2 border-red-600 px-7 py-3 font-bold transition hover:bg-red-600" style={smokyTextShadow}>Message to Order</a>
           </div>
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-20 sm:px-6">
+          {shirts.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {shirts.map((shirt, index) => (
+                <article key={shirt} className="overflow-hidden rounded-3xl border border-red-900 bg-black/90 shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600">
+                  <div className="aspect-square bg-black p-3">
+                    <img src={shirt} alt={`${size.name} premade shirt ${index + 1}`} className="h-full w-full object-contain" loading="lazy" />
+                  </div>
+                  <div className="border-t border-red-950 p-5 text-center">
+                    <p className="text-sm font-black uppercase tracking-wider text-red-400">Size {size.name}</p>
+                    <a href="https://www.instagram.com/pressed_in_pink/" target="_blank" rel="noreferrer" className="mt-4 inline-flex rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition hover:bg-red-600" style={smokyTextShadow}>Message to Order</a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mx-auto max-w-2xl rounded-3xl border border-red-900 bg-black/90 p-8 text-center shadow-xl backdrop-blur-md sm:p-12">
+              <h2 className="text-2xl font-black" style={smokyTextShadow}>No premade {size.name} shirts listed yet</h2>
+              <p className="mt-4 leading-7 text-white/75">Message Pressed In Pink to have one of the available designs made in this size.</p>
+              <a href="https://www.instagram.com/pressed_in_pink/" target="_blank" rel="noreferrer" className="mt-7 inline-flex rounded-full border-2 border-red-600 px-7 py-3 font-bold transition hover:bg-red-600" style={smokyTextShadow}>Message to Order</a>
+            </div>
+          )}
         </section>
       </div>
     </main>
