@@ -1,3 +1,4 @@
+// Premade shirt inventory deployment
 const sizes = {
   small: { name: "Small", count: 6 },
   medium: { name: "Medium", count: 7 },
