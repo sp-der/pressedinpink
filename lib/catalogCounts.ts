@@ -11,29 +11,52 @@ type CountableWrap = Pick<
   "category_id" | "image_number"
 >;
 
+const WRAP_COUNT_PAGE_SIZE = 1000;
+
+async function loadAllCountableWraps(): Promise<CountableWrap[]> {
+  const allWraps: CountableWrap[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from("catalog_wraps")
+      .select("category_id, image_number")
+      .eq("is_active", true)
+      .order("id", { ascending: true })
+      .range(from, from + WRAP_COUNT_PAGE_SIZE - 1);
+
+    if (error) {
+      throw error;
+    }
+
+    const page = (data ?? []) as CountableWrap[];
+    allWraps.push(...page);
+
+    if (page.length < WRAP_COUNT_PAGE_SIZE) {
+      break;
+    }
+
+    from += WRAP_COUNT_PAGE_SIZE;
+  }
+
+  return allWraps;
+}
+
 export async function loadCatalogWrapCounts(): Promise<CatalogWrapCounts> {
-  const [categoryResult, wrapResult] = await Promise.all([
+  const [categoryResult, wraps] = await Promise.all([
     supabase
       .from("catalog_categories")
       .select("*")
       .eq("is_active", true),
-    supabase
-      .from("catalog_wraps")
-      .select("category_id, image_number")
-      .eq("is_active", true),
+    loadAllCountableWraps(),
   ]);
 
   if (categoryResult.error) {
     throw categoryResult.error;
   }
 
-  if (wrapResult.error) {
-    throw wrapResult.error;
-  }
-
   const categories =
     (categoryResult.data ?? []) as CatalogCategoryRecord[];
-  const wraps = (wrapResult.data ?? []) as CountableWrap[];
   const uploadedNumbersByCategory = new Map<string, Set<number>>();
 
   for (const wrap of wraps) {
