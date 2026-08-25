@@ -16,22 +16,14 @@ import type {
   CatalogWrapRecord,
 } from "@/types/catalog";
 
-type RecentWrap = CatalogWrapRecord & {
-  catalog_categories:
-    | {
-        display_name: string;
-        slug: string;
-      }
-    | {
-        display_name: string;
-        slug: string;
-      }[]
-    | null;
-};
-
 type UploadProgress = {
   filename: string;
-  status: "waiting" | "converting" | "uploading" | "done" | "error";
+  status:
+    | "waiting"
+    | "converting"
+    | "uploading"
+    | "done"
+    | "error";
   message: string;
 };
 
@@ -65,8 +57,7 @@ async function convertToWebp(
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(
     1,
-    maxDimension /
-      Math.max(bitmap.width, bitmap.height),
+    maxDimension / Math.max(bitmap.width, bitmap.height),
   );
   const width = Math.max(
     1,
@@ -96,9 +87,11 @@ async function convertToWebp(
   context.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
 
-  const webp = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, "image/webp", quality);
-  });
+  const webp = await new Promise<Blob | null>(
+    (resolve) => {
+      canvas.toBlob(resolve, "image/webp", quality);
+    },
+  );
 
   if (!webp) {
     throw new Error(
@@ -108,7 +101,6 @@ async function convertToWebp(
 
   return webp;
 }
-
 
 async function convertCategoryImageToWebp(
   file: File,
@@ -158,9 +150,11 @@ async function convertCategoryImageToWebp(
   );
   bitmap.close();
 
-  const webp = await new Promise<Blob | null>((resolve) => {
-    canvas.toBlob(resolve, "image/webp", quality);
-  });
+  const webp = await new Promise<Blob | null>(
+    (resolve) => {
+      canvas.toBlob(resolve, "image/webp", quality);
+    },
+  );
 
   if (!webp) {
     throw new Error(
@@ -171,40 +165,35 @@ async function convertCategoryImageToWebp(
   return webp;
 }
 
-function categoryLabel(
-  recent: RecentWrap,
-): string {
-  const relation = recent.catalog_categories;
-
-  if (Array.isArray(relation)) {
-    return relation[0]?.display_name ?? "Category";
-  }
-
-  return relation?.display_name ?? "Category";
-}
-
 export default function AdminCatalogPage() {
   const { user, loading, isAdmin } = useAuth();
+
   const [categories, setCategories] = useState<
     CatalogCategoryRecord[]
   >([]);
-  const [recentWraps, setRecentWraps] = useState<
-    RecentWrap[]
-  >([]);
   const [selectedSlug, setSelectedSlug] =
     useState("princesses");
+  const [categoryWraps, setCategoryWraps] = useState<
+    CatalogWrapRecord[]
+  >([]);
+  const [loadingCategoryWraps, setLoadingCategoryWraps] =
+    useState(false);
+  const [viewerIndex, setViewerIndex] =
+    useState<number | null>(null);
+  const [deletingWrapId, setDeletingWrapId] =
+    useState<string | null>(null);
+
   const [creatingCategory, setCreatingCategory] =
     useState(false);
   const [categoryParentSlug, setCategoryParentSlug] =
     useState("");
-  const [categoryName, setCategoryName] =
-    useState("");
-  const [categorySlug, setCategorySlug] =
-    useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [categorySlug, setCategorySlug] = useState("");
   const [itemLabel, setItemLabel] = useState("");
   const [filenamePrefix, setFilenamePrefix] =
     useState("");
   const [keywords, setKeywords] = useState("");
+
   const [categoryImageFile, setCategoryImageFile] =
     useState<File | null>(null);
   const [categoryImagePreview, setCategoryImagePreview] =
@@ -215,52 +204,92 @@ export default function AdminCatalogPage() {
     useState(0);
   const [savingCategoryImage, setSavingCategoryImage] =
     useState(false);
+
   const [files, setFiles] = useState<File[]>([]);
   const [progress, setProgress] = useState<
     UploadProgress[]
   >([]);
   const [uploading, setUploading] = useState(false);
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] =
     useState("");
 
-  const loadCatalog = useCallback(async () => {
-    const [categoryResult, wrapResult] = await Promise.all([
-      supabase
-        .from("catalog_categories")
-        .select("*")
-        .order("display_order", { ascending: true })
-        .order("display_name", { ascending: true }),
-      supabase
-        .from("catalog_wraps")
-        .select(
-          `
-            *,
-            catalog_categories (
-              display_name,
-              slug
-            )
-          `,
-        )
-        .order("created_at", { ascending: false })
-        .limit(30),
-    ]);
+  const selectedCategory = useMemo(
+    () =>
+      categories.find(
+        (category) => category.slug === selectedSlug,
+      ) ?? null,
+    [categories, selectedSlug],
+  );
 
-    if (categoryResult.error) {
+  const selectedViewerWrap =
+    viewerIndex === null
+      ? null
+      : categoryWraps[viewerIndex] ?? null;
+
+  const categoryCardPreview =
+    categoryImagePreview ||
+    (!creatingCategory
+      ? selectedCategory?.card_image_url ?? ""
+      : "");
+
+  const loadCatalog = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("catalog_categories")
+      .select("*")
+      .order("display_order", { ascending: true })
+      .order("display_name", { ascending: true });
+
+    if (error) {
       setErrorMessage(
-        `Catalog setup is not ready: ${categoryResult.error.message}`,
+        `Catalog setup is not ready: ${error.message}`,
       );
       return;
     }
 
-    setCategories(
-      (categoryResult.data ?? []) as CatalogCategoryRecord[],
-    );
-    setRecentWraps(
-      (wrapResult.data ?? []) as unknown as RecentWrap[],
+    const nextCategories =
+      (data ?? []) as CatalogCategoryRecord[];
+
+    setCategories(nextCategories);
+    setSelectedSlug((current) =>
+      nextCategories.some(
+        (category) => category.slug === current,
+      )
+        ? current
+        : nextCategories[0]?.slug ?? current,
     );
   }, []);
+
+  const loadCategoryWraps = useCallback(
+    async (categoryId: string | null | undefined) => {
+      if (!categoryId) {
+        setCategoryWraps([]);
+        return;
+      }
+
+      setLoadingCategoryWraps(true);
+
+      const { data, error } = await supabase
+        .from("catalog_wraps")
+        .select("*")
+        .eq("category_id", categoryId)
+        .order("image_number", { ascending: true });
+
+      if (error) {
+        setCategoryWraps([]);
+        setErrorMessage(
+          `Could not load category wraps: ${error.message}`,
+        );
+      } else {
+        setCategoryWraps(
+          (data ?? []) as CatalogWrapRecord[],
+        );
+      }
+
+      setLoadingCategoryWraps(false);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (loading) {
@@ -276,23 +305,19 @@ export default function AdminCatalogPage() {
   }, [loading, user, isAdmin, loadCatalog]);
 
   useEffect(() => {
-    if (!creatingCategory) {
+    setViewerIndex(null);
+
+    if (creatingCategory) {
+      setCategoryWraps([]);
       return;
     }
 
-    const nextSlug = slugify(categoryName);
-    const nextPrefix = prefixFromName(categoryName);
-
-    setCategorySlug((current) =>
-      current ? current : nextSlug,
-    );
-    setFilenamePrefix((current) =>
-      current ? current : nextPrefix,
-    );
-    setItemLabel((current) =>
-      current ? current : categoryName.trim(),
-    );
-  }, [categoryName, creatingCategory]);
+    void loadCategoryWraps(selectedCategory?.id);
+  }, [
+    selectedCategory?.id,
+    creatingCategory,
+    loadCategoryWraps,
+  ]);
 
   useEffect(() => {
     if (!categoryImageFile) {
@@ -309,20 +334,6 @@ export default function AdminCatalogPage() {
       URL.revokeObjectURL(objectUrl);
     };
   }, [categoryImageFile]);
-
-  const selectedCategory = useMemo(
-    () =>
-      categories.find(
-        (category) => category.slug === selectedSlug,
-      ) ?? null,
-    [categories, selectedSlug],
-  );
-
-  const categoryCardPreview =
-    categoryImagePreview ||
-    (!creatingCategory
-      ? selectedCategory?.card_image_url ?? ""
-      : "");
 
   const appendNewCategoryFields = (
     formData: FormData,
@@ -358,9 +369,7 @@ export default function AdminCatalogPage() {
       itemLabel.trim().length < 1 ||
       filenamePrefix.trim().length < 1
     ) {
-      return (
-        "Enter the new category name, item label, and filename prefix."
-      );
+      return "Enter the new category name, wrap label, and filename prefix.";
     }
 
     return null;
@@ -370,9 +379,7 @@ export default function AdminCatalogPage() {
     uploadSlug: string,
   ): Promise<CatalogCategoryRecord> => {
     if (!categoryImageFile) {
-      throw new Error(
-        "Choose a category image first.",
-      );
+      throw new Error("Choose a category image first.");
     }
 
     const categoryWebp = await convertCategoryImageToWebp(
@@ -387,9 +394,11 @@ export default function AdminCatalogPage() {
     formData.append("categorySlug", uploadSlug);
     formData.append(
       "categoryImage",
-      new File([categoryWebp], "category-card.webp", {
-        type: "image/webp",
-      }),
+      new File(
+        [categoryWebp],
+        "category-card.webp",
+        { type: "image/webp" },
+      ),
     );
     appendNewCategoryFields(formData);
 
@@ -403,7 +412,8 @@ export default function AdminCatalogPage() {
       throw error;
     }
 
-    const uploaded = data as CategoryImageUploadResult;
+    const uploaded =
+      data as CategoryImageUploadResult;
 
     if (!uploaded?.category?.id) {
       throw new Error(
@@ -434,10 +444,10 @@ export default function AdminCatalogPage() {
       return;
     }
 
-    const validationMessage = validateNewCategory();
+    const validation = validateNewCategory();
 
-    if (validationMessage) {
-      setErrorMessage(validationMessage);
+    if (validation) {
+      setErrorMessage(validation);
       return;
     }
 
@@ -451,10 +461,10 @@ export default function AdminCatalogPage() {
       setCreatingCategory(false);
       setCategoryParentSlug("");
       setCategoryImageFile(null);
-      setCategoryImageInputKey((current) =>
-        current + 1,
-      );
+      setCategoryImageScale(100);
+      setCategoryImageInputKey((current) => current + 1);
       await loadCatalog();
+      await loadCategoryWraps(uploadedCategory.id);
       setSuccessMessage(
         `${uploadedCategory.display_name} category image saved to R2.`,
       );
@@ -487,9 +497,7 @@ export default function AdminCatalogPage() {
     setSuccessMessage("");
 
     if (files.length === 0) {
-      setErrorMessage(
-        "Choose at least one PNG, JPG, or WebP image.",
-      );
+      setErrorMessage("Choose at least one wrap image.");
       return;
     }
 
@@ -502,10 +510,10 @@ export default function AdminCatalogPage() {
       return;
     }
 
-    const validationMessage = validateNewCategory();
+    const validation = validateNewCategory();
 
-    if (validationMessage) {
-      setErrorMessage(validationMessage);
+    if (validation) {
+      setErrorMessage(validation);
       return;
     }
 
@@ -520,20 +528,19 @@ export default function AdminCatalogPage() {
 
     let completed = 0;
     let failed = 0;
-    let categoryImageSaved = false;
+    let publishedCategory:
+      | CatalogCategoryRecord
+      | null = selectedCategory;
 
     if (categoryImageFile) {
       setSavingCategoryImage(true);
 
       try {
-        const uploadedCategory =
+        publishedCategory =
           await uploadCategoryImage(uploadSlug);
-        setSelectedSlug(uploadedCategory.slug);
-        categoryImageSaved = true;
         setCategoryImageFile(null);
-        setCategoryImageInputKey((current) =>
-          current + 1,
-        );
+        setCategoryImageScale(100);
+        setCategoryImageInputKey((current) => current + 1);
       } catch (error) {
         setUploading(false);
         setSavingCategoryImage(false);
@@ -548,7 +555,11 @@ export default function AdminCatalogPage() {
       }
     }
 
-    for (let index = 0; index < files.length; index += 1) {
+    for (
+      let index = 0;
+      index < files.length;
+      index += 1
+    ) {
       const file = files[index];
 
       try {
@@ -577,12 +588,13 @@ export default function AdminCatalogPage() {
         );
         formData.append(
           "thumbnail",
-          new File([thumbnailWebp], "thumbnail.webp", {
-            type: "image/webp",
-          }),
+          new File(
+            [thumbnailWebp],
+            "thumbnail.webp",
+            { type: "image/webp" },
+          ),
         );
         formData.append("categorySlug", uploadSlug);
-
         appendNewCategoryFields(formData);
 
         const { data, error } =
@@ -603,6 +615,7 @@ export default function AdminCatalogPage() {
           );
         }
 
+        publishedCategory = uploaded.category;
         completed += 1;
         setProgressItem(index, {
           status: "done",
@@ -622,42 +635,112 @@ export default function AdminCatalogPage() {
 
     setUploading(false);
 
-    if (creatingCategory && completed > 0) {
+    if (publishedCategory?.id && completed > 0) {
       setCreatingCategory(false);
       setCategoryParentSlug("");
-      setSelectedSlug(uploadSlug);
+      setSelectedSlug(publishedCategory.slug);
+      await loadCatalog();
+      await loadCategoryWraps(publishedCategory.id);
+      setFiles([]);
     }
-
-    await loadCatalog();
 
     if (completed > 0) {
       setSuccessMessage(
-        `${completed} wrap${completed === 1 ? "" : "s"} converted to WebP, uploaded to R2, and published${categoryImageSaved ? " with the category image" : ""}.`,
+        `${completed} wrap${completed === 1 ? "" : "s"} converted, uploaded to R2, and published.`,
       );
-      setFiles([]);
     }
 
     if (failed > 0) {
       setErrorMessage(
-        `${failed} upload${failed === 1 ? "" : "s"} failed. Review the status list below.`,
+        `${failed} upload${failed === 1 ? "" : "s"} failed. Review the status list.`,
       );
     }
   };
 
-  const toggleWrap = async (wrap: RecentWrap) => {
-    setErrorMessage("");
+  const deleteWrap = async (
+    wrap: CatalogWrapRecord,
+  ) => {
+    const confirmed = window.confirm(
+      `Delete ${wrap.display_name}? This permanently removes the catalog record and its R2 files.`,
+    );
 
-    const { error } = await supabase
-      .from("catalog_wraps")
-      .update({ is_active: !wrap.is_active })
-      .eq("id", wrap.id);
-
-    if (error) {
-      setErrorMessage(error.message);
+    if (!confirmed) {
       return;
     }
 
-    await loadCatalog();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDeletingWrapId(wrap.id);
+
+    try {
+      const { data, error } =
+        await supabase.functions.invoke(
+          "delete-wrap",
+          { body: { wrapId: wrap.id } },
+        );
+
+      if (error) {
+        throw error;
+      }
+
+      const result = data as {
+        deleted?: boolean;
+        r2CleanupWarning?: boolean;
+      };
+
+      if (!result?.deleted) {
+        throw new Error(
+          "The delete function did not confirm deletion.",
+        );
+      }
+
+      setViewerIndex(null);
+      await loadCategoryWraps(selectedCategory?.id);
+
+      setSuccessMessage(
+        result.r2CleanupWarning
+          ? `${wrap.display_name} was removed from the catalog. R2 cleanup reported a warning.`
+          : `${wrap.display_name} was permanently deleted.`,
+      );
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "The wrap could not be deleted.",
+      );
+    } finally {
+      setDeletingWrapId(null);
+    }
+  };
+
+  const showPreviousWrap = () => {
+    setViewerIndex((current) => {
+      if (
+        current === null ||
+        categoryWraps.length === 0
+      ) {
+        return null;
+      }
+
+      return current === 0
+        ? categoryWraps.length - 1
+        : current - 1;
+    });
+  };
+
+  const showNextWrap = () => {
+    setViewerIndex((current) => {
+      if (
+        current === null ||
+        categoryWraps.length === 0
+      ) {
+        return null;
+      }
+
+      return current === categoryWraps.length - 1
+        ? 0
+        : current + 1;
+    });
   };
 
   if (loading || !isAdmin) {
@@ -678,7 +761,7 @@ export default function AdminCatalogPage() {
     <AuthPageShell
       eyebrow="Pressed In Pink Admin"
       title="Wrap Catalog Manager"
-      description="Convert images to WebP, upload directly to R2, and publish them without touching GitHub."
+      description="Upload, preview, manage, and delete wraps by category."
       backHref="/admin/orders"
       backLabel="Back to Orders"
       maxWidthClass="max-w-7xl"
@@ -695,11 +778,13 @@ export default function AdminCatalogPage() {
         </div>
       )}
 
-      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_430px]">
         <section className="rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black">Upload Wraps</h2>
+              <h2 className="text-2xl font-black">
+                Upload Wraps
+              </h2>
               <p className="mt-2 text-sm leading-6 text-white/65">
                 Originals stay out of GitHub. Your browser creates the full WebP and thumbnail before upload.
               </p>
@@ -711,9 +796,11 @@ export default function AdminCatalogPage() {
                 setCreatingCategory((current) => !current);
                 setCategoryParentSlug("");
                 setCategoryImageFile(null);
+                setCategoryImageScale(100);
                 setCategoryImageInputKey((current) =>
                   current + 1,
                 );
+                setViewerIndex(null);
                 setErrorMessage("");
               }}
               className="rounded-full border border-red-600 px-5 py-2 text-sm font-black transition hover:bg-red-600"
@@ -726,20 +813,27 @@ export default function AdminCatalogPage() {
 
           {!creatingCategory ? (
             <label className="mt-6 block">
-              <span className="text-sm font-bold">Category</span>
+              <span className="text-sm font-bold">
+                Category
+              </span>
               <select
                 value={selectedSlug}
                 onChange={(event) => {
                   setSelectedSlug(event.target.value);
                   setCategoryImageFile(null);
+                  setCategoryImageScale(100);
                   setCategoryImageInputKey((current) =>
                     current + 1,
                   );
+                  setViewerIndex(null);
                 }}
                 className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
               >
                 {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
+                  <option
+                    key={category.id}
+                    value={category.slug}
+                  >
                     {category.parent_slug === "sports"
                       ? `Sports • ${category.display_name}`
                       : category.display_name}
@@ -756,7 +850,9 @@ export default function AdminCatalogPage() {
           ) : (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <label className="sm:col-span-2">
-                <span className="text-sm font-bold">Where should this category appear?</span>
+                <span className="text-sm font-bold">
+                  Where should this category appear?
+                </span>
                 <select
                   value={categoryParentSlug}
                   onChange={(event) =>
@@ -764,22 +860,28 @@ export default function AdminCatalogPage() {
                   }
                   className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
                 >
-                  <option value="">Main Wrap Categories</option>
-                  <option value="sports">Sports Team Categories</option>
+                  <option value="">
+                    Main Wrap Categories
+                  </option>
+                  <option value="sports">
+                    Sports Team Categories
+                  </option>
                 </select>
-                <p className="mt-2 text-xs leading-5 text-white/55">
-                  Sports Team Categories appear inside Sports and stay hidden from the main category grid.
-                </p>
               </label>
+
               <label>
-                <span className="text-sm font-bold">Category name</span>
+                <span className="text-sm font-bold">
+                  Category name
+                </span>
                 <input
                   value={categoryName}
                   onChange={(event) => {
                     const value = event.target.value;
                     setCategoryName(value);
                     setCategorySlug(slugify(value));
-                    setFilenamePrefix(prefixFromName(value));
+                    setFilenamePrefix(
+                      prefixFromName(value),
+                    );
                     setItemLabel(value);
                   }}
                   placeholder="Bluey"
@@ -788,11 +890,15 @@ export default function AdminCatalogPage() {
               </label>
 
               <label>
-                <span className="text-sm font-bold">URL slug / R2 folder</span>
+                <span className="text-sm font-bold">
+                  URL slug / R2 folder
+                </span>
                 <input
                   value={categorySlug}
                   onChange={(event) =>
-                    setCategorySlug(slugify(event.target.value))
+                    setCategorySlug(
+                      slugify(event.target.value),
+                    )
                   }
                   placeholder="bluey"
                   className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
@@ -800,17 +906,23 @@ export default function AdminCatalogPage() {
               </label>
 
               <label>
-                <span className="text-sm font-bold">Wrap label</span>
+                <span className="text-sm font-bold">
+                  Wrap label
+                </span>
                 <input
                   value={itemLabel}
-                  onChange={(event) => setItemLabel(event.target.value)}
+                  onChange={(event) =>
+                    setItemLabel(event.target.value)
+                  }
                   placeholder="Bluey"
                   className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
                 />
               </label>
 
               <label>
-                <span className="text-sm font-bold">Filename prefix</span>
+                <span className="text-sm font-bold">
+                  Filename prefix
+                </span>
                 <input
                   value={filenamePrefix}
                   onChange={(event) =>
@@ -821,12 +933,15 @@ export default function AdminCatalogPage() {
                 />
               </label>
 
-
               <label className="sm:col-span-2">
-                <span className="text-sm font-bold">Search keywords</span>
+                <span className="text-sm font-bold">
+                  Search keywords
+                </span>
                 <input
                   value={keywords}
-                  onChange={(event) => setKeywords(event.target.value)}
+                  onChange={(event) =>
+                    setKeywords(event.target.value)
+                  }
                   placeholder="characters cartoon blue family"
                   className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
                 />
@@ -843,7 +958,9 @@ export default function AdminCatalogPage() {
                     alt="Category card preview"
                     className="h-full w-full object-contain transition-transform duration-200"
                     style={{
-                      transform: `scale(${categoryImageScale / 100})`,
+                      transform: categoryImageFile
+                        ? `scale(${categoryImageScale / 100})`
+                        : undefined,
                     }}
                   />
                 ) : (
@@ -858,7 +975,7 @@ export default function AdminCatalogPage() {
                   Category Card Image
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-white/60">
-                  Upload the artwork shown on the main wrap category page. Square PNG, JPG, or WebP images work best. The browser converts it to WebP before R2 upload.
+                  Upload or replace the artwork shown on the category card.
                 </p>
 
                 <input
@@ -891,7 +1008,6 @@ export default function AdminCatalogPage() {
                       max="200"
                       step="5"
                       value={categoryImageScale}
-                      disabled={uploading || savingCategoryImage}
                       onChange={(event) =>
                         setCategoryImageScale(
                           Number(event.target.value),
@@ -899,62 +1015,37 @@ export default function AdminCatalogPage() {
                       }
                       className="mt-4 w-full accent-red-600"
                     />
-                    <div className="mt-2 flex items-center justify-between text-xs font-bold text-white/50">
-                      <span>Smaller</span>
-                      <button
-                        type="button"
-                        onClick={() => setCategoryImageScale(100)}
-                        disabled={uploading || savingCategoryImage}
-                        className="rounded-full border border-red-800 px-3 py-1 text-white/75 transition hover:border-red-500 hover:text-white disabled:opacity-50"
-                      >
-                        Reset to 100%
-                      </button>
-                      <span>Larger</span>
-                    </div>
-                    <p className="mt-3 text-xs leading-5 text-white/55">
-                      Use the preview to fit the artwork. This size is baked into the uploaded square WebP so the live category card matches it.
-                    </p>
                   </div>
                 )}
 
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      void saveCategoryImageOnly()
-                    }
-                    disabled={
-                      !categoryImageFile ||
-                      uploading ||
-                      savingCategoryImage
-                    }
-                    className="rounded-full border border-red-600 px-5 py-3 text-sm font-black transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {savingCategoryImage
-                      ? "Saving Category Image…"
-                      : creatingCategory
-                        ? "Create Category & Save Image"
-                        : "Upload / Replace Category Image"}
-                  </button>
-
-                  {categoryImageFile && (
-                    <span className="text-xs font-bold text-white/55">
-                      {categoryImageFile.name}
-                    </span>
-                  )}
-                </div>
-
-                <p className="mt-3 text-xs leading-5 text-white/45">
-                  You can save the image by itself, or leave it selected and publish wraps below. The category image will be saved first.
-                </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void saveCategoryImageOnly()
+                  }
+                  disabled={
+                    !categoryImageFile ||
+                    uploading ||
+                    savingCategoryImage
+                  }
+                  className="mt-4 rounded-full border border-red-600 px-5 py-3 text-sm font-black transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {savingCategoryImage
+                    ? "Saving Category Image…"
+                    : creatingCategory
+                      ? "Create Category & Save Image"
+                      : "Upload / Replace Category Image"}
+                </button>
               </div>
             </div>
           </section>
 
           <label className="mt-6 block rounded-3xl border border-dashed border-red-700 bg-red-950/15 p-6 text-center transition hover:border-red-500">
-            <span className="block text-lg font-black">Choose wrap images</span>
+            <span className="block text-lg font-black">
+              Choose wrap images
+            </span>
             <span className="mt-2 block text-sm text-white/60">
-              PNG, JPG, or WebP. You can select many files at once.
+              PNG, JPG, or WebP. Select many files at once.
             </span>
             <input
               type="file"
@@ -962,22 +1053,13 @@ export default function AdminCatalogPage() {
               accept="image/png,image/jpeg,image/webp"
               disabled={uploading}
               onChange={(event) =>
-                setFiles(Array.from(event.target.files ?? []))
+                setFiles(
+                  Array.from(event.target.files ?? []),
+                )
               }
               className="mt-5 block w-full text-sm text-white file:mr-4 file:rounded-full file:border-0 file:bg-red-600 file:px-5 file:py-3 file:font-black file:text-white hover:file:bg-red-500"
             />
           </label>
-
-          {files.length > 0 && (
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="font-black">
-                {files.length} image{files.length === 1 ? "" : "s"} selected
-              </p>
-              <p className="mt-1 text-xs text-white/55">
-                Upload order determines the assigned wrap numbers.
-              </p>
-            </div>
-          )}
 
           <button
             type="button"
@@ -987,7 +1069,7 @@ export default function AdminCatalogPage() {
           >
             {uploading
               ? "Converting & Publishing…"
-              : "Convert to WebP & Publish"}
+              : `Convert to WebP & Publish${files.length > 0 ? ` (${files.length})` : ""}`}
           </button>
 
           {progress.length > 0 && (
@@ -1018,39 +1100,105 @@ export default function AdminCatalogPage() {
         </section>
 
         <aside className="rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl">
-          <h2 className="text-xl font-black">Recent Dashboard Uploads</h2>
-          <p className="mt-2 text-sm leading-6 text-white/60">
-            Hide a design without deleting its R2 file or order history.
-          </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black">
+                {selectedCategory
+                  ? `${selectedCategory.display_name} Wraps`
+                  : "Current Category Wraps"}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/60">
+                The manager follows the category selected on the left. Click a wrap to inspect the full rotated design or permanently delete it.
+              </p>
+            </div>
+
+            {!creatingCategory && selectedCategory && (
+              <span className="shrink-0 rounded-full border border-red-800 px-3 py-1 text-xs font-black text-red-200">
+                {categoryWraps.length}
+              </span>
+            )}
+          </div>
 
           <div className="mt-5 max-h-[760px] space-y-4 overflow-y-auto pr-1">
-            {recentWraps.length === 0 ? (
+            {creatingCategory ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/60">
-                No dashboard uploads yet.
+                Finish creating the category to manage its wraps.
+              </div>
+            ) : loadingCategoryWraps ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/60">
+                Loading category wraps…
+              </div>
+            ) : categoryWraps.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-sm text-white/60">
+                No dashboard-managed wraps are in this category yet.
               </div>
             ) : (
-              recentWraps.map((wrap) => (
+              categoryWraps.map((wrap, index) => (
                 <article
                   key={wrap.id}
                   className="overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <img
-                    src={wrap.thumbnail_url}
-                    alt={wrap.display_name}
-                    className="aspect-[2/1] w-full object-cover"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setViewerIndex(index)}
+                    aria-label={`Open ${wrap.display_name}`}
+                    className="group block w-full"
+                  >
+                    <div className="relative aspect-[2/1] w-full overflow-hidden bg-white">
+                      <img
+                        src={wrap.thumbnail_url}
+                        alt={wrap.display_name}
+                        loading="lazy"
+                        decoding="async"
+                        draggable={false}
+                        onError={(event) => {
+                          event.currentTarget.onerror = null;
+                          event.currentTarget.src =
+                            wrap.full_image_url;
+                        }}
+                        className="absolute left-1/2 top-1/2 h-[204%] w-[52%] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover transition duration-300 group-hover:scale-[1.03]"
+                      />
+                    </div>
+                  </button>
+
                   <div className="p-4">
-                    <p className="font-black">{wrap.display_name}</p>
-                    <p className="mt-1 text-xs text-white/55">
-                      {categoryLabel(wrap)}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => void toggleWrap(wrap)}
-                      className="mt-3 rounded-full border border-red-600 px-4 py-2 text-xs font-black transition hover:bg-red-600"
-                    >
-                      {wrap.is_active ? "Hide from Site" : "Publish Again"}
-                    </button>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-black">
+                          {wrap.display_name}
+                        </p>
+                        <p className="mt-1 text-xs text-white/55">
+                          Wrap #{wrap.image_number}
+                          {!wrap.is_active
+                            ? " • Hidden"
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setViewerIndex(index)}
+                        className="rounded-full border border-white/20 px-4 py-2 text-xs font-black transition hover:bg-white/10"
+                      >
+                        View Full Wrap
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void deleteWrap(wrap)
+                        }
+                        disabled={
+                          deletingWrapId === wrap.id
+                        }
+                        className="rounded-full border border-red-600 px-4 py-2 text-xs font-black text-red-200 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+                      >
+                        {deletingWrapId === wrap.id
+                          ? "Deleting…"
+                          : "Delete Wrap"}
+                      </button>
+                    </div>
                   </div>
                 </article>
               ))
@@ -1058,6 +1206,94 @@ export default function AdminCatalogPage() {
           </div>
         </aside>
       </div>
+
+      {selectedViewerWrap && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${selectedViewerWrap.display_name} viewer`}
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-3 backdrop-blur-md sm:p-6"
+          onClick={() => setViewerIndex(null)}
+        >
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setViewerIndex(null);
+            }}
+            aria-label="Close viewer"
+            className="absolute right-4 top-4 z-[90] flex h-12 w-12 items-center justify-center rounded-full border border-red-600 bg-black/90 text-3xl font-bold text-white transition hover:bg-red-600"
+          >
+            ×
+          </button>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              showPreviousWrap();
+            }}
+            aria-label="Previous wrap"
+            className="absolute left-2 z-[90] flex h-12 w-12 items-center justify-center rounded-full border border-red-600 bg-black/90 text-4xl font-bold text-white transition hover:bg-red-600 sm:left-6"
+          >
+            ‹
+          </button>
+
+          <div
+            className="w-full max-w-6xl rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white">
+              <img
+                src={selectedViewerWrap.full_image_url}
+                alt={`${selectedViewerWrap.display_name} full wrap`}
+                draggable={false}
+                className="absolute left-1/2 top-1/2 h-[200%] w-1/2 max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
+              />
+            </div>
+
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-black">
+                  {selectedViewerWrap.display_name}
+                </p>
+                <p className="mt-1 text-xs text-white/55">
+                  Wrap #{selectedViewerWrap.image_number}
+                  {" • "}
+                  {(viewerIndex ?? 0) + 1} / {categoryWraps.length}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  void deleteWrap(selectedViewerWrap)
+                }
+                disabled={
+                  deletingWrapId === selectedViewerWrap.id
+                }
+                className="rounded-full border border-red-600 px-5 py-3 text-sm font-black text-red-200 transition hover:bg-red-600 hover:text-white disabled:opacity-50"
+              >
+                {deletingWrapId === selectedViewerWrap.id
+                  ? "Deleting…"
+                  : "Delete Wrap"}
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              showNextWrap();
+            }}
+            aria-label="Next wrap"
+            className="absolute right-2 z-[90] flex h-12 w-12 items-center justify-center rounded-full border border-red-600 bg-black/90 text-4xl font-bold text-white transition hover:bg-red-600 sm:right-6"
+          >
+            ›
+          </button>
+        </div>
+      )}
     </AuthPageShell>
   );
 }
