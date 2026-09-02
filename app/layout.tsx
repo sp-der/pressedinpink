@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://pressedinpink.com"),
   title: "Pressed In Pink",
   description:
-    "Pressed In Pink offers custom cups, shirts, keychains, wraps, and personalized creations made with love.",
+    "Shop premade Pressed In Pink creations or UV-DTF wraps, blank cups, glitter, and supplies for creators.",
   manifest: "/site.webmanifest",
   icons: {
     icon: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     siteName: "Pressed In Pink",
     title: "Pressed In Pink",
     description:
-      "Custom cups, shirts, keychains, UV-DTF wraps, and personalized creations made with love.",
+      "Shop premade cups and shirts or UV-DTF wraps and supplies for creators.",
     images: [
       {
         url: socialImage,
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Pressed In Pink",
     description:
-      "Custom cups, shirts, keychains, UV-DTF wraps, and personalized creations made with love.",
+      "Shop premade cups and shirts or UV-DTF wraps and supplies for creators.",
     images: [socialImage],
   },
 };

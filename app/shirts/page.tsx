@@ -18,8 +18,8 @@ export default function ShirtsPage() {
         <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
-              <a href="/" className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600" style={smokyTextShadow}>
-                ← Back Home
+              <a href="/premade" className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600" style={smokyTextShadow}>
+                ← Back to Premade
               </a>
             </div>
             <a href="/" className="flex justify-center">
@@ -35,7 +35,7 @@ export default function ShirtsPage() {
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">
             <p className="mb-4 text-xs font-black uppercase tracking-[0.3em] text-white sm:text-sm" style={smokyTextShadow}>Pressed In Pink Collection</p>
-            <h1 className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl" style={smokyTextShadow}>Custom Shirts</h1>
+            <h1 className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl" style={smokyTextShadow}>Premade Shirts</h1>
           </div>
         </section>
 
@@ -56,7 +56,7 @@ export default function ShirtsPage() {
         <footer className="border-t border-red-900 bg-black/90 px-6 py-10 text-center backdrop-blur-md">
           <img src="/header-logo.png" alt="Pressed In Pink" className="mx-auto h-auto w-36 object-contain" />
           <p className="mt-4 text-white" style={smokyTextShadow}>Handmade with love in Rialto, California.</p>
-          <a href="/" className="mt-5 inline-block text-sm font-bold text-white transition hover:text-red-500" style={smokyTextShadow}>Return Home</a>
+          <a href="/premade" className="mt-5 inline-block text-sm font-bold text-white transition hover:text-red-500" style={smokyTextShadow}>Return to Premade</a>
         </footer>
       </div>
     </main>

@@ -22,7 +22,7 @@ export default function PremadeShirtsPage() {
         <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
-              <a href="/shirts" className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition hover:bg-red-600" style={smokyTextShadow}>← Custom Shirts</a>
+              <a href="/premade" className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition hover:bg-red-600" style={smokyTextShadow}>← Back to Premade</a>
             </div>
             <a href="/" className="flex justify-center">
               <img src="/header-logo.png" alt="Pressed In Pink" className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60" />
@@ -56,6 +56,7 @@ export default function PremadeShirtsPage() {
         <footer className="border-t border-red-900 bg-black/90 px-6 py-10 text-center backdrop-blur-md">
           <img src="/header-logo.png" alt="Pressed In Pink" className="mx-auto h-auto w-36 object-contain" />
           <p className="mt-4" style={smokyTextShadow}>Handmade with love in Rialto, California.</p>
+          <a href="/premade" className="mt-5 inline-block text-sm font-bold transition hover:text-red-500" style={smokyTextShadow}>Return to Premade</a>
         </footer>
       </div>
     </main>

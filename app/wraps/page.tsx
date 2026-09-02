@@ -361,11 +361,11 @@ export default function WrapsPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
               <a
-                href="/"
+                href="/for-creators"
                 className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
                 style={smokyTextShadow}
               >
-                ← Back Home
+                ← Back to For Creators
               </a>
             </div>
 
@@ -532,11 +532,11 @@ export default function WrapsPage() {
             Handmade with love in Rialto, California.
           </p>
           <a
-            href="/"
+            href="/for-creators"
             className="mt-5 inline-block text-sm font-bold transition hover:text-red-500"
             style={smokyTextShadow}
           >
-            Return Home
+            Return to For Creators
           </a>
         </footer>
       </div>
