@@ -15,6 +15,10 @@ type CollectionHubProps = {
   eyebrow: string;
   title: string;
   description: string;
+  heroAction?: {
+    label: string;
+    href: string;
+  };
   items: CollectionHubItem[];
 };
 
@@ -85,6 +89,7 @@ export default function CollectionHub({
   eyebrow,
   title,
   description,
+  heroAction,
   items,
 }: CollectionHubProps) {
   return (
@@ -109,6 +114,19 @@ export default function CollectionHub({
           >
             {description}
           </p>
+          {heroAction ? (
+            <div className="mt-8 flex justify-center">
+              <a
+                href={heroAction.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex rounded-full border-2 border-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-600"
+                style={smokyTextShadow}
+              >
+                {heroAction.label}
+              </a>
+            </div>
+          ) : null}
         </div>
       </section>
 
