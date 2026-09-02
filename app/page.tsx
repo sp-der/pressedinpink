@@ -28,9 +28,13 @@ export default function Home() {
   return (
     <StorefrontFrame>
       <CollectionHub
-        eyebrow="Pressed In Pink"
-        title="What are you shopping for?"
-        description="Choose premade products or supplies for creating your own custom pieces."
+        eyebrow="Rialto, CA"
+        title="Made for Creators Built for Custom & Where Custom Meets Creativity"
+        description="Here you can order a custom cup from Pressed in Pink or browse wraps, blanks, bundles, and supplies to create your own."
+        heroAction={{
+          label: "Message to Order",
+          href: "https://www.instagram.com/pressed_in_pink/",
+        }}
         items={shoppingPaths}
       />
     </StorefrontFrame>
