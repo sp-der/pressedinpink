@@ -4,11 +4,11 @@ import StorefrontFrame from "@/components/StorefrontFrame";
 const premadeCollections = [
   {
     title: "Premade Cups",
-    description: "Browse finished cup designs from Pressed In Pink.",
+    description:
+      "Shop Snowglobe Cups, Kid's Snowglobe Cups, Libby Cups, and Paris Cups.",
     action: "View Premade Cups →",
     href: "/cups",
     monogram: "Cups",
-    label: "Coming soon",
   },
   {
     title: "Premade Shirts",

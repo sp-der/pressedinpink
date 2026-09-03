@@ -6,19 +6,31 @@ type CategoryPlaceholderProps = {
   section: "Premade" | "For Creators";
   title: string;
   description: string;
+  backHref?: string;
+  backLabel?: string;
 };
 
 export default function CategoryPlaceholder({
   section,
   title,
   description,
+  backHref,
+  backLabel,
 }: CategoryPlaceholderProps) {
-  const backHref = section === "Premade" ? "/premade" : "/for-creators";
+  const sectionHref = section === "Premade" ? "/premade" : "/for-creators";
+  const resolvedBackHref = backHref ?? sectionHref;
+  const resolvedBackLabel = backLabel ?? section;
 
   return (
     <StorefrontFrame
-      backLink={{ href: backHref, label: `Back to ${section}` }}
-      footerLink={{ href: backHref, label: `Return to ${section}` }}
+      backLink={{
+        href: resolvedBackHref,
+        label: `Back to ${resolvedBackLabel}`,
+      }}
+      footerLink={{
+        href: resolvedBackHref,
+        label: `Return to ${resolvedBackLabel}`,
+      }}
     >
       <section className="mx-auto flex max-w-5xl px-4 py-16 sm:px-6 sm:py-24">
         <div className="mx-auto w-full max-w-3xl rounded-[2rem] border border-red-900 bg-black/90 p-7 text-center shadow-2xl backdrop-blur-md sm:p-12">
@@ -43,11 +55,11 @@ export default function CategoryPlaceholder({
             </p>
           </div>
           <a
-            href={backHref}
+            href={resolvedBackHref}
             className="mt-8 inline-flex rounded-full border-2 border-red-600 px-7 py-3 font-bold text-white transition hover:bg-red-600"
             style={smokyTextShadow}
           >
-            Browse {section}
+            Browse {resolvedBackLabel}
           </a>
         </div>
       </section>
