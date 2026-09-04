@@ -78,12 +78,11 @@ export default function CupDetail({
         </div>
 
         <div className="rounded-[2rem] border border-red-900 bg-black/90 p-6 shadow-2xl sm:p-8">
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-red-400">
-            {category.displayName}
-          </p>
-          <h1 className="mt-3 text-4xl font-black sm:text-5xl">
-            {product.displayName}
-          </h1>
+          <div className="inline-flex max-w-full items-center justify-center rounded-full border border-red-500/60 bg-black/75 px-6 py-3 shadow-xl backdrop-blur-md">
+            <h1 className="text-3xl font-black sm:text-4xl">
+              {category.displayName}
+            </h1>
+          </div>
 
           <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5">
             <p className="text-sm font-black uppercase tracking-[0.14em] text-white/55">
@@ -93,10 +92,6 @@ export default function CupDetail({
               {description ||
                 "No extra description has been added for this cup yet."}
             </p>
-          </div>
-
-          <div className="mt-6 rounded-2xl border border-red-900 bg-red-950/15 p-5 text-sm leading-6 text-white/70">
-            This is a one-of-one premade item. The cart quantity stays locked at 1 so the exact cup cannot be requested more than once in the same order.
           </div>
 
           <AddToCartControls
