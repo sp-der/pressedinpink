@@ -1,3 +1,10 @@
+export type ProductMediaType =
+  | "image"
+  | "video";
+
+export type ProductType =
+  | "wrap"
+  | "cup";
 
 export type WrapProduct = {
   id: string;
@@ -8,6 +15,10 @@ export type WrapProduct = {
   sourceFilename: string;
   thumbnailUrl: string;
   fullImageUrl: string;
+  productType?: ProductType;
+  mediaType?: ProductMediaType;
+  isOneOfOne?: boolean;
+  detailHref?: string;
 };
 
 export type CartItem = WrapProduct & {
