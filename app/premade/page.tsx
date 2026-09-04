@@ -16,8 +16,7 @@ const premadeCollections = [
       "Shop available shirts by size, with made-to-order sizing available when needed.",
     action: "View Premade Shirts →",
     href: "/shirts/premade",
-    image: "/premade-shirts-category.png",
-    imageFit: "cover" as const,
+    monogram: "Shirts",
   },
   {
     title: "Custom Cup Orders",
