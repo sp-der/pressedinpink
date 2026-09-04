@@ -1,13 +1,20 @@
-import CategoryPlaceholder from "@/components/CategoryPlaceholder";
+import CupGallery from "@/components/CupGallery";
+import StorefrontFrame from "@/components/StorefrontFrame";
+import { getCupCategory } from "@/lib/cups";
+
+const category = getCupCategory("snowglobe");
 
 export default function SnowglobeCupsPage() {
+  if (!category) {
+    return null;
+  }
+
   return (
-    <CategoryPlaceholder
-      section="Premade"
-      title="Snowglobe Cups"
-      description="Premade Snowglobe Cup designs will appear here as they are added."
-      backHref="/cups"
-      backLabel="Premade Cups"
-    />
+    <StorefrontFrame
+      backLink={{ href: "/cups", label: "Premade Cups" }}
+      footerLink={{ href: "/cups", label: "Return to Premade Cups" }}
+    >
+      <CupGallery category={category} />
+    </StorefrontFrame>
   );
 }
