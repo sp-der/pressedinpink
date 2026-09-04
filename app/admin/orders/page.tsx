@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -205,15 +204,23 @@ export default function AdminOrdersPage() {
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-900 bg-black/90 p-4">
         <p className="text-sm text-white/65">
-          Manage incoming orders or publish new R2 wrap designs.
+          Manage incoming orders, wrap uploads, and premade cup details.
         </p>
 
-        <a
-          href="/admin/catalog"
-          className="rounded-full bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-500"
-        >
-          Open Wrap Uploader
-        </a>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/admin/cups"
+            className="rounded-full border border-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-600"
+          >
+            Manage Premade Cups
+          </a>
+          <a
+            href="/admin/catalog"
+            className="rounded-full bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-500"
+          >
+            Open Wrap Uploader
+          </a>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -450,7 +457,7 @@ export default function AdminOrdersPage() {
                           .length
                       }{" "}
                       designs •{" "}
-                      {totalQuantity} wraps
+                      {totalQuantity} items
                     </p>
 
                     <a
