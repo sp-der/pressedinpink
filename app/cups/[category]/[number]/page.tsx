@@ -7,6 +7,8 @@ import {
   getCupCategory,
 } from "@/lib/cups";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return CUP_CATEGORIES.flatMap((category) =>
     Array.from(
