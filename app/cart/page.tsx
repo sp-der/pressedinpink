@@ -7,6 +7,12 @@ const smokyTextShadow = {
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
+function customerCupLabel(
+  categoryName: string,
+): string {
+  return categoryName.replace(/ Cups$/i, " Cup");
+}
+
 export default function CartPage() {
   const {
     items,
@@ -163,20 +169,18 @@ export default function CartPage() {
             </div>
           ) : (
             <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
-              <div className="space-y-5">
-                {items.map((item) => (
-                  <article
-                    key={item.id}
-                    className="overflow-hidden rounded-3xl border border-red-900 bg-black/90 shadow-xl backdrop-blur-md sm:grid sm:grid-cols-[240px_1fr]"
-                  >
-                    <div
-                      className={
-                        item.mediaType === "video"
-                          ? "relative aspect-[9/16] max-h-[360px] overflow-hidden bg-black sm:aspect-auto sm:min-h-52"
-                          : "relative aspect-[2/1] overflow-hidden bg-black sm:aspect-auto sm:min-h-52"
-                      }
+              <div className="space-y-3 sm:space-y-5">
+                {items.map((item) =>
+                  item.isOneOfOne ? (
+                    <article
+                      key={item.id}
+                      className="grid grid-cols-[108px_minmax(0,1fr)] overflow-hidden rounded-2xl border border-red-900 bg-black/90 shadow-xl backdrop-blur-md sm:grid-cols-[132px_minmax(0,1fr)]"
                     >
-                      {item.mediaType === "video" ? (
+                      <a
+                        href={item.detailHref ?? "#"}
+                        className="relative block h-44 overflow-hidden bg-black sm:h-48"
+                        aria-label={`View ${customerCupLabel(item.categoryName)}`}
+                      >
                         <video
                           src={item.fullImageUrl}
                           muted
@@ -186,7 +190,54 @@ export default function CartPage() {
                           preload="metadata"
                           className="h-full w-full object-cover"
                         />
-                      ) : (
+                      </a>
+
+                      <div className="flex min-w-0 flex-col justify-between gap-3 p-3 sm:p-4">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-red-500 sm:text-xs">
+                            Premade • 1 of 1
+                          </p>
+
+                          <h2
+                            className="mt-1 truncate text-lg font-black text-white sm:text-xl"
+                            style={smokyTextShadow}
+                          >
+                            {customerCupLabel(item.categoryName)}
+                          </h2>
+
+                          {item.detailHref && (
+                            <a
+                              href={item.detailHref}
+                              className="mt-2 inline-block text-xs font-black text-white/65 underline decoration-red-600 underline-offset-4"
+                            >
+                              View Item
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-xs font-bold text-white/45">
+                            Qty 1
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeItem(item.id)
+                            }
+                            className="rounded-full border border-red-800 px-3 py-1.5 text-xs font-black text-white/75 transition hover:bg-red-700 hover:text-white"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ) : (
+                    <article
+                      key={item.id}
+                      className="overflow-hidden rounded-3xl border border-red-900 bg-black/90 shadow-xl backdrop-blur-md sm:grid sm:grid-cols-[240px_1fr]"
+                    >
+                      <div className="relative aspect-[2/1] overflow-hidden bg-black sm:aspect-auto sm:min-h-52">
                         <img
                           src={item.thumbnailUrl}
                           alt={`${item.displayName} wrap`}
@@ -198,44 +249,32 @@ export default function CartPage() {
                           }}
                           className="absolute left-1/2 top-1/2 h-[204%] w-[52%] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover"
                         />
-                      )}
-                    </div>
-
-                    <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">
-                          {item.categoryName}
-                        </p>
-
-                        <h2
-                          className="mt-2 text-2xl font-black text-white"
-                          style={smokyTextShadow}
-                        >
-                          {item.displayName}
-                        </h2>
-
-                        {item.isOneOfOne && (
-                          <span className="mt-3 inline-block rounded-full border border-red-700 px-3 py-1 text-xs font-black text-red-200">
-                            One of One • Qty 1
-                          </span>
-                        )}
-
-                        {item.detailHref && (
-                          <a
-                            href={item.detailHref}
-                            className="mt-3 block text-xs font-black text-white/70 underline decoration-red-600 underline-offset-4"
-                          >
-                            View Item Page
-                          </a>
-                        )}
                       </div>
 
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        {item.isOneOfOne ? (
-                          <div className="rounded-full border border-red-700 bg-black px-5 py-3 text-sm font-black text-white">
-                            Quantity: 1
-                          </div>
-                        ) : (
+                      <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">
+                            {item.categoryName}
+                          </p>
+
+                          <h2
+                            className="mt-2 text-2xl font-black text-white"
+                            style={smokyTextShadow}
+                          >
+                            {item.displayName}
+                          </h2>
+
+                          {item.detailHref && (
+                            <a
+                              href={item.detailHref}
+                              className="mt-3 block text-xs font-black text-white/70 underline decoration-red-600 underline-offset-4"
+                            >
+                              View Item Page
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex w-fit items-center overflow-hidden rounded-full border border-red-700 bg-black">
                             <button
                               type="button"
@@ -275,21 +314,21 @@ export default function CartPage() {
                               +
                             </button>
                           </div>
-                        )}
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            removeItem(item.id)
-                          }
-                          className="text-sm font-bold text-white/70 underline decoration-red-600 underline-offset-4 transition hover:text-red-500"
-                        >
-                          Remove
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeItem(item.id)
+                            }
+                            className="text-sm font-bold text-white/70 underline decoration-red-600 underline-offset-4 transition hover:text-red-500"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ),
+                )}
               </div>
 
               <aside className="h-fit rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl backdrop-blur-md lg:sticky lg:top-6">
