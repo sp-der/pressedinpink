@@ -6,7 +6,7 @@ const shoppingPaths = [
     title: "For Premade",
     description:
       "Browse premade cups and shirts. Custom cup orders will be added here later.",
-    action: "Shop Premade →",
+    action: "Shop For Premade →",
     href: "/premade",
     monogram: "For Premade",
     label: "Finished products",
