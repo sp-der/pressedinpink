@@ -294,7 +294,7 @@ export default function AdminCupsPage() {
                   key={category.slug}
                   value={category.slug}
                 >
-                  {category.displayName} ({category.count})
+                  {category.displayName} ({category.itemNumbers.length})
                 </option>
               ))}
             </select>
