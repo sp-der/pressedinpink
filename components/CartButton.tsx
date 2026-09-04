@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCart } from "@/components/CartProvider";
@@ -15,7 +14,7 @@ export default function CartButton() {
   return (
     <a
       href="/cart"
-      aria-label={`Open wrap cart with ${visibleQuantity} requested wraps`}
+      aria-label={`Open cart with ${visibleQuantity} requested items`}
       className="
         fixed bottom-5 right-5 z-40
         flex items-center gap-3 rounded-full
