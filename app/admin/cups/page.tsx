@@ -9,6 +9,7 @@ import {
 
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
+import LoopingCupVideo from "@/components/LoopingCupVideo";
 import {
   CUP_CATEGORIES,
   getCupProducts,
@@ -336,13 +337,8 @@ export default function AdminCupsPage() {
             >
               <div className="grid grid-cols-[132px_1fr] gap-0 sm:grid-cols-[150px_1fr]">
                 <div className="relative aspect-[9/16] bg-black">
-                  <video
+                  <LoopingCupVideo
                     src={product.fullImageUrl}
-                    muted
-                    autoPlay
-                    loop
-                    playsInline
-                    preload="metadata"
                     className="h-full w-full object-cover"
                   />
                 </div>
