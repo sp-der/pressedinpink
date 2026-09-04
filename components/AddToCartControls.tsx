@@ -90,17 +90,15 @@ export default function AddToCartControls({
             : "space-y-3"
         }
       >
-        <div>
-          <p className="text-xs font-bold text-white/70">
-            {isOneOfOne
-              ? currentCartQuantity > 0
-                ? "This one-of-one cup is already in your cart."
-                : "One-of-one item • quantity is fixed at 1."
-              : currentCartQuantity > 0
+        {!isOneOfOne && (
+          <div>
+            <p className="text-xs font-bold text-white/70">
+              {currentCartQuantity > 0
                 ? `Already in cart: ${currentCartQuantity}`
                 : "Choose the quantity you want to request."}
-          </p>
-        </div>
+            </p>
+          </div>
+        )}
 
         <div
           className={
