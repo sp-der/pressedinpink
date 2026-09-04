@@ -58,16 +58,14 @@ export default function CupGallery({
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-      <div className="mx-auto max-w-3xl text-center">
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-500/60 bg-black/80 px-6 py-6 text-center shadow-2xl backdrop-blur-md sm:px-10 sm:py-8">
         <p className="text-xs font-black uppercase tracking-[0.3em] text-red-400">
           Premade • One of One
         </p>
 
-        <div className="mx-auto mt-3 inline-flex max-w-full items-center justify-center rounded-full border border-red-500/60 bg-black/75 px-7 py-4 shadow-2xl backdrop-blur-md sm:px-10">
-          <h1 className="text-4xl font-black sm:text-5xl">
-            {category.displayName}
-          </h1>
-        </div>
+        <h1 className="mt-3 text-4xl font-black sm:text-5xl">
+          {category.displayName}
+        </h1>
 
         <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/75">
           {category.description}
