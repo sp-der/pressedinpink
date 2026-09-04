@@ -2,6 +2,7 @@ import type { WrapProduct } from "@/types/cart";
 
 export type CupCategorySlug =
   | "snowglobe"
+  | "kids-snowglobe"
   | "libby"
   | "paris";
 
@@ -12,12 +13,22 @@ export type CupCategoryConfig = {
   itemLabel: string;
   r2Folder: string;
   filenamePrefix: string;
-  count: number;
+  itemNumbers: number[];
   description: string;
 };
 
 const R2_VIDEO_BASE_URL =
   "https://images.pressedinpink.com/videos";
+
+function itemRange(
+  first: number,
+  last: number,
+): number[] {
+  return Array.from(
+    { length: last - first + 1 },
+    (_, index) => first + index,
+  );
+}
 
 export const CUP_CATEGORIES: CupCategoryConfig[] = [
   {
@@ -27,9 +38,25 @@ export const CUP_CATEGORIES: CupCategoryConfig[] = [
     itemLabel: "Snowglobe Cup",
     r2Folder: "snowglobecups",
     filenamePrefix: "Snowglobe",
-    count: 18,
+    itemNumbers: [
+      ...itemRange(1, 14),
+      16,
+      17,
+      18,
+    ],
     description:
       "Premade one-of-one Snowglobe Cups. Each cup shown is the exact finished cup available to request.",
+  },
+  {
+    slug: "kids-snowglobe",
+    databaseSlug: "cup-kids-snowglobe",
+    displayName: "Kid's Snowglobe Cups",
+    itemLabel: "Kid's Snowglobe Cup",
+    r2Folder: "snowglobecups",
+    filenamePrefix: "Snowglobe",
+    itemNumbers: [15],
+    description:
+      "Premade one-of-one Kid's Snowglobe Cups. Each cup shown is the exact finished cup available to request.",
   },
   {
     slug: "libby",
@@ -38,7 +65,7 @@ export const CUP_CATEGORIES: CupCategoryConfig[] = [
     itemLabel: "Libby Cup",
     r2Folder: "libbycups",
     filenamePrefix: "Libby",
-    count: 34,
+    itemNumbers: itemRange(1, 34),
     description:
       "Premade one-of-one Libby Cups. Each cup shown is the exact finished cup available to request.",
   },
@@ -49,7 +76,7 @@ export const CUP_CATEGORIES: CupCategoryConfig[] = [
     itemLabel: "Paris Cup",
     r2Folder: "pariscups",
     filenamePrefix: "Paris",
-    count: 6,
+    itemNumbers: itemRange(1, 6),
     description:
       "Premade one-of-one Paris Cups. Each cup shown is the exact finished cup available to request.",
   },
@@ -103,11 +130,16 @@ export function getCupProduct(
 export function getCupProducts(
   category: CupCategoryConfig,
 ): WrapProduct[] {
-  return Array.from(
-    { length: category.count },
-    (_, index) =>
-      getCupProduct(category, index + 1),
+  return category.itemNumbers.map((number) =>
+    getCupProduct(category, number),
   );
+}
+
+export function categoryHasCupNumber(
+  category: CupCategoryConfig,
+  number: number,
+): boolean {
+  return category.itemNumbers.includes(number);
 }
 
 export type CupDescriptionMap = Record<
