@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCart } from "@/components/CartProvider";
@@ -24,7 +23,7 @@ export default function CartPage() {
   const handleClearCart = () => {
     const confirmed =
       window.confirm(
-        "Remove every wrap from your cart?",
+        "Remove every item from your cart?",
       );
 
     if (confirmed) {
@@ -59,7 +58,7 @@ export default function CartPage() {
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             <div className="flex justify-center md:justify-start">
               <a
-                href="/wraps"
+                href="/"
                 className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
                 style={smokyTextShadow}
               >
@@ -105,16 +104,14 @@ export default function CartPage() {
               className="mt-4 text-4xl font-black text-white sm:text-5xl md:text-6xl"
               style={smokyTextShadow}
             >
-              Your Wrap Cart
+              Your Cart
             </h1>
 
             <p
               className="mx-auto mt-5 max-w-2xl leading-7 text-white"
               style={smokyTextShadow}
             >
-              Review your requested designs
-              and quantities. No payment is
-              collected at this stage.
+              Review your requested wraps and premade items. No payment is collected at this stage.
             </p>
           </div>
         </section>
@@ -146,17 +143,23 @@ export default function CartPage() {
                 className="mx-auto mt-3 max-w-xl text-white/80"
                 style={smokyTextShadow}
               >
-                Browse the UV-DTF wrap
-                categories and add the
-                designs you want.
+                Browse premade one-of-one cups or UV-DTF wraps and add the items you want.
               </p>
 
-              <a
-                href="/wraps"
-                className="mt-7 inline-block rounded-full bg-red-600 px-7 py-3 font-black text-white transition hover:bg-red-500"
-              >
-                Browse Wraps
-              </a>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <a
+                  href="/cups"
+                  className="inline-block rounded-full bg-red-600 px-7 py-3 font-black text-white transition hover:bg-red-500"
+                >
+                  Browse Cups
+                </a>
+                <a
+                  href="/wraps"
+                  className="inline-block rounded-full border border-red-600 px-7 py-3 font-black text-white transition hover:bg-red-600"
+                >
+                  Browse Wraps
+                </a>
+              </div>
             </div>
           ) : (
             <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
@@ -166,26 +169,36 @@ export default function CartPage() {
                     key={item.id}
                     className="overflow-hidden rounded-3xl border border-red-900 bg-black/90 shadow-xl backdrop-blur-md sm:grid sm:grid-cols-[240px_1fr]"
                   >
-                    <div className="relative aspect-[2/1] overflow-hidden bg-black sm:aspect-auto sm:min-h-52">
-                      <img
-                        src={item.thumbnailUrl}
-                        alt={`${item.displayName} wrap`}
-                        draggable={false}
-                        onError={(event) => {
-                          event.currentTarget.onerror =
-                            null;
-
-                          event.currentTarget.src =
-                            item.fullImageUrl;
-                        }}
-                        className="
-                          absolute left-1/2 top-1/2
-                          h-[204%] w-[52%]
-                          max-w-none -translate-x-1/2
-                          -translate-y-1/2 rotate-90
-                          object-cover
-                        "
-                      />
+                    <div
+                      className={
+                        item.mediaType === "video"
+                          ? "relative aspect-[9/16] max-h-[360px] overflow-hidden bg-black sm:aspect-auto sm:min-h-52"
+                          : "relative aspect-[2/1] overflow-hidden bg-black sm:aspect-auto sm:min-h-52"
+                      }
+                    >
+                      {item.mediaType === "video" ? (
+                        <video
+                          src={item.fullImageUrl}
+                          muted
+                          autoPlay
+                          loop
+                          playsInline
+                          preload="metadata"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={item.thumbnailUrl}
+                          alt={`${item.displayName} wrap`}
+                          draggable={false}
+                          onError={(event) => {
+                            event.currentTarget.onerror = null;
+                            event.currentTarget.src =
+                              item.fullImageUrl;
+                          }}
+                          className="absolute left-1/2 top-1/2 h-[204%] w-[52%] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover"
+                        />
+                      )}
                     </div>
 
                     <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
@@ -200,61 +213,69 @@ export default function CartPage() {
                         >
                           {item.displayName}
                         </h2>
+
+                        {item.isOneOfOne && (
+                          <span className="mt-3 inline-block rounded-full border border-red-700 px-3 py-1 text-xs font-black text-red-200">
+                            One of One • Qty 1
+                          </span>
+                        )}
+
+                        {item.detailHref && (
+                          <a
+                            href={item.detailHref}
+                            className="mt-3 block text-xs font-black text-white/70 underline decoration-red-600 underline-offset-4"
+                          >
+                            View Item Page
+                          </a>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <div
-                          className="
-                            flex w-fit items-center
-                            overflow-hidden rounded-full
-                            border border-red-700 bg-black
-                          "
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              decrementItem(
-                                item.id,
-                              )
-                            }
-                            aria-label={`Decrease ${item.displayName} quantity`}
-                            className="flex h-11 w-11 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
-                          >
-                            −
-                          </button>
+                        {item.isOneOfOne ? (
+                          <div className="rounded-full border border-red-700 bg-black px-5 py-3 text-sm font-black text-white">
+                            Quantity: 1
+                          </div>
+                        ) : (
+                          <div className="flex w-fit items-center overflow-hidden rounded-full border border-red-700 bg-black">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                decrementItem(item.id)
+                              }
+                              aria-label={`Decrease ${item.displayName} quantity`}
+                              className="flex h-11 w-11 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
+                            >
+                              −
+                            </button>
 
-                          <input
-                            type="number"
-                            min={1}
-                            max={999}
-                            inputMode="numeric"
-                            value={item.quantity}
-                            onChange={(event) =>
-                              setItemQuantity(
-                                item.id,
-                                Number(
-                                  event.target
-                                    .value,
-                                ),
-                              )
-                            }
-                            aria-label={`${item.displayName} cart quantity`}
-                            className="h-11 w-16 border-x border-red-900 bg-black text-center font-black text-white outline-none"
-                          />
+                            <input
+                              type="number"
+                              min={1}
+                              max={999}
+                              inputMode="numeric"
+                              value={item.quantity}
+                              onChange={(event) =>
+                                setItemQuantity(
+                                  item.id,
+                                  Number(event.target.value),
+                                )
+                              }
+                              aria-label={`${item.displayName} cart quantity`}
+                              className="h-11 w-16 border-x border-red-900 bg-black text-center font-black text-white outline-none"
+                            />
 
-                          <button
-                            type="button"
-                            onClick={() =>
-                              incrementItem(
-                                item.id,
-                              )
-                            }
-                            aria-label={`Increase ${item.displayName} quantity`}
-                            className="flex h-11 w-11 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
-                          >
-                            +
-                          </button>
-                        </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                incrementItem(item.id)
+                              }
+                              aria-label={`Increase ${item.displayName} quantity`}
+                              className="flex h-11 w-11 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
 
                         <button
                           type="button"
@@ -282,7 +303,7 @@ export default function CartPage() {
                 <div className="mt-6 space-y-4 border-y border-red-950 py-5">
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-white/75">
-                      Different designs
+                      Different items
                     </span>
 
                     <strong className="text-xl text-white">
@@ -292,7 +313,7 @@ export default function CartPage() {
 
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-white/75">
-                      Total wraps
+                      Total quantity
                     </span>
 
                     <strong className="text-xl text-white">
@@ -303,27 +324,20 @@ export default function CartPage() {
 
                 <a
                   href="/checkout"
-                  className="
-                    mt-6 block w-full rounded-full
-                    bg-red-600 px-5 py-3
-                    text-center font-black text-white
-                    transition hover:bg-red-500
-                  "
+                  className="mt-6 block w-full rounded-full bg-red-600 px-5 py-3 text-center font-black text-white transition hover:bg-red-500"
                 >
                   Continue to Order Request
                 </a>
 
                 <p className="mt-3 text-center text-xs leading-5 text-white/60">
-                  Continue as a guest or sign
-                  in to save the order to your
-                  customer account.
+                  Continue as a guest or sign in to save the order to your customer account.
                 </p>
 
                 <a
-                  href="/wraps"
+                  href="/"
                   className="mt-5 block text-center text-sm font-bold text-white underline decoration-red-600 underline-offset-4 transition hover:text-red-500"
                 >
-                  Add More Wraps
+                  Add More Items
                 </a>
               </aside>
             </div>
