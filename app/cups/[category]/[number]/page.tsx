@@ -4,6 +4,7 @@ import CupDetail from "@/components/CupDetail";
 import StorefrontFrame from "@/components/StorefrontFrame";
 import {
   CUP_CATEGORIES,
+  categoryHasCupNumber,
   getCupCategory,
 } from "@/lib/cups";
 
@@ -11,13 +12,10 @@ export const dynamicParams = false;
 
 export function generateStaticParams() {
   return CUP_CATEGORIES.flatMap((category) =>
-    Array.from(
-      { length: category.count },
-      (_, index) => ({
-        category: category.slug,
-        number: String(index + 1),
-      }),
-    ),
+    category.itemNumbers.map((number) => ({
+      category: category.slug,
+      number: String(number),
+    })),
   );
 }
 
@@ -37,8 +35,7 @@ export default function CupItemPage({
   if (
     !category ||
     !Number.isInteger(number) ||
-    number < 1 ||
-    number > category.count
+    !categoryHasCupNumber(category, number)
   ) {
     notFound();
   }
