@@ -305,7 +305,7 @@ export default function WrapsPage() {
         (category) =>
           !knownSlugs.has(category.slug) &&
           !sportsChildSlugSet.has(category.slug) &&
-          category.parent_slug !== "sports",
+          !category.parent_slug,
       )
       .map((category): DisplayCategory => ({
         slug: category.slug,
