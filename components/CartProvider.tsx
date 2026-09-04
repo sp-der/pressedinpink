@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -86,7 +85,9 @@ function normalizeStoredItems(
     .filter(isCartItem)
     .map((item) => ({
       ...item,
-      quantity: clampQuantity(item.quantity),
+      quantity: item.isOneOfOne
+        ? 1
+        : clampQuantity(item.quantity),
     }));
 }
 
@@ -181,8 +182,9 @@ export function CartProvider({
       product: WrapProduct,
       quantity = 1,
     ) => {
-      const safeQuantity =
-        clampQuantity(quantity);
+      const safeQuantity = product.isOneOfOne
+        ? 1
+        : clampQuantity(quantity);
 
       setItems((currentItems) => {
         const existingItem =
@@ -198,6 +200,21 @@ export function CartProvider({
               quantity: safeQuantity,
             },
           ];
+        }
+
+        if (
+          existingItem.isOneOfOne ||
+          product.isOneOfOne
+        ) {
+          return currentItems.map((item) =>
+            item.id === product.id
+              ? {
+                  ...item,
+                  ...product,
+                  quantity: 1,
+                }
+              : item,
+          );
         }
 
         return currentItems.map((item) =>
@@ -233,15 +250,14 @@ export function CartProvider({
         return;
       }
 
-      const safeQuantity =
-        clampQuantity(quantity);
-
       setItems((currentItems) =>
         currentItems.map((item) =>
           item.id === productId
             ? {
                 ...item,
-                quantity: safeQuantity,
+                quantity: item.isOneOfOne
+                  ? 1
+                  : clampQuantity(quantity),
               }
             : item,
         ),
@@ -257,9 +273,11 @@ export function CartProvider({
           item.id === productId
             ? {
                 ...item,
-                quantity: clampQuantity(
-                  item.quantity + 1,
-                ),
+                quantity: item.isOneOfOne
+                  ? 1
+                  : clampQuantity(
+                      item.quantity + 1,
+                    ),
               }
             : item,
         ),
@@ -276,7 +294,10 @@ export function CartProvider({
             return [item];
           }
 
-          if (item.quantity <= 1) {
+          if (
+            item.isOneOfOne ||
+            item.quantity <= 1
+          ) {
             return [];
           }
 
