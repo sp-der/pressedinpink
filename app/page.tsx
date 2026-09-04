@@ -3,13 +3,12 @@ import StorefrontFrame from "@/components/StorefrontFrame";
 
 const shoppingPaths = [
   {
-    title: "Premade",
+    title: "For Premade",
     description:
       "Browse premade cups and shirts. Custom cup orders will be added here later.",
     action: "Shop Premade →",
     href: "/premade",
-    image: "/premade-shirts-category.png",
-    imageFit: "cover" as const,
+    monogram: "For Premade",
     label: "Finished products",
   },
   {
