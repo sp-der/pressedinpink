@@ -62,9 +62,13 @@ export default function CupGallery({
         <p className="text-xs font-black uppercase tracking-[0.3em] text-red-400">
           Premade • One of One
         </p>
-        <h1 className="mt-3 text-4xl font-black sm:text-5xl">
-          {category.displayName}
-        </h1>
+
+        <div className="mx-auto mt-3 inline-flex max-w-full items-center justify-center rounded-full border border-red-500/60 bg-black/75 px-7 py-4 shadow-2xl backdrop-blur-md sm:px-10">
+          <h1 className="text-4xl font-black sm:text-5xl">
+            {category.displayName}
+          </h1>
+        </div>
+
         <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/75">
           {category.description}
         </p>
@@ -83,7 +87,7 @@ export default function CupGallery({
               <a
                 href={product.detailHref}
                 className="group block"
-                aria-label={`Open ${product.displayName}`}
+                aria-label={`Open ${category.displayName} item ${product.imageNumber}`}
               >
                 <div className="relative aspect-[9/16] overflow-hidden bg-black">
                   <LoopingCupVideo
@@ -96,15 +100,12 @@ export default function CupGallery({
                 </div>
 
                 <div className="p-4 pb-3">
-                  <h2 className="text-lg font-black text-white">
-                    {product.displayName}
-                  </h2>
                   {description ? (
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/65">
+                    <p className="line-clamp-2 text-sm leading-6 text-white/65">
                       {description}
                     </p>
                   ) : (
-                    <p className="mt-2 text-sm text-white/50">
+                    <p className="text-sm text-white/50">
                       Tap to view this cup.
                     </p>
                   )}
