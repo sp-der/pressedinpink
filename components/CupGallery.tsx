@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import AddToCartControls from "@/components/AddToCartControls";
+import LoopingCupVideo from "@/components/LoopingCupVideo";
 import {
   getCupProducts,
   parseCupDescriptions,
@@ -85,13 +86,8 @@ export default function CupGallery({
                 aria-label={`Open ${product.displayName}`}
               >
                 <div className="relative aspect-[9/16] overflow-hidden bg-black">
-                  <video
+                  <LoopingCupVideo
                     src={product.fullImageUrl}
-                    muted
-                    autoPlay
-                    loop
-                    playsInline
-                    preload="metadata"
                     className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
                   />
                   <span className="absolute left-3 top-3 rounded-full border border-red-500 bg-black/80 px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-red-200 backdrop-blur">
