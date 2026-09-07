@@ -80,14 +80,14 @@ export default function CustomCupPage() {
 
   const complete = !!cup && !!wrap && !!color && decorated !== null;
   const titles = ["Choose your cup", "Choose your wrap", "Choose your lid color", "Make your lid special"];
-  const summaries = [cup, wrap?.displayName, color, decorated === null ? "" : decorated ? "Decorated lid · PNP will contact you" : "Standard lid"];
+  const summaries = [cup, wrap?.displayName, color, decorated === null ? "" : decorated ? "Decorated lid · Order Notes are optional" : "Standard lid"];
   const available = [true, !!cup, !!cup && !!wrap, !!cup && !!wrap && !!color];
 
   function addCup() {
     if (!complete || !wrap || !isReady) return;
     const id = `custom-cup-${crypto.randomUUID()}`;
     addItem({ ...wrap, id, categorySlug: id,
-      displayName: `${cup} | ${color} lid | ${decorated ? "Decorated lid: contact me" : "Standard lid"}`,
+      displayName: `${cup} | ${color} lid | ${decorated ? "Decorated lid" : "Standard lid"}`,
       categoryName: `Custom Cup · Wrap: ${wrap.displayName}`.slice(0,160),
       productType: "cup", mediaType: "image", isOneOfOne: false,
       detailHref: "/custom-cup",
@@ -114,12 +114,12 @@ export default function CustomCupPage() {
                 {index===0 && <div className="grid gap-3 sm:grid-cols-3">{cups.map(value=><button key={value} className={`${choice} ${cup===value ? "border-red-500 bg-red-950" : "border-white/20 bg-white/5 hover:border-red-500"}`} onClick={()=>{setCup(value);setStep(1)}}>{value}</button>)}</div>}
                 {index===1 && <><p className="mb-5 text-white/70">Choose from our regular UV-DTF collection. Every design can be used with your cup.</p><button className="rounded-full bg-red-600 px-6 py-3 font-black" onClick={()=>{setPicker(true);setCategory(null)}}>{wrap ? "Change wrap" : "Browse UV-DTF wraps"}</button>{wrap && <button className="ml-4 rounded-full border border-red-600 px-6 py-3 font-bold" onClick={()=>setStep(2)}>Continue</button>}</>}
                 {index===2 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">{colors.map((value,i)=><button key={value} className={`${choice} ${color===value ? "border-red-500 bg-red-950" : "border-white/20 bg-white/5"}`} onClick={()=>{setColor(value);setStep(3)}}><span aria-hidden="true" className="mb-3 block h-8 w-8 rounded-full border border-white/40" style={{background:swatches[i]}}/>{value}</button>)}</div>}
-                {index===3 && <><p className="mb-5 text-white/70">Want a decorated lid? Pressed In Pink will reach out about your order, lid design, and upgrade pricing.</p><div className="grid gap-3 sm:grid-cols-2">{[false,true].map(value=><button key={String(value)} className={`${choice} ${decorated===value ? "border-red-500 bg-red-950" : "border-white/20 bg-white/5"}`} onClick={()=>{setDecorated(value);setStep(4)}}>{value ? "Add a custom decorated lid" : "Keep the standard lid"}</button>)}</div></>}
+                {index===3 && <><p className="mb-5 text-white/70">Want a decorated lid? If you want a specific lid design, add it to your Order Notes at checkout. If you leave the notes blank, Pressed In Pink will design the decorated lid at her discretion.</p><div className="grid gap-3 sm:grid-cols-2">{[false,true].map(value=><button key={String(value)} className={`${choice} ${decorated===value ? "border-red-500 bg-red-950" : "border-white/20 bg-white/5"}`} onClick={()=>{setDecorated(value);setStep(4)}}>{value ? "Add a custom decorated lid" : "Keep the standard lid"}</button>)}</div></>}
               </div>}
             </section>
           ))}
         </div>
-        {complete && <section className="mt-8 rounded-3xl border border-red-500 bg-black/95 p-6"><h2 className="text-2xl font-black">Your Custom Cup</h2><p className="mt-4">{cup} · {color} lid</p><p className="mt-2 text-white/75">Wrap: {wrap?.displayName}</p><p className="mt-2 text-white/75">{decorated ? "Decorated lid requested — PNP will contact you about the design." : "Standard lid selected."}</p><p className="my-5 text-sm text-red-300">Final pricing confirmed after review. No payment is collected now.</p>{added ? <a href="/cart" className="inline-block rounded-full bg-red-600 px-6 py-3 font-black">Added! View Request Cart →</a> : <button disabled={!isReady} onClick={addCup} className="rounded-full bg-red-600 px-6 py-3 font-black disabled:opacity-50">Add Custom Cup to Request</button>}</section>}
+        {complete && <section className="mt-8 rounded-3xl border border-red-500 bg-black/95 p-6"><h2 className="text-2xl font-black">Your Custom Cup</h2><p className="mt-4">{cup} · {color} lid</p><p className="mt-2 text-white/75">Wrap: {wrap?.displayName}</p><p className="mt-2 text-white/75">{decorated ? "Decorated lid selected. Add a specific design in your Order Notes at checkout, or leave them blank and PNP will design the lid at her discretion." : "Standard lid selected."}</p><p className="my-5 text-sm text-red-300">Final pricing confirmed after review. No payment is collected now.</p>{added ? <a href="/cart" className="inline-block rounded-full bg-red-600 px-6 py-3 font-black">Added! View Request Cart →</a> : <button disabled={!isReady} onClick={addCup} className="rounded-full bg-red-600 px-6 py-3 font-black disabled:opacity-50">Add Custom Cup to Request</button>}</section>}
       </div>
       {picker && <div role="dialog" aria-modal="true" aria-label="Choose a UV-DTF wrap" onKeyDown={event => {
         if (event.key !== "Tab") return;
