@@ -38,7 +38,7 @@ export default function StorefrontFrame({
       />
 
       <div className="relative z-10 flex min-h-screen flex-col">
-        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
+        <nav className="bg-gradient-to-b from-black/95 via-black/65 to-transparent px-5 pb-10 pt-5">
           <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
             {backLink ? (
               <div className="flex justify-center md:justify-start">

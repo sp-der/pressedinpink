@@ -1,3 +1,4 @@
+import BrandIntro from "@/components/BrandIntro";
 import CollectionHub from "@/components/CollectionHub";
 import StorefrontFrame from "@/components/StorefrontFrame";
 
@@ -26,6 +27,7 @@ const shoppingPaths = [
 export default function Home() {
   return (
     <StorefrontFrame>
+      <BrandIntro />
       <CollectionHub
         eyebrow="Rialto, CA"
         title="Made for Creators Built for Custom & Where Custom Meets Creativity"

@@ -25,3 +25,64 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+/* A brief lipstick-kiss greeting, followed by a soft reveal of the storefront. */
+.pnp-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, #240609 0%, #090203 48%, #000 80%);
+  animation: pnp-intro-reveal 1.95s ease-in-out both;
+}
+
+.pnp-intro-mark {
+  position: relative;
+  width: min(84vw, 560px);
+}
+
+.pnp-intro-logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 24px rgba(220, 38, 38, 0.22));
+  animation: pnp-kiss 1.45s ease-in-out both;
+}
+
+.pnp-intro-heart {
+  position: absolute;
+  color: #ef4444;
+  font-size: clamp(22px, 5vw, 38px);
+  opacity: 0;
+  animation: pnp-kiss-heart 0.75s ease-out both;
+}
+
+.pnp-intro-heart-one { top: 25%; right: 14%; animation-delay: 0.65s; }
+.pnp-intro-heart-two { top: 36%; right: 8%; animation-delay: 0.8s; font-size: clamp(16px, 3vw, 26px); }
+
+@keyframes pnp-kiss {
+  0% { opacity: 0; transform: scale(0.78) rotate(-7deg); }
+  22% { opacity: 1; transform: scale(1) rotate(0deg); }
+  46% { transform: scaleX(0.88) scaleY(1.06) rotate(-3deg); }
+  65% { transform: scale(1.12) rotate(2deg); }
+  83%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes pnp-kiss-heart {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(22px, -55px) scale(1.1) rotate(12deg); }
+}
+
+@keyframes pnp-intro-reveal {
+  0%, 72% { opacity: 1; visibility: visible; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pnp-intro { animation-duration: 0.15s; }
+  .pnp-intro-logo { animation: none; }
+  .pnp-intro-heart { display: none; }
+}
