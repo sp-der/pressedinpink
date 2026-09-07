@@ -36,6 +36,7 @@ body {
   pointer-events: none;
   background: radial-gradient(ellipse at center, #240609 0%, #090203 48%, #000 80%);
   animation: pnp-intro-reveal 1.95s ease-in-out both;
+  will-change: opacity, visibility;
 }
 
 .pnp-intro-mark {
@@ -49,6 +50,7 @@ body {
   height: auto;
   filter: drop-shadow(0 0 24px rgba(220, 38, 38, 0.22));
   animation: pnp-kiss 1.45s ease-in-out both;
+  will-change: transform, opacity;
 }
 
 .pnp-intro-heart {
@@ -79,10 +81,4 @@ body {
 @keyframes pnp-intro-reveal {
   0%, 72% { opacity: 1; visibility: visible; }
   100% { opacity: 0; visibility: hidden; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pnp-intro { animation-duration: 0.15s; }
-  .pnp-intro-logo { animation: none; }
-  .pnp-intro-heart { display: none; }
 }
