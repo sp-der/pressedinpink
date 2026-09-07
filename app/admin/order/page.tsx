@@ -14,6 +14,7 @@ import {
   invoicePdfBase64,
 } from "@/lib/invoicePdf";
 import type { InvoicePdfData } from "@/lib/invoicePdf";
+import { getAdminOrderItemName } from "@/lib/orderItemName";
 import { supabase } from "@/lib/supabase";
 import {
   getContactHref,
@@ -1049,7 +1050,7 @@ export default function AdminOrderPage() {
               >
                 <img
                   src={item.thumbnail_url}
-                  alt={item.display_name}
+                  alt={getAdminOrderItemName(item)}
                   onError={(event) => {
                     event.currentTarget.onerror = null;
                     event.currentTarget.src = item.full_image_url;
@@ -1060,7 +1061,7 @@ export default function AdminOrderPage() {
 
               <div className="p-5">
                 <h3 className="text-xl font-black">
-                  {item.display_name}
+                  {getAdminOrderItemName(item)}
                 </h3>
                 <p className="mt-1 text-xs text-white/50">
                   Requested quantity: {item.requested_quantity}

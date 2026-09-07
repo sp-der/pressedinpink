@@ -12,6 +12,23 @@ const creatorCollections = [
     imageFit: "contain" as const,
   },
   {
+    title: "Mini UV-DTF",
+    description:
+      "Browse smaller UV-DTF designs for accents and finishing touches.",
+    action: "View Mini UV-DTF →",
+    href: "/for-creators/mini-uv-dtf",
+    monogram: "Mini",
+    label: "Coming soon",
+  },
+  {
+    title: "Sanitizer Wraps",
+    description: "Browse wraps for customizing hand sanitizer bottles.",
+    action: "View Sanitizer Wraps →",
+    href: "/for-creators/sanitizer-wraps",
+    monogram: "Sanitizer",
+    label: "Coming soon",
+  },
+  {
     title: "Blank Cups",
     description: "Browse blank cups ready for your own wrap and finishing style.",
     action: "View Blank Cups →",
@@ -25,15 +42,6 @@ const creatorCollections = [
     action: "View Glitters →",
     href: "/for-creators/glitters",
     monogram: "Glitter",
-    label: "Coming soon",
-  },
-  {
-    title: "Mini UV-DTF",
-    description:
-      "Browse smaller UV-DTF designs for accents and finishing touches.",
-    action: "View Mini UV-DTF →",
-    href: "/for-creators/mini-uv-dtf",
-    monogram: "Mini",
     label: "Coming soon",
   },
 ];
