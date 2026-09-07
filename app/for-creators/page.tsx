@@ -26,7 +26,6 @@ const creatorCollections = [
     action: "View Sanitizer Wraps →",
     href: "/for-creators/sanitizer-wraps",
     monogram: "Sanitizer",
-    label: "Coming soon",
   },
   {
     title: "Blank Cups",

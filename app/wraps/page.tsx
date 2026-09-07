@@ -303,6 +303,7 @@ export default function WrapsPage() {
     const dynamic = liveCategories
       .filter(
         (category) =>
+          category.slug !== "sanitizer-wraps" &&
           !knownSlugs.has(category.slug) &&
           !sportsChildSlugSet.has(category.slug) &&
           !category.parent_slug,

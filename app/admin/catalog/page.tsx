@@ -252,7 +252,7 @@ export default function AdminCatalogPage() {
 
     setCategories(nextCategories);
     setSelectedSlug((current) =>
-      nextCategories.some(
+      current === "sanitizer-wraps" || nextCategories.some(
         (category) => category.slug === current,
       )
         ? current
@@ -338,6 +338,15 @@ export default function AdminCatalogPage() {
   const appendNewCategoryFields = (
     formData: FormData,
   ) => {
+    if (!creatingCategory && selectedSlug === "sanitizer-wraps") {
+      // The existing upload function creates this destination on the first upload.
+      formData.append("displayName", "Sanitizer Wraps");
+      formData.append("itemLabel", "Sanitizer Wrap");
+      formData.append("filenamePrefix", "sanitizer-wrap");
+      formData.append("imageFolder", "sanitizer-wraps");
+      formData.append("parentSlug", "for-creators");
+      return;
+    }
     if (!creatingCategory) {
       return;
     }
@@ -829,6 +838,9 @@ export default function AdminCatalogPage() {
                 }}
                 className="mt-2 w-full rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
               >
+                {!categories.some((category) => category.slug === "sanitizer-wraps") && (
+                  <option value="sanitizer-wraps">Sanitizer Wraps</option>
+                )}
                 {categories.map((category) => (
                   <option
                     key={category.id}
@@ -841,6 +853,11 @@ export default function AdminCatalogPage() {
                 ))}
               </select>
 
+              {selectedSlug === "sanitizer-wraps" && (
+                <p className="mt-2 text-sm text-red-300">
+                  All sanitizer designs publish together on the Sanitizer Wraps page. No subcategories needed.
+                </p>
+              )}
               {selectedCategory && (
                 <p className="mt-2 text-xs text-white/55">
                   Next number starts after the current {selectedCategory.base_image_count} original wraps and any dashboard uploads.

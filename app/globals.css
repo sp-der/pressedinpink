@@ -33,9 +33,10 @@ body {
   z-index: 1000;
   display: grid;
   place-items: center;
-  pointer-events: none;
+  pointer-events: auto;
   background: radial-gradient(ellipse at center, #240609 0%, #090203 48%, #000 80%);
   animation: pnp-intro-reveal 1.95s ease-in-out both;
+  animation-play-state: paused;
   will-change: opacity, visibility;
 }
 
@@ -50,6 +51,7 @@ body {
   height: auto;
   filter: drop-shadow(0 0 24px rgba(220, 38, 38, 0.22));
   animation: pnp-kiss 1.45s ease-in-out both;
+  animation-play-state: paused;
   will-change: transform, opacity;
 }
 
@@ -59,6 +61,7 @@ body {
   font-size: clamp(22px, 5vw, 38px);
   opacity: 0;
   animation: pnp-kiss-heart 0.75s ease-out both;
+  animation-play-state: paused;
 }
 
 .pnp-intro-heart-one { top: 25%; right: 14%; animation-delay: 0.65s; }
@@ -81,4 +84,13 @@ body {
 @keyframes pnp-intro-reveal {
   0%, 72% { opacity: 1; visibility: visible; }
   100% { opacity: 0; visibility: hidden; }
+}
+
+.pnp-intro[data-ready="true"],
+.pnp-intro[data-ready="true"] .pnp-intro-logo,
+.pnp-intro[data-ready="true"] .pnp-intro-heart { animation-play-state: running; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pnp-intro-logo { animation: none; }
+  .pnp-intro-heart { display: none; }
 }

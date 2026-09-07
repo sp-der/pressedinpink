@@ -24,8 +24,9 @@ const shoppingPaths = [
 
 export default function Home() {
   return (
-    <StorefrontFrame>
+    <>
       <BrandIntro />
+      <StorefrontFrame>
       <CollectionHub
         eyebrow="Rialto, CA"
         title="Made for Creators Built for Custom & Where Custom Meets Creativity"
@@ -37,6 +38,7 @@ export default function Home() {
         layout="circles"
         items={shoppingPaths}
       />
-    </StorefrontFrame>
+      </StorefrontFrame>
+    </>
   );
 }

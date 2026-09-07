@@ -1,11 +1,6 @@
-import CategoryPlaceholder from "@/components/CategoryPlaceholder";
+import WrapGallery from "@/components/WrapGallery";
+import { sanitizerWraps } from "@/data/sanitizerWraps";
 
 export default function SanitizerWrapsPage() {
-  return (
-    <CategoryPlaceholder
-      section="For Creators"
-      title="Sanitizer Wraps"
-      description="Sanitizer wraps are coming soon. Available designs and ordering details will appear here as products are added."
-    />
-  );
+  return <WrapGallery category={sanitizerWraps} />;
 }
