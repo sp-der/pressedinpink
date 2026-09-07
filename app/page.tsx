@@ -34,6 +34,7 @@ export default function Home() {
           label: "Message to Order",
           href: "https://www.instagram.com/pressed_in_pink/",
         }}
+        layout="circles"
         items={shoppingPaths}
       />
     </StorefrontFrame>

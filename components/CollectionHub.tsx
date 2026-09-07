@@ -20,6 +20,7 @@ type CollectionHubProps = {
     href: string;
   };
   items: CollectionHubItem[];
+  layout?: "cards" | "circles";
 };
 
 function CardContents({ item }: { item: CollectionHubItem }) {
@@ -91,6 +92,7 @@ export default function CollectionHub({
   description,
   heroAction,
   items,
+  layout = "cards",
 }: CollectionHubProps) {
   return (
     <>
@@ -130,6 +132,29 @@ export default function CollectionHub({
         </div>
       </section>
 
+      {layout === "circles" ? (
+        <section aria-label="Choose how to shop" className="relative mx-auto grid max-w-5xl grid-cols-2 gap-8 px-4 pb-12 sm:gap-16 sm:px-6 sm:pb-16">
+          <div aria-hidden="true" className="absolute bottom-12 left-1/2 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-red-500/80 to-transparent sm:bottom-16" />
+          {items.map((item) => (
+            <div key={item.title} className="flex min-w-0 flex-col items-center text-center">
+              <a
+                href={item.href}
+                aria-label={item.title}
+                className="group relative flex aspect-square w-full max-w-[25rem] flex-col items-center justify-center gap-3 overflow-hidden rounded-full border border-red-700 bg-[radial-gradient(circle_at_35%_25%,rgba(100,15,15,0.96),rgba(0,0,0,0.98)_75%)] p-4 text-white shadow-xl transition duration-300 hover:border-red-400 hover:shadow-[0_0_45px_rgba(185,28,28,0.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 motion-safe:hover:scale-[1.025] sm:gap-5 sm:p-8"
+              >
+                {item.image ? (
+                  <img src={item.image} alt="" className="h-[38%] w-[48%] object-contain" />
+                ) : null}
+                <h2 className="max-w-full text-center text-base font-black uppercase leading-tight tracking-wide min-[400px]:text-lg sm:text-3xl lg:text-4xl" style={smokyTextShadow}>
+                  {item.title}
+                </h2>
+                <span aria-hidden="true" className="text-lg text-red-300 transition-transform group-hover:translate-x-1 sm:text-2xl">→</span>
+              </a>
+              <p className="mt-5 text-[10px] font-black uppercase tracking-[0.14em] text-red-300 sm:text-xs">{item.label}</p>
+            </div>
+          ))}
+        </section>
+      ) : (
       <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
         <div
           className={`grid gap-6 sm:grid-cols-2 ${
@@ -161,6 +186,7 @@ export default function CollectionHub({
           )}
         </div>
       </section>
+      )}
     </>
   );
 }
