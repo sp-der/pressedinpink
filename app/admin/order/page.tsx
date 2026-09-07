@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import AuthPageShell from "@/components/AuthPageShell";
+import CustomCupOrderDetails from "@/components/CustomCupOrderDetails";
 import { useAuth } from "@/components/AuthProvider";
 import {
   downloadInvoicePdf,
@@ -272,7 +273,7 @@ export default function AdminOrderPage() {
       if (item.category_slug.startsWith("custom-cup-")) {
         const unitPrice = moneyValue(customPrices[item.id] ?? "0");
         grouped.set(item.id, { categorySlug: item.id, orderItemId: item.id,
-          description: `${item.display_name} — ${item.category_name}`,
+          description: "Custom Cup Order",
           quantity, unitPrice, lineTotal: roundMoney(quantity * unitPrice) });
         continue;
       }
@@ -1085,7 +1086,7 @@ export default function AdminOrderPage() {
                 <h3 className="text-xl font-black">
                   {getAdminOrderItemName(item)}
                 </h3>
-                {item.category_slug.startsWith("custom-cup-") && <p className="mt-2 text-sm text-red-300">{item.category_name}</p>}
+                {item.category_slug.startsWith("custom-cup-") && <CustomCupOrderDetails name={item.display_name} category={item.category_name} />}
                 <p className="mt-1 text-xs text-white/50">
                   Requested quantity: {item.requested_quantity}
                 </p>

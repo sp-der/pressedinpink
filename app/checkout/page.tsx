@@ -10,6 +10,7 @@ import {
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
 import { useCart } from "@/components/CartProvider";
+import { customerItemName } from "@/lib/customCupDisplay";
 import { supabase } from "@/lib/supabase";
 import {
   CONTACT_METHOD_LABELS,
@@ -702,7 +703,7 @@ export default function CheckoutPage() {
                 className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3"
               >
                 <span className="text-sm font-bold">
-                  {item.displayName}
+                  {customerItemName(item.categorySlug, item.displayName)}
                 </span>
 
                 <span className="rounded-full bg-red-600 px-2 py-1 text-xs font-black">

@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import AuthPageShell from "@/components/AuthPageShell";
+import { customerItemName, isCustomCup } from "@/lib/customCupDisplay";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
 import {
@@ -339,7 +340,7 @@ export default function OrderStatusPage() {
                     item.thumbnail_url
                   }
                   alt={
-                    item.display_name
+                    customerItemName(item.category_slug, item.display_name)
                   }
                   onError={(event) => {
                     event.currentTarget.onerror =
@@ -356,13 +357,13 @@ export default function OrderStatusPage() {
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.18em] text-red-500">
                       {
-                        item.category_name
+                        isCustomCup(item.category_slug) ? "Made to order" : item.category_name
                       }
                     </p>
 
                     <h2 className="mt-1 text-2xl font-black">
                       {
-                        item.display_name
+                        customerItemName(item.category_slug, item.display_name)
                       }
                     </h2>
                   </div>

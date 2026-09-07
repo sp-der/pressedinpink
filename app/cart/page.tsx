@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/CartProvider";
+import { customerItemName, isCustomCup } from "@/lib/customCupDisplay";
 
 const smokyTextShadow = {
   textShadow:
@@ -254,14 +255,14 @@ export default function CartPage() {
                       <div className="flex flex-col justify-between gap-5 p-5 sm:p-6">
                         <div>
                           <p className="text-xs font-black uppercase tracking-[0.2em] text-red-500">
-                            {item.categoryName}
+                            {isCustomCup(item.categorySlug) ? "Made to order" : item.categoryName}
                           </p>
 
                           <h2
                             className="mt-2 text-2xl font-black text-white"
                             style={smokyTextShadow}
                           >
-                            {item.displayName}
+                            {customerItemName(item.categorySlug, item.displayName)}
                           </h2>
 
                           {item.detailHref && (
