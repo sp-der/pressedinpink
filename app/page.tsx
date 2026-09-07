@@ -4,12 +4,12 @@ import StorefrontFrame from "@/components/StorefrontFrame";
 
 const shoppingPaths = [
   {
-    title: "For Premade",
+    title: "For Custom & Premade",
     description:
-      "Browse premade cups and shirts. Custom cup orders will be added here later.",
-    action: "Shop For Premade →",
+      "Order custom cups or shop premade cups, shirts, totes, and more.",
+    action: "Shop Custom & Premade →",
     href: "/premade",
-    monogram: "For Premade",
+    monogram: "For Custom & Premade",
     label: "Finished products",
   },
   {
@@ -18,8 +18,6 @@ const shoppingPaths = [
       "Find UV-DTF wraps, blank cups, glitters, and mini UV-DTF designs for your own creations.",
     action: "Shop Creator Supplies →",
     href: "/for-creators",
-    image: "/wrap-categories/Hello Kitty.png",
-    imageFit: "contain" as const,
     label: "Wraps & supplies",
   },
 ];
