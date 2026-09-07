@@ -9,6 +9,8 @@ const wrapLabels = new Map(
 export function getAdminOrderItemName(
   item: Pick<OrderItemRecord, "category_slug" | "category_name" | "display_name">,
 ): string {
+  if (item.category_slug.startsWith("custom-cup-")) return item.display_name;
+
   if (item.category_slug === "sanitizer-wraps") return "Sanitizer Wrap";
 
   if (item.category_slug.startsWith("cup-")) {

@@ -40,6 +40,7 @@ const BULK_WRAP_PRICE = 1.25;
 const BULK_WRAP_MINIMUM = 50;
 
 type GroupedInvoiceLine = {
+  orderItemId?: string;
   categorySlug: string;
   description: string;
   quantity: number;
@@ -67,6 +68,7 @@ export default function AdminOrderPage() {
   const [revisionMessage, setRevisionMessage] = useState("");
   const [invoice, setInvoice] =
     useState<InvoiceRecord | null>(null);
+  const [customPrices, setCustomPrices] = useState<Record<string, string>>({});
   const [shipping, setShipping] = useState("0.00");
   const [discount, setDiscount] = useState("0.00");
   const [tax, setTax] = useState("0.00");
@@ -101,6 +103,7 @@ export default function AdminOrderPage() {
 
       if (!data) {
         setInvoice(null);
+        setCustomPrices({});
         setShipping("0.00");
         setDiscount("0.00");
         setTax("0.00");
@@ -109,6 +112,10 @@ export default function AdminOrderPage() {
       }
 
       const loadedInvoice = data as InvoiceRecord;
+      const { data: savedLines } = await supabase.from("invoice_items")
+        .select("order_item_id, unit_price").eq("invoice_id", loadedInvoice.id);
+      setCustomPrices(Object.fromEntries((savedLines ?? []).filter(line => line.order_item_id).map(line => [line.order_item_id, String(line.unit_price)])));
+
 
       setInvoice({
         ...loadedInvoice,
@@ -223,7 +230,7 @@ export default function AdminOrderPage() {
   const approvedWrapQuantity = useMemo(
     () =>
       items.reduce((totalQuantity, item) => {
-        if (!item.is_available) {
+        if (!item.is_available || item.category_slug.startsWith("custom-cup-")) {
           return totalQuantity;
         }
 
@@ -262,6 +269,13 @@ export default function AdminOrderPage() {
         continue;
       }
 
+      if (item.category_slug.startsWith("custom-cup-")) {
+        const unitPrice = moneyValue(customPrices[item.id] ?? "0");
+        grouped.set(item.id, { categorySlug: item.id, orderItemId: item.id,
+          description: `${item.display_name} — ${item.category_name}`,
+          quantity, unitPrice, lineTotal: roundMoney(quantity * unitPrice) });
+        continue;
+      }
       const categorySlug = item.category_slug || "other";
       const current = grouped.get(categorySlug);
 
@@ -285,7 +299,7 @@ export default function AdminOrderPage() {
     return Array.from(grouped.values()).sort((first, second) =>
       first.description.localeCompare(second.description),
     );
-  }, [items, automaticUnitPrice]);
+  }, [items, automaticUnitPrice, customPrices]);
 
   const subtotal = useMemo(
     () =>
@@ -421,6 +435,10 @@ export default function AdminOrderPage() {
       return null;
     }
 
+    if (invoiceLines.some(line => line.orderItemId && (!customPrices[line.orderItemId]?.trim() || !Number.isFinite(Number(customPrices[line.orderItemId])) || Number(customPrices[line.orderItemId]) <= 0))) {
+      setErrorMessage("Enter the quoted unit price for every custom cup before saving or sending its invoice.");
+      return null;
+    }
     if (invoiceLines.length === 0) {
       setErrorMessage(
         "The invoice needs at least one available wrap with an approved quantity.",
@@ -494,7 +512,7 @@ export default function AdminOrderPage() {
         .insert(
           invoiceLines.map((line) => ({
             invoice_id: savedInvoice.id,
-            order_item_id: null,
+            order_item_id: line.orderItemId ?? null,
             description: line.description,
             quantity: line.quantity,
             unit_price: line.unitPrice,
@@ -908,7 +926,11 @@ export default function AdminOrderPage() {
                     {line.quantity}
                   </td>
                   <td className="px-4 py-3 font-black text-red-300">
-                    {currency.format(line.unitPrice)} each
+                    {line.orderItemId ? <label className="block text-sm">Custom cup quote (each)
+                      <input type="number" min="0.01" step="0.01" aria-label={`Quoted unit price for ${line.description}`} value={customPrices[line.orderItemId] ?? ""}
+                        onChange={event => setCustomPrices(current => ({ ...current, [line.orderItemId!]: event.target.value }))}
+                        placeholder="Enter price" className="mt-2 w-32 rounded-lg border border-red-700 bg-black p-2 text-white" />
+                    </label> : <>{currency.format(line.unitPrice)} each</>}
                   </td>
                   <td className="px-4 py-3 text-right font-black">
                     {currency.format(line.lineTotal)}
@@ -1063,6 +1085,7 @@ export default function AdminOrderPage() {
                 <h3 className="text-xl font-black">
                   {getAdminOrderItemName(item)}
                 </h3>
+                {item.category_slug.startsWith("custom-cup-") && <p className="mt-2 text-sm text-red-300">{item.category_name}</p>}
                 <p className="mt-1 text-xs text-white/50">
                   Requested quantity: {item.requested_quantity}
                 </p>

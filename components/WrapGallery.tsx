@@ -22,6 +22,7 @@ const WRAPS_PER_PAGE = 24;
 
 type WrapGalleryProps = {
   category: WrapCategoryConfig;
+  onSelectWrap?: (product: WrapProduct) => void;
 };
 
 type GalleryWrap = {
@@ -131,6 +132,7 @@ function createBaseWraps(
 
 export default function WrapGallery({
   category,
+  onSelectWrap,
 }: WrapGalleryProps) {
   const baseWraps = useMemo(
     () => createBaseWraps(category),
@@ -732,9 +734,9 @@ export default function WrapGallery({
                       </div>
                     </button>
 
-                    <AddToCartControls
-                      product={wrap.product}
-                    />
+                    {onSelectWrap ? (
+                      <button type="button" onClick={() => onSelectWrap(wrap.product)} className="m-4 rounded-full bg-red-600 px-5 py-3 font-bold">Choose this wrap</button>
+                    ) : <AddToCartControls product={wrap.product} />}
                   </article>
                 );
               },
@@ -861,10 +863,9 @@ export default function WrapGallery({
               {wraps.length}
             </p>
 
-            <AddToCartControls
-              product={selectedWrap.product}
-              variant="viewer"
-            />
+            {onSelectWrap ? (
+              <button type="button" onClick={() => onSelectWrap(selectedWrap.product)} className="mt-4 rounded-full bg-red-600 px-5 py-3 font-bold">Use this wrap for my cup</button>
+            ) : <AddToCartControls product={selectedWrap.product} variant="viewer" />}
           </div>
 
           <button

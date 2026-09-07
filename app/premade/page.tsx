@@ -21,10 +21,10 @@ const premadeCollections = [
   {
     title: "Custom Cup Orders",
     description:
-      "A guided custom cup ordering option will be added in a later update.",
-    action: "Coming Soon",
+      "Choose your cup, wrap, and lid to create your own custom piece.",
+    action: "Build Your Cup →",
+    href: "/custom-cup",
     monogram: "Custom",
-    label: "Coming soon",
   },
 ];
 
@@ -36,8 +36,8 @@ export default function PremadePage() {
     >
       <CollectionHub
         eyebrow="Shop Finished Pieces"
-        title="Premade"
-        description="Choose from premade cups and shirts, with custom cup ordering coming later."
+        title="Custom & Premade"
+        description="Build a custom cup or shop premade cups and shirts."
         items={premadeCollections}
       />
     </StorefrontFrame>
