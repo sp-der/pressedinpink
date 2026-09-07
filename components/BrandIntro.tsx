@@ -56,8 +56,8 @@ export default function BrandIntro() {
             className="pnp-intro-logo"
             onError={() => setDismissed(true)}
           />
-          <span className="pnp-intro-heart pnp-intro-heart-one">♥</span>
-          <span className="pnp-intro-heart pnp-intro-heart-two">♥</span>
+          <span className="pnp-intro-lip pnp-intro-lip-one">💋</span>
+          <span className="pnp-intro-lip pnp-intro-lip-two">💋</span>
         </div>
       </div>
       <noscript><style>{".pnp-intro { display: none !important; }"}</style></noscript>
