@@ -10,7 +10,7 @@ import type { WrapProduct } from "@/types/cart";
 
 type AddToCartControlsProps = {
   product: WrapProduct;
-  variant?: "card" | "viewer";
+  variant?: "card" | "compact" | "viewer";
 };
 
 export default function AddToCartControls({
@@ -31,6 +31,8 @@ export default function AddToCartControls({
   const isOneOfOne = product.isOneOfOne === true;
   const isAlreadyInCart =
     isOneOfOne && currentCartQuantity > 0;
+  const isViewer = variant === "viewer";
+  const isCompact = variant === "compact";
 
   useEffect(() => {
     if (!showAddedMessage) {
@@ -75,9 +77,11 @@ export default function AddToCartControls({
   return (
     <div
       className={
-        variant === "viewer"
+        isViewer
           ? "mt-4 rounded-2xl border border-red-900 bg-black/90 p-4"
-          : "border-t border-red-950 bg-black/95 p-4"
+          : isCompact
+            ? "border-t border-red-950 bg-black/95 p-3"
+            : "border-t border-red-950 bg-black/95 p-4"
       }
       onClick={(event) =>
         event.stopPropagation()
@@ -85,35 +89,50 @@ export default function AddToCartControls({
     >
       <div
         className={
-          variant === "viewer"
+          isViewer
             ? "flex flex-col items-center justify-between gap-4 sm:flex-row"
-            : "space-y-3"
+            : isCompact
+              ? "space-y-2"
+              : "space-y-3"
         }
       >
         {!isOneOfOne && (
           <div>
-            <p className="text-xs font-bold text-white/70">
+            <p
+              className={
+                isCompact
+                  ? "text-[10px] font-bold leading-4 text-white/70"
+                  : "text-xs font-bold text-white/70"
+              }
+            >
               {currentCartQuantity > 0
-                ? `Already in cart: ${currentCartQuantity}`
-                : "Choose the quantity you want to request."}
+                ? isCompact
+                  ? `In cart: ${currentCartQuantity}`
+                  : `Already in cart: ${currentCartQuantity}`
+                : isCompact
+                  ? "Choose quantity."
+                  : "Choose the quantity you want to request."}
             </p>
           </div>
         )}
 
         <div
           className={
-            variant === "viewer"
+            isViewer
               ? "flex flex-wrap items-center justify-center gap-3"
-              : "flex items-center justify-between gap-3"
+              : isCompact
+                ? "flex flex-col items-stretch gap-2 xl:flex-row xl:items-center xl:justify-between"
+                : "flex items-center justify-between gap-3"
           }
         >
           {!isOneOfOne && (
             <div
-              className="
+              className={`
                 flex items-center overflow-hidden
                 rounded-full border border-red-700
                 bg-black
-              "
+                ${isCompact ? "mx-auto xl:mx-0" : ""}
+              `}
             >
               <button
                 type="button"
@@ -121,11 +140,11 @@ export default function AddToCartControls({
                   updateQuantity(quantity - 1)
                 }
                 aria-label="Decrease wrap quantity"
-                className="
-                  flex h-10 w-10 items-center
-                  justify-center text-xl font-black
-                  text-white transition hover:bg-red-700
-                "
+                className={
+                  isCompact
+                    ? "flex h-8 w-8 items-center justify-center text-lg font-black text-white transition hover:bg-red-700"
+                    : "flex h-10 w-10 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
+                }
               >
                 −
               </button>
@@ -142,12 +161,11 @@ export default function AddToCartControls({
                   )
                 }
                 aria-label="Wrap quantity"
-                className="
-                  h-10 w-14 border-x
-                  border-red-900 bg-black
-                  text-center font-black text-white
-                  outline-none
-                "
+                className={
+                  isCompact
+                    ? "h-8 w-10 border-x border-red-900 bg-black text-center text-sm font-black text-white outline-none"
+                    : "h-10 w-14 border-x border-red-900 bg-black text-center font-black text-white outline-none"
+                }
               />
 
               <button
@@ -156,11 +174,11 @@ export default function AddToCartControls({
                   updateQuantity(quantity + 1)
                 }
                 aria-label="Increase wrap quantity"
-                className="
-                  flex h-10 w-10 items-center
-                  justify-center text-xl font-black
-                  text-white transition hover:bg-red-700
-                "
+                className={
+                  isCompact
+                    ? "flex h-8 w-8 items-center justify-center text-lg font-black text-white transition hover:bg-red-700"
+                    : "flex h-10 w-10 items-center justify-center text-xl font-black text-white transition hover:bg-red-700"
+                }
               >
                 +
               </button>
@@ -171,16 +189,11 @@ export default function AddToCartControls({
             type="button"
             onClick={handleAdd}
             disabled={isAlreadyInCart}
-            className="
-              min-h-10 flex-1 rounded-full
-              bg-red-600 px-5 py-2
-              text-sm font-black text-white
-              transition hover:bg-red-500
-              focus:outline-none focus:ring-2
-              focus:ring-red-400
-              disabled:cursor-default disabled:bg-green-700
-              sm:flex-none
-            "
+            className={
+              isCompact
+                ? "min-h-8 w-full rounded-full bg-red-600 px-3 py-1.5 text-xs font-black text-white transition hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:cursor-default disabled:bg-green-700 xl:w-auto xl:flex-1"
+                : "min-h-10 flex-1 rounded-full bg-red-600 px-5 py-2 text-sm font-black text-white transition hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 disabled:cursor-default disabled:bg-green-700 sm:flex-none"
+            }
           >
             {isAlreadyInCart
               ? "In Cart ✓"
