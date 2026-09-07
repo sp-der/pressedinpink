@@ -18,7 +18,7 @@ import type { WrapCategoryConfig } from "@/types/wraps";
 const R2_WRAP_BASE_URL =
   "https://images.pressedinpink.com/wraps";
 
-const WRAPS_PER_PAGE = 24;
+const WRAPS_PER_PAGE = 50;
 
 type WrapGalleryProps = {
   category: WrapCategoryConfig;
@@ -616,7 +616,7 @@ export default function WrapGallery({
 
         <section
           ref={galleryRef}
-          className="scroll-mt-6 mx-auto max-w-7xl px-4 pb-20 sm:px-6"
+          className="scroll-mt-6 mx-auto max-w-[1600px] px-3 pb-20 sm:px-5 lg:px-6"
         >
           <div className="mb-7 flex flex-col items-center justify-between gap-4 rounded-2xl border border-red-900/80 bg-black/80 px-5 py-4 backdrop-blur-md sm:flex-row">
             <div className="text-center sm:text-left">
@@ -658,7 +658,7 @@ export default function WrapGallery({
               </p>
             </div>
           ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5">
             {visibleWraps.map(
               (wrap, localIndex) => {
                 const globalIndex =
@@ -669,7 +669,7 @@ export default function WrapGallery({
                   <article
                     key={wrap.product.id}
                     className="
-                      overflow-hidden rounded-3xl
+                      overflow-hidden rounded-2xl
                       border border-red-900
                       bg-black shadow-xl
                       transition duration-300
@@ -696,7 +696,7 @@ export default function WrapGallery({
                           }
                           alt={`${wrap.product.displayName} wrap design`}
                           loading={
-                            localIndex < 3
+                            localIndex < 5
                               ? "eager"
                               : "lazy"
                           }
@@ -735,8 +735,8 @@ export default function WrapGallery({
                     </button>
 
                     {onSelectWrap ? (
-                      <button type="button" onClick={() => onSelectWrap(wrap.product)} className="m-4 rounded-full bg-red-600 px-5 py-3 font-bold">Choose this wrap</button>
-                    ) : <AddToCartControls product={wrap.product} />}
+                      <button type="button" onClick={() => onSelectWrap(wrap.product)} className="m-3 rounded-full bg-red-600 px-3 py-2 text-xs font-bold">Choose this wrap</button>
+                    ) : <AddToCartControls product={wrap.product} variant="compact" />}
                   </article>
                 );
               },
