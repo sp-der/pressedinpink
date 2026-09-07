@@ -7,6 +7,7 @@ export type WrapCategoryConfig = {
   filenamePrefix: string;
   imageFolder: string;
   totalImages: number;
+  displayOrientation?: "upright" | "landscape";
   backHref: string;
   backLabel: string;
   footerHref: string;

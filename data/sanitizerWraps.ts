@@ -8,6 +8,7 @@ export const sanitizerWraps: WrapCategoryConfig = {
   filenamePrefix: "sanitizer-wrap",
   imageFolder: "sanitizer-wraps",
   totalImages: 0,
+  displayOrientation: "upright",
   backHref: "/for-creators",
   backLabel: "Back to For Creators",
   footerHref: "/for-creators",

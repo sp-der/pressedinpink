@@ -226,8 +226,8 @@ export default function WrapGallery({
     for (const wrap of uploadedWraps) {
       merged.set(wrap.image_number, {
         number: wrap.image_number,
-        thumbnailNeedsRotation: true,
-        viewerNeedsRotation: true,
+        thumbnailNeedsRotation: category.displayOrientation !== "upright",
+        viewerNeedsRotation: category.displayOrientation !== "upright",
         product: {
           id: `${category.slug}-${wrap.image_number}`,
           displayName: wrap.display_name,
@@ -686,7 +686,7 @@ export default function WrapGallery({
                       aria-label={`Open ${wrap.product.displayName}`}
                       className="group block w-full"
                     >
-                      <div className="relative aspect-[2/1] w-full overflow-hidden">
+                      <div className={category.displayOrientation === "upright" ? "relative w-full overflow-hidden" : "relative aspect-[2/1] w-full overflow-hidden"}>
                         <img
                           src={
                             wrap.product
@@ -709,7 +709,9 @@ export default function WrapGallery({
                                 .fullImageUrl;
                           }}
                           className={
-                            wrap.thumbnailNeedsRotation
+                            category.displayOrientation === "upright"
+                              ? "block h-auto w-full"
+                              : wrap.thumbnailNeedsRotation
                               ? `
                                 absolute left-1/2 top-1/2
                                 h-[204%] w-[52%]
@@ -813,12 +815,16 @@ export default function WrapGallery({
           </button>
 
           <div
-            className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"
+            className={category.displayOrientation === "upright"
+              ? "max-h-[92dvh] w-fit max-w-[90vw] overflow-y-auto rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"
+              : "max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-3xl border border-red-900 bg-black/95 p-3 shadow-2xl sm:p-5"}
             onClick={(event) =>
               event.stopPropagation()
             }
           >
-            <div className="relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white">
+            <div className={category.displayOrientation === "upright"
+              ? "mx-auto w-fit overflow-hidden rounded-xl"
+              : "relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white"}>
               <img
                 src={
                   selectedWrap.product
@@ -827,7 +833,9 @@ export default function WrapGallery({
                 alt={`${selectedWrap.product.displayName} wrap design`}
                 draggable={false}
                 className={
-                  selectedWrap.viewerNeedsRotation
+                  category.displayOrientation === "upright"
+                    ? "block h-auto max-h-[65dvh] w-auto max-w-full object-contain"
+                    : selectedWrap.viewerNeedsRotation
                     ? `
                       absolute left-1/2 top-1/2
                       h-[200%] w-1/2 max-w-none
