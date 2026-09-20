@@ -37,12 +37,12 @@ export default function BlankCupGallery({
               className="group block"
               aria-label={`Open ${category.displayName} item ${product.imageNumber}`}
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-black/80">
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <img
                   src={product.fullImageUrl}
                   alt=""
                   loading="lazy"
-                  className="h-full w-full object-contain transition duration-300 group-hover:scale-[1.02]"
+                  className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.02]"
                 />
               </div>
               <div className="p-4 pb-3">
