@@ -14,12 +14,12 @@ export default function BlankCupDetail({
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,620px)_1fr] lg:items-start">
-        <div className="overflow-hidden rounded-[2rem] border border-red-900 bg-black/90 shadow-2xl">
-          <div className="aspect-[4/3] bg-black/80">
+        <div className="overflow-hidden rounded-[2rem] border border-red-900 shadow-2xl">
+          <div className="aspect-[4/3] overflow-hidden">
             <img
               src={product.fullImageUrl}
               alt=""
-              className="h-full w-full object-contain"
+              className="h-full w-full object-cover object-center"
             />
           </div>
         </div>
