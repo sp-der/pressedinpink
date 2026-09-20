@@ -5,7 +5,7 @@ const premadeCollections = [
   {
     title: "Premade Cups",
     description:
-      "Shop Snowglobe Cups, Kid's Snowglobe Cups, Libby Cups, and Paris Cups.",
+      "Shop Snowglobe Cups, Kid's Snowglobe Cups, Libby Cups, and Acrylic Cups.",
     action: "View Premade Cups →",
     href: "/cups",
     monogram: "Cups",
