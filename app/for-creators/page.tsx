@@ -8,8 +8,7 @@ const creatorCollections = [
       "Browse the complete UV-DTF collection by character, theme, team, artist, and style.",
     action: "Browse All Wraps →",
     href: "/wraps",
-    image: "/wrap-categories/Hello Kitty.png",
-    imageFit: "contain" as const,
+    monogram: "UV-DTF WRAPS",
   },
   {
     title: "Mini UV-DTF",
