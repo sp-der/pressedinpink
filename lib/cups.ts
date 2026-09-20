@@ -72,13 +72,13 @@ export const CUP_CATEGORIES: CupCategoryConfig[] = [
   {
     slug: "paris",
     databaseSlug: "cup-paris",
-    displayName: "Paris Cups",
-    itemLabel: "Paris Cup",
+    displayName: "Acrylic Cups",
+    itemLabel: "Acrylic Cup",
     r2Folder: "pariscups",
     filenamePrefix: "Paris",
     itemNumbers: itemRange(1, 6),
     description:
-      "Premade one-of-one Paris Cups. Each cup shown is the exact finished cup available to request.",
+      "Premade one-of-one Acrylic Cups. Each cup shown is the exact finished cup available to request.",
   },
 ];
 
