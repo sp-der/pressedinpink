@@ -33,6 +33,8 @@ export default function AddToCartControls({
     isOneOfOne && currentCartQuantity > 0;
   const isViewer = variant === "viewer";
   const isCompact = variant === "compact";
+  const quantityLabel =
+    product.productType === "cup" ? "cup" : "wrap";
 
   useEffect(() => {
     if (!showAddedMessage) {
@@ -60,7 +62,7 @@ export default function AddToCartControls({
             : 1,
           1,
         ),
-        99,
+        999,
       ),
     );
   };
@@ -139,7 +141,7 @@ export default function AddToCartControls({
                 onClick={() =>
                   updateQuantity(quantity - 1)
                 }
-                aria-label="Decrease wrap quantity"
+                aria-label={`Decrease ${quantityLabel} quantity`}
                 className={
                   isCompact
                     ? "flex h-8 w-8 items-center justify-center text-lg font-black text-white transition hover:bg-red-700"
@@ -152,7 +154,7 @@ export default function AddToCartControls({
               <input
                 type="number"
                 min={1}
-                max={99}
+                max={999}
                 inputMode="numeric"
                 value={quantity}
                 onChange={(event) =>
@@ -160,7 +162,7 @@ export default function AddToCartControls({
                     Number(event.target.value),
                   )
                 }
-                aria-label="Wrap quantity"
+                aria-label={`${quantityLabel[0].toUpperCase() + quantityLabel.slice(1)} quantity`}
                 className={
                   isCompact
                     ? "h-8 w-10 border-x border-red-900 bg-black text-center text-sm font-black text-white outline-none"
@@ -173,7 +175,7 @@ export default function AddToCartControls({
                 onClick={() =>
                   updateQuantity(quantity + 1)
                 }
-                aria-label="Increase wrap quantity"
+                aria-label={`Increase ${quantityLabel} quantity`}
                 className={
                   isCompact
                     ? "flex h-8 w-8 items-center justify-center text-lg font-black text-white transition hover:bg-red-700"
@@ -211,7 +213,7 @@ export default function AddToCartControls({
         {showAddedMessage
           ? isOneOfOne
             ? `${product.displayName} added to the cart.`
-            : `${quantity} wrap${quantity === 1 ? "" : "s"} added to the cart.`
+            : `${quantity} ${quantityLabel}${quantity === 1 ? "" : "s"} added to the cart.`
           : ""}
       </p>
     </div>
