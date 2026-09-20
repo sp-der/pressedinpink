@@ -27,12 +27,12 @@ const cupCollections = [
     monogram: "Libby",
   },
   {
-    title: "Paris Cups",
+    title: "Acrylic Cups",
     description:
-      "Browse premade Paris cups finished in Pressed In Pink designs.",
-    action: "View Paris Cups →",
+      "Browse premade Acrylic cups finished in Pressed In Pink designs.",
+    action: "View Acrylic Cups →",
     href: "/cups/paris",
-    monogram: "Paris",
+    monogram: "Acrylic",
   },
 ];
 
