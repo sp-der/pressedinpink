@@ -36,7 +36,7 @@ export default function BlankCupDetail({
               Request quantity
             </p>
             <p className="mt-3 leading-7 text-white/80">
-              Select how many you need and add them to your request cart. No payment is collected now. Final pricing is confirmed after review.
+              Select how many you need and add them to your request cart.
             </p>
           </div>
 
