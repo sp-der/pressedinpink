@@ -32,7 +32,6 @@ const creatorCollections = [
     action: "View Blank Cups →",
     href: "/for-creators/blank-cups",
     monogram: "Blanks",
-    label: "Coming soon",
   },
   {
     title: "Glitters",
