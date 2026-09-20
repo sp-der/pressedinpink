@@ -22,7 +22,7 @@ export default function BlankCupGallery({
           {category.description}
         </p>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-red-200/80">
-          Choose any quantity and add it to your request cart. Final pricing is confirmed after your request is reviewed.
+          Choose any quantity and add it to your request cart.
         </p>
       </div>
 
