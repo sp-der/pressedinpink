@@ -2,7 +2,6 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -12,27 +11,20 @@ import { gunzipSync } from "node:zlib";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
-const chunksDir = join(root, "assets", "blank-cups");
+const archivePath = join(
+  root,
+  "assets",
+  "blank-cups",
+  "blank-cups.tar.gz",
+);
 const outputRoot = join(root, "public", "blank-cups");
 
-if (!existsSync(chunksDir)) {
-  console.error("Blank cup asset chunks are missing.");
+if (!existsSync(archivePath)) {
+  console.error("Blank cup asset archive is missing.");
   process.exit(1);
 }
 
-const chunkFiles = readdirSync(chunksDir)
-  .filter((name) => /^part-\d+\.b64$/.test(name))
-  .sort();
-
-if (chunkFiles.length === 0) {
-  console.error("No blank cup asset chunks were found.");
-  process.exit(1);
-}
-
-const encoded = chunkFiles
-  .map((name) => readFileSync(join(chunksDir, name), "utf8").trim())
-  .join("");
-const tar = gunzipSync(Buffer.from(encoded, "base64"));
+const tar = gunzipSync(readFileSync(archivePath));
 
 rmSync(outputRoot, { recursive: true, force: true });
 mkdirSync(outputRoot, { recursive: true });
