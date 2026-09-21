@@ -41,8 +41,16 @@ export default function BlankCupGallery({
                 <img
                   src={product.fullImageUrl}
                   alt=""
+                  aria-hidden="true"
                   loading="lazy"
-                  className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-[1.02]"
+                  className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-xl brightness-[0.72] saturate-[1.06]"
+                />
+                <div className="absolute inset-0 bg-black/10" />
+                <img
+                  src={product.fullImageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="relative z-10 h-full w-full object-contain object-center brightness-[1.04] contrast-[1.05] saturate-[1.04] transition duration-300 group-hover:scale-[1.015]"
                 />
               </div>
               <div className="p-4 pb-3">
