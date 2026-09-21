@@ -2,6 +2,7 @@ import { customCupDetails } from "@/lib/customCupDisplay";
 
 export default function CustomCupOrderDetails({ name, category }: { name: string; category: string }) {
   const details = customCupDetails(name, category);
+  const hasLidOptions = details.lid !== "No lid customization";
   const lidLabel = `${details.lid.replace(/\s+lid$/i, "")} Lid`;
   const decorationLabel = details.decorated ? "Decorated Lid" : "Standard Lid";
 
@@ -9,8 +10,8 @@ export default function CustomCupOrderDetails({ name, category }: { name: string
     <div className="mt-4 overflow-hidden rounded-2xl border border-red-900 bg-gradient-to-b from-red-950/35 to-white/[0.03]">
       <div className="space-y-2 px-5 py-5">
         <p className="text-lg font-black text-white">{details.cup}</p>
-        <p className="text-lg font-black text-white">{lidLabel}</p>
-        <p className="text-lg font-black text-white">{decorationLabel}</p>
+        <p className="text-lg font-black text-white">{hasLidOptions ? lidLabel : "No lid customization"}</p>
+        {hasLidOptions && <p className="text-lg font-black text-white">{decorationLabel}</p>}
       </div>
 
       {details.decorated && (

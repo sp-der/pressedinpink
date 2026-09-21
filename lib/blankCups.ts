@@ -213,3 +213,26 @@ export function categoryHasBlankCupNumber(
     number <= category.sourceFilenames.length
   );
 }
+
+// Colored-lid compatibility confirmed by the owner; match original filenames,
+// not gallery positions, so reordering photos cannot change eligibility.
+const COLORED_LID_CUPS = new Set([
+  "IMG_8962", "IMG_9006", "IMG_9007",
+  "IMG_8956", "IMG_8957", "IMG_8958", "IMG_8959", "IMG_8960",
+  "IMG_8978", "IMG_8979", "IMG_8980", "IMG_8989", "IMG_8998",
+  "IMG_9008", "IMG_9009", "IMG_8964", "IMG_9010",
+]);
+
+export function blankCupHasColoredLids(product: WrapProduct): boolean {
+  const source = product.sourceFilename.replace(/\.[^.]+$/, "").toUpperCase();
+  return product.categorySlug === "blank-metal"
+    ? source !== "IMG_8967"
+    : COLORED_LID_CUPS.has(source);
+}
+
+export const CUSTOM_CUP_CATEGORIES = BLANK_CUP_CATEGORIES.filter(c => c.slug !== "lids");
+export const CUSTOM_CUPS = CUSTOM_CUP_CATEGORIES.flatMap(getBlankCupProducts);
+export const CUSTOM_LIDS = getBlankCupProducts(getBlankCupCategory("lids")!).map(product => ({
+  ...product,
+  displayName: product.sourceFilename.replace(/\.[^.]+$/, "").replace(/\]/g, ""),
+}));
