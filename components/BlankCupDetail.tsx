@@ -15,11 +15,18 @@ export default function BlankCupDetail({
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,620px)_1fr] lg:items-start">
         <div className="overflow-hidden rounded-[2rem] border border-red-900 shadow-2xl">
-          <div className="aspect-[4/3] overflow-hidden">
+          <div className="relative aspect-[4/3] overflow-hidden">
             <img
               src={product.fullImageUrl}
               alt=""
-              className="h-full w-full object-cover object-center"
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full scale-110 object-cover object-center blur-2xl brightness-[0.72] saturate-[1.06]"
+            />
+            <div className="absolute inset-0 bg-black/10" />
+            <img
+              src={product.fullImageUrl}
+              alt=""
+              className="relative z-10 h-full w-full object-contain object-center brightness-[1.04] contrast-[1.05] saturate-[1.04]"
             />
           </div>
         </div>
