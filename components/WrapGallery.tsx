@@ -44,6 +44,7 @@ const smokyTextShadow = {
 
 const UPLOADED_LANDSCAPE_CATEGORY_NAMES = [
   "toy story",
+  "betty boop",
 ];
 
 function uploadedWrapsNeedRotation(
