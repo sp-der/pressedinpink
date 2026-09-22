@@ -9,6 +9,7 @@ import {
 
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
+import { categoryUsesDisplayReadyUploads } from "@/lib/wrapOrientation";
 import { supabase } from "@/lib/supabase";
 import type {
   CatalogCategoryRecord,
@@ -53,6 +54,7 @@ async function convertToWebp(
   file: File,
   maxDimension: number,
   quality: number,
+  normalizeLandscapeForRotatingGallery = false,
 ): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(
@@ -67,9 +69,17 @@ async function convertToWebp(
     1,
     Math.round(bitmap.height * scale),
   );
+  const rotateToLegacyPortrait =
+    normalizeLandscapeForRotatingGallery &&
+    width > height;
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+
+  canvas.width = rotateToLegacyPortrait
+    ? height
+    : width;
+  canvas.height = rotateToLegacyPortrait
+    ? width
+    : height;
 
   const context = canvas.getContext("2d", {
     alpha: true,
@@ -84,6 +94,15 @@ async function convertToWebp(
 
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
+
+  if (rotateToLegacyPortrait) {
+    // The regular wrap gallery rotates legacy portrait assets 90° clockwise.
+    // Store new horizontal uploads 90° counter-clockwise so that display
+    // rotation returns them to the exact orientation the customer uploaded.
+    context.translate(0, canvas.height);
+    context.rotate(-Math.PI / 2);
+  }
+
   context.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
 
@@ -577,10 +596,37 @@ export default function AdminCatalogPage() {
           message: "Converting to WebP",
         });
 
+        const categoryIdentity = creatingCategory
+          ? [
+              uploadSlug,
+              categoryName,
+              `${categoryName} Wraps`,
+            ]
+          : [
+              uploadSlug,
+              selectedCategory?.display_name,
+              selectedCategory?.heading,
+            ];
+        const normalizeForRotatingGallery =
+          uploadSlug !== "sanitizer-wraps" &&
+          !categoryUsesDisplayReadyUploads(
+            categoryIdentity,
+          );
+
         const [fullWebp, thumbnailWebp] =
           await Promise.all([
-            convertToWebp(file, 5000, 0.92),
-            convertToWebp(file, 700, 0.82),
+            convertToWebp(
+              file,
+              5000,
+              0.92,
+              normalizeForRotatingGallery,
+            ),
+            convertToWebp(
+              file,
+              700,
+              0.82,
+              normalizeForRotatingGallery,
+            ),
           ]);
 
         setProgressItem(index, {

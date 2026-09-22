@@ -10,6 +10,7 @@ import {
 } from "react";
 
 import AddToCartControls from "@/components/AddToCartControls";
+import { categoryUsesDisplayReadyUploads } from "@/lib/wrapOrientation";
 import { supabase } from "@/lib/supabase";
 import type { CatalogWrapRecord } from "@/types/catalog";
 import type { WrapProduct } from "@/types/cart";
@@ -41,28 +42,6 @@ const smokyTextShadow = {
   textShadow:
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
-
-const UPLOADED_LANDSCAPE_CATEGORY_NAMES = [
-  "toy story",
-  "betty boop",
-];
-
-function uploadedWrapsNeedRotation(
-  category: WrapCategoryConfig,
-): boolean {
-  const identity = [
-    category.slug,
-    category.displayName,
-    category.heading,
-  ]
-    .join(" ")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ");
-
-  return !UPLOADED_LANDSCAPE_CATEGORY_NAMES.some(
-    (categoryName) => identity.includes(categoryName),
-  );
-}
 
 function getPaginationItems(
   currentPage: number,
@@ -252,10 +231,18 @@ export default function WrapGallery({
         number: wrap.image_number,
         thumbnailNeedsRotation:
           category.displayOrientation !== "upright" &&
-          uploadedWrapsNeedRotation(category),
+          !categoryUsesDisplayReadyUploads([
+            category.slug,
+            category.displayName,
+            category.heading,
+          ]),
         viewerNeedsRotation:
           category.displayOrientation !== "upright" &&
-          uploadedWrapsNeedRotation(category),
+          !categoryUsesDisplayReadyUploads([
+            category.slug,
+            category.displayName,
+            category.heading,
+          ]),
         product: {
           id: `${category.slug}-${wrap.image_number}`,
           displayName: wrap.display_name,
