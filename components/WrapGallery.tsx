@@ -42,6 +42,104 @@ const smokyTextShadow = {
     "0 2px 5px rgba(0, 0, 0, 1), 0 0 12px rgba(0, 0, 0, 0.95), 0 0 24px rgba(0, 0, 0, 0.75)",
 };
 
+type RotatableWrapImageProps = {
+  src: string;
+  fallbackSrc?: string;
+  alt: string;
+  mode: "thumbnail" | "viewer";
+  initialNeedsRotation: boolean;
+  upright: boolean;
+  eager?: boolean;
+};
+
+function RotatableWrapImage({
+  src,
+  fallbackSrc,
+  alt,
+  mode,
+  initialNeedsRotation,
+  upright,
+  eager = false,
+}: RotatableWrapImageProps) {
+  const [needsRotation, setNeedsRotation] =
+    useState(initialNeedsRotation);
+
+  useEffect(() => {
+    setNeedsRotation(initialNeedsRotation);
+  }, [src, initialNeedsRotation]);
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      loading={
+        mode === "thumbnail"
+          ? eager
+            ? "eager"
+            : "lazy"
+          : undefined
+      }
+      decoding="async"
+      draggable={false}
+      onLoad={(event) => {
+        if (
+          !upright &&
+          event.currentTarget.naturalWidth > 0 &&
+          event.currentTarget.naturalHeight > 0
+        ) {
+          setNeedsRotation(
+            event.currentTarget.naturalHeight >
+              event.currentTarget.naturalWidth,
+          );
+        }
+      }}
+      onError={(event) => {
+        if (!fallbackSrc) {
+          return;
+        }
+
+        event.currentTarget.onerror = null;
+        event.currentTarget.src = fallbackSrc;
+      }}
+      className={
+        upright
+          ? mode === "thumbnail"
+            ? "block h-auto w-full"
+            : "block h-auto max-h-[65dvh] w-auto max-w-full object-contain"
+          : mode === "thumbnail"
+            ? needsRotation
+              ? `
+                absolute left-1/2 top-1/2
+                h-[204%] w-[52%]
+                max-w-none -translate-x-1/2
+                -translate-y-1/2 rotate-90
+                object-cover transition
+                duration-300
+                group-hover:scale-[1.03]
+              `
+              : `
+                absolute inset-0 h-full w-full
+                object-cover transition
+                duration-300
+                group-hover:scale-[1.03]
+              `
+            : needsRotation
+              ? `
+                absolute left-1/2 top-1/2
+                h-[200%] w-1/2 max-w-none
+                -translate-x-1/2
+                -translate-y-1/2 rotate-90
+                object-contain
+              `
+              : `
+                absolute inset-0 h-full w-full
+                object-contain
+              `
+      }
+    />
+  );
+}
+
 function getPaginationItems(
   currentPage: number,
   totalPages: number,
@@ -689,47 +787,25 @@ export default function WrapGallery({
                       className="group block w-full"
                     >
                       <div className={category.displayOrientation === "upright" ? "relative w-full overflow-hidden" : "relative aspect-[2/1] w-full overflow-hidden"}>
-                        <img
+                        <RotatableWrapImage
                           src={
                             wrap.product
                               .thumbnailUrl
                           }
+                          fallbackSrc={
+                            wrap.product
+                              .fullImageUrl
+                          }
                           alt={`${wrap.product.displayName} wrap design`}
-                          loading={
-                            localIndex < 5
-                              ? "eager"
-                              : "lazy"
+                          mode="thumbnail"
+                          initialNeedsRotation={
+                            wrap.thumbnailNeedsRotation
                           }
-                          decoding="async"
-                          draggable={false}
-                          onError={(event) => {
-                            event.currentTarget.onerror =
-                              null;
-
-                            event.currentTarget.src =
-                              wrap.product
-                                .fullImageUrl;
-                          }}
-                          className={
-                            category.displayOrientation === "upright"
-                              ? "block h-auto w-full"
-                              : wrap.thumbnailNeedsRotation
-                              ? `
-                                absolute left-1/2 top-1/2
-                                h-[204%] w-[52%]
-                                max-w-none -translate-x-1/2
-                                -translate-y-1/2 rotate-90
-                                object-cover transition
-                                duration-300
-                                group-hover:scale-[1.03]
-                              `
-                              : `
-                                absolute inset-0 h-full w-full
-                                object-cover transition
-                                duration-300
-                                group-hover:scale-[1.03]
-                              `
+                          upright={
+                            category.displayOrientation ===
+                            "upright"
                           }
+                          eager={localIndex < 5}
                         />
                       </div>
                     </button>
@@ -827,28 +903,19 @@ export default function WrapGallery({
             <div className={category.displayOrientation === "upright"
               ? "mx-auto w-fit overflow-hidden rounded-xl"
               : "relative aspect-[2/1] w-full overflow-hidden rounded-2xl bg-white"}>
-              <img
+              <RotatableWrapImage
                 src={
                   selectedWrap.product
                     .fullImageUrl
                 }
                 alt={`${selectedWrap.product.displayName} wrap design`}
-                draggable={false}
-                className={
-                  category.displayOrientation === "upright"
-                    ? "block h-auto max-h-[65dvh] w-auto max-w-full object-contain"
-                    : selectedWrap.viewerNeedsRotation
-                    ? `
-                      absolute left-1/2 top-1/2
-                      h-[200%] w-1/2 max-w-none
-                      -translate-x-1/2
-                      -translate-y-1/2 rotate-90
-                      object-contain
-                    `
-                    : `
-                      absolute inset-0 h-full w-full
-                      object-contain
-                    `
+                mode="viewer"
+                initialNeedsRotation={
+                  selectedWrap.viewerNeedsRotation
+                }
+                upright={
+                  category.displayOrientation ===
+                  "upright"
                 }
               />
             </div>
