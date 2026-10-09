@@ -2,6 +2,7 @@ const DISPLAY_READY_UPLOADED_WRAP_CATEGORIES = [
   "toy story",
   "betty boop",
   "felix the cat",
+  "los angeles rams",
 ] as const;
 
 function normalizeCategoryIdentity(
