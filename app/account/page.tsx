@@ -456,7 +456,7 @@ export default function AccountPage() {
                       )}`}
                       className="rounded-full border border-red-600 px-5 py-2 text-sm font-black transition hover:bg-red-600"
                     >
-                      View Order Page
+                      View Order & Chat
                     </a>
 
                     {order.status ===

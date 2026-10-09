@@ -83,30 +83,8 @@ async function sha256Hex(value: string): Promise<string> {
     .join("");
 }
 
-function resolveSiteOrigin(requestedOrigin: unknown): string {
-  const fallback =
-    Deno.env.get("SITE_URL") ?? "https://pressedinpink.com";
-  const requested = toText(requestedOrigin).trim();
-
-  if (!requested) {
-    return fallback.replace(/\/$/, "");
-  }
-
-  try {
-    const parsed = new URL(requested);
-    const hostname = parsed.hostname.toLowerCase();
-    const allowed =
-      hostname === "pressedinpink.com" ||
-      hostname === "www.pressedinpink.com" ||
-      hostname === "localhost" ||
-      hostname === "127.0.0.1" ||
-      hostname.endsWith(".app.github.dev") ||
-      hostname.endsWith(".pages.dev");
-
-    return allowed ? parsed.origin : fallback.replace(/\/$/, "");
-  } catch {
-    return fallback.replace(/\/$/, "");
-  }
+function resolveSiteOrigin(_requestedOrigin: unknown): string {
+  return "https://pressedinpink.com";
 }
 
 async function sendEmail(
@@ -345,6 +323,15 @@ Deno.serve(async (request) => {
         403,
       );
     }
+
+    // Save the validated checkout token only in encrypted server storage.
+    // Older links remain valid; notification emails can now reuse this link.
+    const { error: tokenCaptureError } = await adminClient.rpc("order_chat_portal_token", {
+      p_order_id: orderRecordId, p_access_token: accessToken,
+    });
+    if (tokenCaptureError) console.error("Could not preserve notification portal token", {
+      orderId: orderRecordId, code: tokenCaptureError.code,
+    });
 
     stage = "order-item-count";
     const { count: designCount, error: countError } = await adminClient

@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 
+import OrderConversation from "@/components/OrderConversation";
 import AuthPageShell from "@/components/AuthPageShell";
 import { customerItemName, isCustomCup } from "@/lib/customCupDisplay";
 import { useAuth } from "@/components/AuthProvider";
@@ -315,17 +316,7 @@ export default function OrderStatusPage() {
         </div>
       </div>
 
-      {order.revision_message && (
-        <div className="mt-6 rounded-3xl border border-orange-500/60 bg-orange-500/10 p-6">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-orange-100">
-            Message from Pressed In Pink
-          </p>
-
-          <p className="mt-3 whitespace-pre-wrap leading-7 text-white/85">
-            {order.revision_message}
-          </p>
-        </div>
-      )}
+      <OrderConversation orderId={order.id} accessToken={accessToken} />
 
       <div className="mt-6 space-y-6">
         {order.order_items.map(

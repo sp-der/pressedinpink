@@ -1,0 +1,4 @@
+# Guests authenticate with a server-validated private token; the scheduled
+# notification worker uses a Vault credential. Signed-in callers use getUser.
+[functions.order-chat]
+verify_jwt = false

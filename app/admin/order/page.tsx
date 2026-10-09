@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 
+import OrderConversation from "@/components/OrderConversation";
 import AuthPageShell from "@/components/AuthPageShell";
 import CustomCupOrderDetails from "@/components/CustomCupOrderDetails";
 import { useAuth } from "@/components/AuthProvider";
@@ -624,7 +625,7 @@ export default function AdminOrderPage() {
             orderId: order.id,
             invoiceId: savedInvoice.id,
             pdfBase64,
-            siteOrigin: window.location.origin,
+            siteOrigin: "https://pressedinpink.com",
           },
         },
       );
@@ -829,6 +830,7 @@ export default function AdminOrderPage() {
               }
               rows={4}
               className="mt-2 w-full resize-y rounded-2xl border border-red-900 bg-black px-4 py-3 text-white outline-none focus:border-red-500"
+              maxLength={4000}
               placeholder="Explain quantity changes or unavailable items"
             />
           </label>
@@ -856,6 +858,8 @@ export default function AdminOrderPage() {
           </button>
         </section>
       </div>
+
+      <OrderConversation orderId={order.id} admin refreshKey={order.revision_message} />
 
       <section className="mt-6 rounded-3xl border border-red-900 bg-black/90 p-6 shadow-xl sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">

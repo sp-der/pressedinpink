@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 
+import { orderChat } from "@/lib/orderChat";
 import AuthPageShell from "@/components/AuthPageShell";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/lib/supabase";
@@ -39,6 +40,22 @@ export default function AdminOrdersPage() {
     useState("");
   const [statusFilter, setStatusFilter] =
     useState("all");
+
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    if (!isAdmin) return;
+    let active = true;
+    const refresh = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const result = await orderChat<{ counts: Record<string, number> }>({ action: "unread" });
+        if (active) setUnreadCounts(result.counts);
+      } catch { /* Orders remain available if chat is temporarily unavailable. */ }
+    };
+    void refresh();
+    const timer = window.setInterval(() => void refresh(), 10000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [isAdmin]);
 
   const loadOrders =
     useCallback(async () => {
@@ -366,6 +383,7 @@ export default function AdminOrdersPage() {
                         order.order_number
                       }
                     </h2>
+                    {unreadCounts[order.id] > 0 && <span className="mt-2 inline-block rounded-full bg-red-600 px-3 py-1 text-xs font-black">New Message ({unreadCounts[order.id]})</span>}
 
                     <p className="mt-2 text-sm text-white/65">
                       {new Date(
