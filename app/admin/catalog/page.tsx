@@ -241,6 +241,20 @@ export default function AdminCatalogPage() {
     [categories, selectedSlug],
   );
 
+  const selectedCategoryUsesDisplayReadyUploads = useMemo(
+    () =>
+      categoryUsesDisplayReadyUploads([
+        selectedCategory?.slug,
+        selectedCategory?.display_name,
+        selectedCategory?.heading,
+      ]),
+    [
+      selectedCategory?.slug,
+      selectedCategory?.display_name,
+      selectedCategory?.heading,
+    ],
+  );
+
   const selectedViewerWrap =
     viewerIndex === null
       ? null
@@ -1219,7 +1233,11 @@ export default function AdminCatalogPage() {
                           event.currentTarget.src =
                             wrap.full_image_url;
                         }}
-                        className="absolute left-1/2 top-1/2 h-[204%] w-[52%] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover transition duration-300 group-hover:scale-[1.03]"
+                        className={
+                          selectedCategoryUsesDisplayReadyUploads
+                            ? "absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                            : "absolute left-1/2 top-1/2 h-[204%] w-[52%] max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover transition duration-300 group-hover:scale-[1.03]"
+                        }
                       />
                     </div>
                   </button>
@@ -1311,7 +1329,11 @@ export default function AdminCatalogPage() {
                 src={selectedViewerWrap.full_image_url}
                 alt={`${selectedViewerWrap.display_name} full wrap`}
                 draggable={false}
-                className="absolute left-1/2 top-1/2 h-[200%] w-1/2 max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
+                className={
+                  selectedCategoryUsesDisplayReadyUploads
+                    ? "absolute inset-0 h-full w-full object-contain"
+                    : "absolute left-1/2 top-1/2 h-[200%] w-1/2 max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
+                }
               />
             </div>
 
