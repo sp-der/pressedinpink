@@ -3,6 +3,12 @@ const DISPLAY_READY_UPLOADED_WRAP_CATEGORIES = [
   "betty boop",
   "felix the cat",
   "los angeles rams",
+  "disney cars",
+  "gaming",
+  "washington commanders",
+  "new york jets",
+  "new orleans saints",
+  "philadelphia eagles",
 ] as const;
 
 function normalizeCategoryIdentity(
