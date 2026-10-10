@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import OrderConversation from "@/components/OrderConversation";
+import OrderItemImage from "@/components/OrderItemImage";
 import AuthPageShell from "@/components/AuthPageShell";
 import CustomCupOrderDetails from "@/components/CustomCupOrderDetails";
 import { useAuth } from "@/components/AuthProvider";
@@ -1075,14 +1076,9 @@ export default function AdminOrderPage() {
                 rel="noreferrer"
                 className="relative block aspect-[2/1] w-full overflow-hidden bg-black/80 p-4"
               >
-                <img
-                  src={item.thumbnail_url}
+                <OrderItemImage
+                  item={item}
                   alt={getAdminOrderItemName(item)}
-                  onError={(event) => {
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = item.full_image_url;
-                  }}
-                  className="absolute left-1/2 top-1/2 h-[200%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
                 />
               </a>
 
