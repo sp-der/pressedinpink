@@ -1,5 +1,6 @@
 "use client";
 
+import StorefrontHeader from "@/components/StorefrontHeader";
 import {
   useEffect,
   useMemo,
@@ -246,7 +247,7 @@ export default function SportsWrapsPage() {
   });
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main id="storefront-content" className="pnp-legacy relative min-h-screen overflow-hidden text-white">
       <div
         aria-hidden="true"
         className="
@@ -267,47 +268,7 @@ export default function SportsWrapsPage() {
       />
 
       <div className="relative z-10">
-        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
-            <div className="flex justify-center md:justify-start">
-              <a
-                href="/wraps"
-                className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
-                style={smokyTextShadow}
-              >
-                ← Back to Wraps
-              </a>
-            </div>
-
-            <a href="/" className="flex justify-center">
-              <img
-                src="/header-logo.png"
-                alt="Pressed In Pink"
-                className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60"
-              />
-            </a>
-
-            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end">
-              <a
-                href="https://www.instagram.com/pressed_in_pink/"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
-              >
-                Instagram
-              </a>
-
-              <a
-                href="https://www.tiktok.com/@pressedinpink23?lang=en"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
-              >
-                TikTok
-              </a>
-            </div>
-          </div>
-        </nav>
+        <StorefrontHeader backLink={{ href: "/wraps", label: "UV-DTF Wraps" }} />
 
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">

@@ -9,6 +9,8 @@ const blankCupCollections = BLANK_CUP_CATEGORIES.map(
     action: `View ${category.displayName} →`,
     href: `/for-creators/blank-cups/${category.slug}`,
     monogram: category.monogram,
+    image: `/blank-cups/${category.slug}/1.webp`,
+    imageFit: "contain" as const,
   }),
 );
 

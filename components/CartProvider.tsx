@@ -182,6 +182,7 @@ export function CartProvider({
       product: WrapProduct,
       quantity = 1,
     ) => {
+      window.dispatchEvent(new CustomEvent("pnp:cart-add", { detail: { label: "Added to your cart" } }));
       const safeQuantity = product.isOneOfOne
         ? 1
         : clampQuantity(quantity);

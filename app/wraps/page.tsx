@@ -1,5 +1,7 @@
 "use client";
 
+import StorefrontHeader from "@/components/StorefrontHeader";
+import CollectionHeader from "@/components/CollectionHeader";
 import {
   useEffect,
   useMemo,
@@ -344,7 +346,7 @@ export default function WrapsPage() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main id="storefront-content" className="pnp-legacy relative min-h-screen overflow-hidden text-white">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 bg-cover bg-no-repeat bg-[position:62%_top] sm:bg-[position:58%_top] md:bg-center"
@@ -358,69 +360,9 @@ export default function WrapsPage() {
       />
 
       <div className="relative z-10">
-        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
-            <div className="flex justify-center md:justify-start">
-              <a
-                href="/for-creators"
-                className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
-                style={smokyTextShadow}
-              >
-                ← Back to For Creators
-              </a>
-            </div>
+        <StorefrontHeader backLink={{ href: "/for-creators", label: "For Creators" }} />
 
-            <a href="/" className="flex justify-center">
-              <img
-                src="/header-logo.png"
-                alt="Pressed In Pink"
-                className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60"
-              />
-            </a>
-
-            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end">
-              <a
-                href="https://www.instagram.com/pressed_in_pink/"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://www.tiktok.com/@pressedinpink23?lang=en"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
-              >
-                TikTok
-              </a>
-            </div>
-          </div>
-        </nav>
-
-        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
-          <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10 md:p-12">
-            <p
-              className="mb-4 text-xs font-black uppercase tracking-[0.3em] text-white sm:text-sm"
-              style={smokyTextShadow}
-            >
-              Pressed In Pink Collection
-            </p>
-            <h1
-              className="mx-auto max-w-3xl text-4xl font-black leading-tight text-white sm:text-5xl md:text-7xl"
-              style={smokyTextShadow}
-            >
-              UV-DTF Wraps
-            </h1>
-            <p
-              className="mx-auto mt-6 max-w-2xl text-base leading-7 text-white sm:text-lg sm:leading-8"
-              style={smokyTextShadow}
-            >
-              Choose a category below to browse available wrap designs. Categories automatically sort from the largest collection to the smallest.
-            </p>
-          </div>
-        </section>
+        <CollectionHeader eyebrow="For Creators · The wrap collection" title="UV-DTF Wraps"><p>A design for every kind of you. Search by character, theme, team, or style and find your next project.</p></CollectionHeader>
 
         <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
           <div className="mx-auto mb-10 max-w-2xl">
@@ -451,7 +393,7 @@ export default function WrapsPage() {
               )}
             </div>
             <p
-              className="mt-3 text-center text-sm"
+              aria-live="polite" className="mt-3 text-center text-sm"
               style={smokyTextShadow}
             >
               Showing {filteredCategories.length}{" "}
@@ -459,13 +401,15 @@ export default function WrapsPage() {
             </p>
           </div>
 
+          <div className="pnp-chip-row" role="group" aria-label="Quick category filters">{[{label:"All collections",query:""},{label:"Sports",query:"sports"},{label:"Music",query:"music"},{label:"Cute & pink",query:"pink"},{label:"Spooky",query:"Halloween"}].map(filter=><button type="button" className="pnp-chip" key={filter.label} aria-pressed={searchQuery === filter.query} onClick={()=>setSearchQuery(filter.query)}>{filter.label}</button>)}</div>
+
           {filteredCategories.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredCategories.map((category) => (
                 <a
                   key={category.slug}
                   href={category.href}
-                  className="group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
+                  className="pnp-category-card group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
                   <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
                     <img
