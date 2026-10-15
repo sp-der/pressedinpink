@@ -44,10 +44,12 @@ Edit `data/customerCreations.ts` and add an entry only after the owner approves 
 
 - Cart non-one-of-one images use an unconditional rotation; catalog and admin use different flags/dimensions. This predates the redesign. The original transforms and source URLs are retained; a dedicated orientation fix should reconcile stored cart metadata across all product types.
 - Category image error handlers may repeatedly retry a failing fallback; unchanged.
-- No existing frontend test suite or lint configuration was present. The existing tests are Supabase order-chat logic/SQL tests; they require their corresponding runtime/database.
+- No existing frontend test suite or lint configuration was present. This change adds a Next core-web-vitals lint configuration, with static-export image/anchor rules deliberately disabled. The existing order-chat logic tests run under Node with TypeScript stripping; SQL integration tests require a test database.
 - Next.js dependency and Browserslist currency are outside this visual-change scope.
 - Guest checkout and authenticated order submission cannot be safely proven against production without placing an order; do not submit production test requests or send customer email.
 
 ## Verification / release
 
 Use a feature branch and a remotely accessible preview. Do not merge to production until the preview is inspected on mobile/desktop and affected shopping flows are checked. Build-only dummy Supabase settings must never be deployed as production credentials. No secrets, database records, RLS, email or payment settings should be changed for this release.
+
+Local validation: production export passed (184 pages); `npm run lint` passed with zero warnings/errors; `npx tsc --noEmit` passed; `node --experimental-strip-types --test supabase/functions/order-chat/logic.test.ts` passed 3/3. Static HTML audit found zero missing internal routes/assets (4,080 route links, 1,580 local asset references). Final homepage route JS reported by Next is about 81.0 kB versus 80.6 kB baseline; this is a build-size comparison, not a measured live performance score. The two new WebP frames total approximately 82.5 kB.

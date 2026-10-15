@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { AuthProvider } from "@/components/AuthProvider";
 import AccountButton from "@/components/AccountButton";
+import { AuthProvider } from "@/components/AuthProvider";
 import CartButton from "@/components/CartButton";
 import { CartProvider } from "@/components/CartProvider";
 
@@ -63,7 +63,6 @@ export default function RootLayout({
         <AuthProvider>
           <CartProvider>
             {children}
-
             <AccountButton />
             <CartButton />
           </CartProvider>

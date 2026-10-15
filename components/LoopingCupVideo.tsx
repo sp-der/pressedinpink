@@ -28,7 +28,7 @@ export default function LoopingCupVideo({
         visible = entries[0]?.isIntersecting ?? false;
         // Attach the source only near the viewport, avoiding metadata requests for
         // every cup in the catalog. Keep the same original R2 video.
-        if (visible && !video.getAttribute("src")) video.src = src;
+        if (visible && video.getAttribute("src") !== src) video.src = src;
         update();
       },
       { rootMargin: "120px 0px", threshold: 0.01 },

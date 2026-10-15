@@ -1,4 +1,3 @@
-import AccountButton from "@/components/AccountButton";
 
 export default function StorefrontHeader({
   backLink,
@@ -24,7 +23,7 @@ export default function StorefrontHeader({
           </a>
         </nav>
         <div className="pnp-header-actions">
-          <AccountButton inline />
+          <a className="pnp-account-link" href="/account">Account</a>
           <details className="pnp-mobile-menu">
             <summary aria-label="Open shopping menu">
               Menu <span aria-hidden="true">☰</span>
