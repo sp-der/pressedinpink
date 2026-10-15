@@ -29,7 +29,7 @@ export default function CollectionHub({
         <p>{description}</p>
         {heroAction && (
           <a className="pnp-button" href={heroAction.href}>
-            {heroAction.label} ↗
+            {heroAction.label} ↗︎
           </a>
         )}
       </CollectionHeader>

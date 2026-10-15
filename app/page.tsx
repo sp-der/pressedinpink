@@ -58,7 +58,7 @@ export default function Home() {
             </p>
             <div className="pnp-hero-actions">
               <a className="pnp-button pnp-sparkle-button" href="#shop">
-                Find your thing <span aria-hidden="true">↗</span>
+                Find your thing <span aria-hidden="true">↗︎</span>
               </a>
               <a className="pnp-text-link" href="/custom-cup">
                 Build your own cup →
@@ -71,15 +71,12 @@ export default function Home() {
           </div>
           <div className="pnp-hero-stage" aria-label="A look at PNP cups">
             <span className="pnp-stage-orbit" aria-hidden="true" />
-            <span className="pnp-stage-star" aria-hidden="true">
-              ✳
-            </span>
             <figure className="pnp-hero-photo pnp-photo-back">
               <img
                 src="/blank-cups/glass/5.webp"
                 alt="Pink glass cup photographed in the PNP studio"
-                width={420}
-                height={560}
+                width={300}
+                height={400}
                 fetchPriority="high"
               />
               <figcaption>A blank canvas for your ideas</figcaption>
@@ -96,12 +93,6 @@ export default function Home() {
                 A little everyday extra <span aria-hidden="true">♥</span>
               </figcaption>
             </figure>
-            <span className="pnp-stage-sticker">
-              Made with
-              <br />
-              <strong>personality</strong>
-              <span aria-hidden="true">✦</span>
-            </span>
           </div>
         </section>
         <section
@@ -133,7 +124,7 @@ export default function Home() {
                   all over them.
                 </p>
                 <span className="pnp-button pnp-button-light">
-                  Shop finished favorites <span aria-hidden="true">↗</span>
+                  Shop finished favorites <span aria-hidden="true">↗︎</span>
                 </span>
               </div>
               <img
@@ -157,14 +148,14 @@ export default function Home() {
                   your ideas to life.
                 </p>
                 <span className="pnp-button pnp-button-light">
-                  Explore the supplies <span aria-hidden="true">↗</span>
+                  Explore the supplies <span aria-hidden="true">↗︎</span>
                 </span>
               </div>
               <img
                 src="/blank-cups/glass/5.webp"
                 alt="Pink blank glass cup ready to customize"
-                width={420}
-                height={560}
+                width={300}
+                height={400}
                 loading="lazy"
               />
             </a>
@@ -185,7 +176,7 @@ export default function Home() {
                   loading="lazy"
                   decoding="async"
                 />
-                <span aria-hidden="true">↗</span>
+                <span aria-hidden="true">↗︎</span>
               </div>
               <p>{item.note}</p>
               <h3>{item.title}</h3>
@@ -206,7 +197,7 @@ export default function Home() {
               We&apos;ll take it from there.
             </p>
             <a href="/custom-cup" className="pnp-button">
-              Make it yours <span aria-hidden="true">↗</span>
+              Make it yours <span aria-hidden="true">↗︎</span>
             </a>
           </div>
           <ol className="pnp-build-steps">
@@ -252,7 +243,7 @@ export default function Home() {
               target="_blank"
               rel="noreferrer"
             >
-              See more on Instagram ↗
+              See more on Instagram ↗︎
             </a>
           </div>
           <div className="pnp-studio-images">

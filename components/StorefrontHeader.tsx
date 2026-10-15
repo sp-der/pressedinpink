@@ -19,7 +19,7 @@ export default function StorefrontHeader({
           <a href="/premade">Custom & Premade</a>
           <a href="/for-creators">For Creators</a>
           <a href="/custom-cup">
-            Build a Cup <span aria-hidden="true">↗</span>
+            Build a Cup <span aria-hidden="true">↗︎</span>
           </a>
         </nav>
         <div className="pnp-header-actions">

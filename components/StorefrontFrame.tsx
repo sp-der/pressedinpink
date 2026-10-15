@@ -50,14 +50,14 @@ export default function StorefrontFrame({
             target="_blank"
             rel="noreferrer"
           >
-            Instagram ↗
+            Instagram ↗︎
           </a>
           <a
             href="https://www.tiktok.com/@pressedinpink23?lang=en"
             target="_blank"
             rel="noreferrer"
           >
-            TikTok ↗
+            TikTok ↗︎
           </a>
         </div>
         <p className="pnp-footer-note">
