@@ -684,7 +684,6 @@ export default function WrapGallery({
                       <span className="pnp-preview-hint">Preview ↗</span>
                     </button>
 
-                    {category.slug !== "sanitizer-wraps" && <p className="pnp-wrap-meta"><strong>$2.00</strong> / wrap · 50+ at $1.25 each</p>}
                     {onSelectWrap ? (
                       <button type="button" onClick={() => onSelectWrap(wrap.product)} className="m-3 rounded-full bg-red-600 px-3 py-2 text-xs font-bold">Choose this wrap</button>
                     ) : <AddToCartControls product={wrap.product} variant="compact" />}

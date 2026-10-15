@@ -29,11 +29,7 @@ export default function CollectionHeader({
           height={160}
           className="pnp-collection-art"
         />
-      ) : (
-        <span className="pnp-header-star" aria-hidden="true">
-          ✳
-        </span>
-      )}
+      ) : null}
     </section>
   );
 }

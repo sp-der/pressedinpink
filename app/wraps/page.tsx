@@ -411,7 +411,7 @@ export default function WrapsPage() {
                   href={category.href}
                   className="pnp-category-card group flex min-h-72 flex-col items-center rounded-3xl border border-red-900 bg-black/85 p-7 text-center shadow-xl backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:border-red-600 hover:bg-black/95"
                 >
-                  <div className="mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-red-900 bg-black/80 p-2 transition duration-300 group-hover:scale-105 group-hover:border-red-600">
+                  <div className="pnp-category-art">
                     <img
                       src={category.image}
                       alt={`${category.title} category`}
@@ -423,9 +423,7 @@ export default function WrapsPage() {
                         event.currentTarget.src =
                           category.fallbackImage || "/logo.png";
                       }}
-                      className={`h-full w-full object-contain transition-transform duration-300 ${
-                        category.imageScale ?? "scale-100"
-                      }`}
+                      className="pnp-category-art-image"
                     />
                   </div>
                   <h2

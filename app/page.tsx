@@ -42,6 +42,15 @@ const featured = [
     href: "/for-creators/blank-cups/snowglobe",
   },
 ];
+const studioCups = [
+  {image:"/storefront/libby-portrait.webp", alt:"PNP Libby cup with a green lid", href:"/cups/libby/1", width:608, height:1080},
+  {image:"/storefront/snowglobe-portrait.webp", alt:"PNP coffee-themed snowglobe cup", href:"/cups/snowglobe/1", width:608, height:1080},
+  {image:"/storefront/studio-kids-snowglobe.webp", alt:"PNP kids’ snowglobe cup", href:"/cups/kids-snowglobe/15", width:540, height:960},
+  {image:"/storefront/studio-snowglobe-4.webp", alt:"PNP black and red snowglobe cup", href:"/cups/snowglobe/4", width:540, height:960},
+  {image:"/storefront/studio-libby-8.webp", alt:"PNP colorful Libby cup", href:"/cups/libby/8", width:540, height:960},
+  {image:"/storefront/studio-acrylic-2.webp", alt:"PNP pink acrylic cup", href:"/cups/paris/2", width:540, height:960},
+  {image:"/storefront/studio-snowglobe-10.webp", alt:"PNP green snowglobe cup", href:"/cups/snowglobe/10", width:540, height:960},
+];
 export default function Home() {
   return (
     <>
@@ -254,20 +263,7 @@ export default function Home() {
             </a>
           </div>
           <div className="pnp-studio-images">
-            <img
-              src="/storefront/libby-portrait.webp"
-              alt="Finished Libby cup in the PNP studio"
-              width={608}
-              height={1080}
-              loading="lazy"
-            />
-            <img
-              src="/storefront/snowglobe-portrait.webp"
-              alt="Finished snowglobe cup in the PNP studio"
-              width={608}
-              height={1080}
-              loading="lazy"
-            />
+            {studioCups.map(cup => <a key={cup.href} href={cup.href} aria-label={`View ${cup.alt}`}><img src={cup.image} alt={cup.alt} width={cup.width} height={cup.height} loading="lazy" decoding="async" /></a>)}
           </div>
         </section>
       </StorefrontFrame>

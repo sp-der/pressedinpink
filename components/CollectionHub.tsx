@@ -37,27 +37,8 @@ export default function CollectionHub({
         {items.map((item) => {
           const contents = (
             <>
-              <div
-                className={`pnp-hub-image ${item.image ? "" : "pnp-hub-type"}`}
-              >
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    className={
-                      item.imageFit === "contain"
-                        ? "object-contain"
-                        : "object-cover"
-                    }
-                  />
-                ) : (
-                  <span aria-hidden="true">{item.monogram || item.title}</span>
-                )}
-                {item.label && <span className="pnp-pill">{item.label}</span>}
-              </div>
               <div className="pnp-hub-copy">
+                {item.label && <span className="pnp-hub-status">{item.label}</span>}
                 <h2>{item.title}</h2>
                 <p>{item.description}</p>
                 <span className="pnp-text-link">{item.action}</span>
