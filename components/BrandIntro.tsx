@@ -8,14 +8,9 @@ export default function BrandIntro() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { setDismissed(true); return; }
-    try {
-      if (sessionStorage.getItem("pnp-intro-seen")) { setDismissed(true); return; }
-      sessionStorage.setItem("pnp-intro-seen", "1");
-    } catch { /* Continue if session storage is unavailable. */ }
     let cancelled = false;
     const image = logo.current;
-    const fallback = window.setTimeout(() => setDismissed(true), 1800);
+    const fallback = window.setTimeout(() => setDismissed(true), 8000);
     // Start only once the actual logo is decoded, including cached images.
     if (image) {
       image.decode().then(() => {

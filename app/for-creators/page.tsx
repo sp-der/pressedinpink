@@ -9,8 +9,6 @@ const creatorCollections = [
     action: "Browse All Wraps →",
     href: "/wraps",
     monogram: "UV-DTF WRAPS",
-    image: "/wrap-categories/western.png",
-    imageFit: "contain" as const,
   },
   {
     title: "Mini UV-DTF",
@@ -34,8 +32,6 @@ const creatorCollections = [
     action: "View Blank Cups →",
     href: "/for-creators/blank-cups",
     monogram: "Blanks",
-    image: "/blank-cups/glass/5.webp",
-    imageFit: "contain" as const,
   },
   {
     title: "Glitters",

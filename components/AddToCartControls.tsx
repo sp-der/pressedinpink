@@ -78,12 +78,12 @@ export default function AddToCartControls({
 
   return (
     <div
-      className={"pnp-cart-controls " + (
+      className={
         isViewer
           ? "mt-4 rounded-2xl border border-red-900 bg-black/90 p-4"
           : isCompact
             ? "border-t border-red-950 bg-black/95 p-3"
-            : "border-t border-red-950 bg-black/95 p-4")
+            : "border-t border-red-950 bg-black/95 p-4"
       }
       onClick={(event) =>
         event.stopPropagation()

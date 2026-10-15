@@ -6,7 +6,6 @@ import {
   useState,
 } from "react";
 
-import CollectionHeader from "@/components/CollectionHeader";
 import AddToCartControls from "@/components/AddToCartControls";
 import LoopingCupVideo from "@/components/LoopingCupVideo";
 import {
@@ -59,7 +58,19 @@ export default function CupGallery({
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-      <CollectionHeader eyebrow="Pressed In Pink Collection" title={category.displayName}><p>{category.description}</p></CollectionHeader>
+      <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-500/60 bg-black/80 px-6 py-6 text-center shadow-2xl backdrop-blur-md sm:px-10 sm:py-8">
+        <p className="text-xs font-black uppercase tracking-[0.3em] text-red-400">
+          Premade • One of One
+        </p>
+
+        <h1 className="mt-3 text-4xl font-black sm:text-5xl">
+          {category.displayName}
+        </h1>
+
+        <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/75">
+          {category.description}
+        </p>
+      </div>
 
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {products.map((product) => {
@@ -69,7 +80,7 @@ export default function CupGallery({
           return (
             <article
               key={product.id}
-              className="pnp-product-card overflow-hidden rounded-3xl"
+              className="overflow-hidden rounded-3xl border border-red-900 bg-black/90 shadow-xl"
             >
               <a
                 href={product.detailHref}

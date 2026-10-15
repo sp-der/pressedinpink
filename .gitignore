@@ -22,7 +22,3 @@ upload-staging/
 # Local PNP update files
 .pnp-backups/
 pnp-invoice-category-update/
-
-# Build-materialized blank photos and TypeScript incremental cache
-/public/blank-cups/
-*.tsbuildinfo

@@ -1,9 +1,6 @@
 
 "use client";
 
-import { useDialogFocus } from "@/components/useDialogFocus";
-import StorefrontHeader from "@/components/StorefrontHeader";
-import CollectionHeader from "@/components/CollectionHeader";
 import {
   useCallback,
   useEffect,
@@ -269,8 +266,6 @@ export default function WrapGallery({
     Math.ceil(wraps.length / WRAPS_PER_PAGE),
   );
 
-  const viewerRef = useDialogFocus(selectedIndex !== null);
-
   const galleryRef =
     useRef<HTMLElement | null>(null);
 
@@ -336,7 +331,7 @@ export default function WrapGallery({
 
       window.requestAnimationFrame(() => {
         galleryRef.current?.scrollIntoView({
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          behavior: "smooth",
           block: "start",
         });
       });
@@ -365,8 +360,6 @@ export default function WrapGallery({
       if (event.key === "Escape") {
         closeViewer();
       }
-
-      if ((event.target as HTMLElement).tagName === "INPUT") return;
 
       if (event.key === "ArrowLeft") {
         showPrevious();
@@ -536,7 +529,7 @@ export default function WrapGallery({
       : "designs";
 
   return (
-    <main id="storefront-content" className="pnp-legacy relative min-h-screen overflow-hidden text-white">
+    <main className="relative min-h-screen overflow-hidden bg-black text-white">
       <div
         aria-hidden="true"
         className="
@@ -558,10 +551,81 @@ export default function WrapGallery({
       />
 
       <div className="relative z-10">
-        <StorefrontHeader backLink={{ href: category.backHref, label: category.backLabel }} />
+        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
+            <div className="flex justify-center md:justify-start">
+              <a
+                href={category.backHref}
+                className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
+                style={smokyTextShadow}
+              >
+                ← {category.backLabel}
+              </a>
+            </div>
 
-        <CollectionHeader eyebrow="Pressed In Pink · UV-DTF Collection" title={category.heading}><p>Explore {wraps.length} {designWord}. Preview any wrap, choose your quantity, and add it to your request cart.</p></CollectionHeader>
-        <nav className="pnp-wrap-nav" aria-label="Collection shortcuts"><div className="pnp-chip-row"><a className="pnp-chip" href="/wraps">All collections</a><span className="pnp-chip" aria-current="page">{category.displayName}</span><a className="pnp-chip" href="/wraps/sports">Sports</a><a className="pnp-chip" href="/for-creators/blank-cups">Blank Cups</a></div></nav>
+            <a
+              href="/"
+              className="flex justify-center"
+            >
+              <img
+                src="/header-logo.png"
+                alt="Pressed In Pink"
+                className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60"
+              />
+            </a>
+
+            <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end">
+              <a
+                href="https://www.instagram.com/pressed_in_pink/"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
+              >
+                Instagram
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@pressedinpink23?lang=en"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border-2 border-red-600 px-5 py-2 text-sm font-bold text-red-600 transition hover:bg-red-600 hover:text-black"
+              >
+                TikTok
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+          <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-7 text-center shadow-2xl backdrop-blur-md sm:p-10">
+            <p
+              className="text-xs font-black uppercase tracking-[0.3em] text-white sm:text-sm"
+              style={smokyTextShadow}
+            >
+              Pressed In Pink Collection
+            </p>
+
+            <h1
+              className="mt-4 text-4xl font-black text-white sm:text-5xl md:text-6xl"
+              style={smokyTextShadow}
+            >
+              {category.heading}
+            </h1>
+
+            <p
+              className="mx-auto mt-5 max-w-2xl leading-7 text-white"
+              style={smokyTextShadow}
+            >
+              Click any design to see the
+              full wrap, then select a
+              quantity and add it to your
+              request cart. Browse all{" "}
+              {wraps.length} {designWord}{" "}
+              continuously with the viewer
+              arrows.
+            </p>
+          </div>
+        </section>
 
         <section
           ref={galleryRef}
@@ -592,7 +656,7 @@ export default function WrapGallery({
             {renderPagination("top")}
           </div>
 
-          {wraps.length === 0 && loadingCatalog ? <div role="status" aria-label="Loading PNP wraps"><span className="sr-only">Loading PNP wraps…</span><div className="pnp-skeleton-grid" aria-hidden="true">{Array.from({length:6},(_,i)=><div key={i} className="pnp-skeleton" />)}</div></div> : wraps.length === 0 ? (
+          {wraps.length === 0 ? (
             <div className="rounded-3xl border border-red-900 bg-black/90 px-6 py-12 text-center shadow-xl backdrop-blur-md">
               <h2 className="text-2xl font-black text-white">
                 {loadingCatalog
@@ -618,7 +682,7 @@ export default function WrapGallery({
                   <article
                     key={wrap.product.id}
                     className="
-                      pnp-product-card overflow-hidden rounded-2xl
+                      overflow-hidden rounded-2xl
                       border border-red-900
                       bg-black shadow-xl
                       transition duration-300
@@ -635,7 +699,7 @@ export default function WrapGallery({
                         )
                       }
                       aria-label={`Open ${wrap.product.displayName}`}
-                      className="group relative block w-full"
+                      className="group block w-full"
                     >
                       <div className={category.displayOrientation === "upright" ? "relative w-full overflow-hidden" : "relative aspect-[2/1] w-full overflow-hidden"}>
                         <img
@@ -681,10 +745,8 @@ export default function WrapGallery({
                           }
                         />
                       </div>
-                      <span className="pnp-preview-hint">Preview ↗</span>
                     </button>
 
-                    {category.slug !== "sanitizer-wraps" && <p className="pnp-wrap-meta"><strong>$2.00</strong> / wrap · 50+ at $1.25 each</p>}
                     {onSelectWrap ? (
                       <button type="button" onClick={() => onSelectWrap(wrap.product)} className="m-3 rounded-full bg-red-600 px-3 py-2 text-xs font-bold">Choose this wrap</button>
                     ) : <AddToCartControls product={wrap.product} variant="compact" />}
@@ -737,7 +799,6 @@ export default function WrapGallery({
 
       {selectedWrap && (
         <div
-          ref={viewerRef}
           role="dialog"
           aria-modal="true"
           aria-label={`${selectedWrap.product.displayName} image viewer`}
