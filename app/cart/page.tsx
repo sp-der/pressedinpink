@@ -1,5 +1,7 @@
 "use client";
 
+import StorefrontHeader from "@/components/StorefrontHeader";
+import CollectionHeader from "@/components/CollectionHeader";
 import { useCart } from "@/components/CartProvider";
 import { customerItemName, isCustomCup } from "@/lib/customCupDisplay";
 
@@ -39,7 +41,7 @@ export default function CartPage() {
   };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main id="storefront-content" className="pnp-legacy relative min-h-screen overflow-hidden text-white">
       <div
         aria-hidden="true"
         className="
@@ -61,71 +63,14 @@ export default function CartPage() {
       />
 
       <div className="relative z-10">
-        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
-            <div className="flex justify-center md:justify-start">
-              <a
-                href="/"
-                className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-600"
-                style={smokyTextShadow}
-              >
-                ← Keep Browsing
-              </a>
-            </div>
+        <StorefrontHeader backLink={{ href: "/", label: "Keep Browsing" }} />
 
-            <a
-              href="/"
-              className="flex justify-center"
-            >
-              <img
-                src="/header-logo.png"
-                alt="Pressed In Pink"
-                className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60"
-              />
-            </a>
-
-            <div className="flex justify-center md:justify-end">
-              {items.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClearCart}
-                  className="rounded-full border border-white/30 px-5 py-2 text-sm font-bold text-white transition hover:border-red-600 hover:bg-red-600"
-                >
-                  Clear Cart
-                </button>
-              )}
-            </div>
-          </div>
-        </nav>
-
-        <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
-          <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/85 p-7 text-center shadow-2xl backdrop-blur-md sm:p-10">
-            <p
-              className="text-xs font-black uppercase tracking-[0.3em] text-white sm:text-sm"
-              style={smokyTextShadow}
-            >
-              Pressed In Pink
-            </p>
-
-            <h1
-              className="mt-4 text-4xl font-black text-white sm:text-5xl md:text-6xl"
-              style={smokyTextShadow}
-            >
-              Your Cart
-            </h1>
-
-            <p
-              className="mx-auto mt-5 max-w-2xl leading-7 text-white"
-              style={smokyTextShadow}
-            >
-              Review your requested wraps and premade items. No payment is collected at this stage.
-            </p>
-          </div>
-        </section>
+        <CollectionHeader eyebrow="Your PNP picks" title="Your Cart"><p>Review your requested items. No payment is collected at this stage.</p></CollectionHeader>
+        {items.length > 0 && <div className="mx-auto max-w-6xl px-6 pb-5 text-right"><button type="button" onClick={handleClearCart} className="pnp-chip">Clear Cart</button></div>}
 
         <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
           {!isReady ? (
-            <div className="rounded-3xl border border-red-900 bg-black/90 p-10 text-center shadow-xl">
+            <div className="pnp-skeleton rounded-3xl border border-red-900 p-10 text-center shadow-xl">
               <p
                 className="font-bold text-white"
                 style={smokyTextShadow}
@@ -136,14 +81,14 @@ export default function CartPage() {
           ) : items.length === 0 ? (
             <div className="rounded-3xl border border-red-900 bg-black/90 p-10 text-center shadow-xl backdrop-blur-md">
               <div className="text-5xl" aria-hidden="true">
-                🛒
+                <span className="pnp-header-star">♡</span>
               </div>
 
               <h2
                 className="mt-5 text-3xl font-black text-white"
                 style={smokyTextShadow}
               >
-                Your cart is empty
+                Your next favorite is waiting.
               </h2>
 
               <p

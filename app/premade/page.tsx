@@ -9,6 +9,8 @@ const premadeCollections = [
     action: "View Premade Cups →",
     href: "/cups",
     monogram: "Cups",
+    image: "/storefront/snowglobe.webp",
+    imageFit: "contain" as const,
   },
   {
     title: "Premade Shirts",
@@ -17,6 +19,8 @@ const premadeCollections = [
     action: "View Premade Shirts →",
     href: "/shirts/premade",
     monogram: "Shirts",
+    image: "/premade-shirts-category.png",
+    imageFit: "contain" as const,
   },
   {
     title: "Custom Cup Orders",
@@ -25,6 +29,8 @@ const premadeCollections = [
     action: "Build Your Cup →",
     href: "/custom-cup",
     monogram: "Custom",
+    image: "/blank-cups/glass/5.webp",
+    imageFit: "contain" as const,
   },
 ];
 

@@ -1,3 +1,4 @@
+import StorefrontHeader from "@/components/StorefrontHeader";
 const sizes = [
   { title: "Small", slug: "small" },
   { title: "Medium", slug: "medium" },
@@ -14,22 +15,12 @@ const smokyTextShadow = {
 
 export default function PremadeShirtsPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
+    <main id="storefront-content" className="pnp-legacy relative min-h-screen overflow-hidden text-white">
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/homepage-background.jpg')" }} />
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-black/40" />
 
       <div className="relative z-10">
-        <nav className="border-b border-red-950/70 bg-black/80 px-5 py-5 backdrop-blur-md">
-          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-4 md:grid-cols-3">
-            <div className="flex justify-center md:justify-start">
-              <a href="/premade" className="rounded-full border border-red-600 px-5 py-2 text-sm font-bold transition hover:bg-red-600" style={smokyTextShadow}>← Back to Premade</a>
-            </div>
-            <a href="/" className="flex justify-center">
-              <img src="/header-logo.png" alt="Pressed In Pink" className="h-auto max-h-24 w-44 object-contain sm:w-52 md:w-60" />
-            </a>
-            <div className="hidden md:block" />
-          </div>
-        </nav>
+        <StorefrontHeader backLink={{ href: "/premade", label: "Custom & Premade" }} />
 
         <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
           <div className="mx-auto max-w-4xl rounded-[2rem] border border-red-900/80 bg-black/90 p-6 text-center shadow-2xl backdrop-blur-md sm:p-10">
