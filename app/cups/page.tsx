@@ -9,7 +9,7 @@ const cupCollections = [
     action: "View Snowglobe Cups →",
     href: "/cups/snowglobe",
     monogram: "Snowglobe",
-    image: "/storefront/snowglobe.webp",
+    image: "/storefront/snowglobe-portrait.webp",
     imageFit: "contain" as const,
   },
   {
@@ -27,7 +27,7 @@ const cupCollections = [
     action: "View Libby Cups →",
     href: "/cups/libby",
     monogram: "Libby",
-    image: "/storefront/libby.webp",
+    image: "/storefront/libby-portrait.webp",
     imageFit: "contain" as const,
   },
   {

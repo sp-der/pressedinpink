@@ -9,7 +9,7 @@ const premadeCollections = [
     action: "View Premade Cups →",
     href: "/cups",
     monogram: "Cups",
-    image: "/storefront/snowglobe.webp",
+    image: "/storefront/snowglobe-portrait.webp",
     imageFit: "contain" as const,
   },
   {

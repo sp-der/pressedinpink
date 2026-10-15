@@ -7,31 +7,38 @@ const featured = [
   {
     title: "Snowglobe Cups",
     note: "Finished by PNP",
-    image: "/storefront/snowglobe.webp",
+    image: "/storefront/snowglobe-portrait.webp",
+    width: 608, height: 1080,
     href: "/cups/snowglobe",
   },
   {
     title: "Libby Cups",
     note: "Find your next favorite",
-    image: "/storefront/libby.webp",
+    image: "/storefront/libby-portrait.webp",
+    width: 608, height: 1080,
     href: "/cups/libby",
   },
   {
     title: "Pink Glass Cup",
     note: "A blank for your next idea",
     image: "/blank-cups/glass/5.webp",
+    width: 300, height: 400,
+    borderless: true,
     href: "/for-creators/blank-cups/glass/5",
   },
   {
     title: "Premade Shirts",
     note: "Wear a little personality",
     image: "/premade-shirts-category.png",
+    width: 1254, height: 1254,
     href: "/shirts/premade",
   },
   {
     title: "Blank Snowglobe Cups",
     note: "Make it your own",
     image: "/blank-cups/snowglobe/1.webp",
+    width: 300, height: 400,
+    borderless: true,
     href: "/for-creators/blank-cups/snowglobe",
   },
 ];
@@ -83,10 +90,10 @@ export default function Home() {
             </figure>
             <figure className="pnp-hero-photo pnp-photo-front">
               <img
-                src="/storefront/libby.webp"
+                src="/storefront/libby-portrait.webp"
                 alt="A finished PNP Libby cup"
-                width={600}
-                height={600}
+                width={608}
+                height={1080}
                 fetchPriority="high"
               />
               <figcaption>
@@ -128,10 +135,10 @@ export default function Home() {
                 </span>
               </div>
               <img
-                src="/storefront/snowglobe.webp"
+                src="/storefront/snowglobe-portrait.webp"
                 alt="Finished PNP snowglobe cup"
-                width={600}
-                height={600}
+                width={608}
+                height={1080}
                 loading="lazy"
               />
             </a>
@@ -167,12 +174,12 @@ export default function Home() {
         >
           {featured.map((item) => (
             <a key={item.title} href={item.href} className="pnp-feature-card">
-              <div className="pnp-feature-image">
+              <div className={`pnp-feature-image ${"borderless" in item && item.borderless ? "pnp-feature-image-borderless" : ""}`}>
                 <img
                   src={item.image}
                   alt={item.title}
-                  width={600}
-                  height={600}
+                  width={item.width}
+                  height={item.height}
                   loading="lazy"
                   decoding="async"
                 />
@@ -248,17 +255,17 @@ export default function Home() {
           </div>
           <div className="pnp-studio-images">
             <img
-              src="/storefront/libby.webp"
+              src="/storefront/libby-portrait.webp"
               alt="Finished Libby cup in the PNP studio"
-              width={600}
-              height={600}
+              width={608}
+              height={1080}
               loading="lazy"
             />
             <img
-              src="/storefront/snowglobe.webp"
+              src="/storefront/snowglobe-portrait.webp"
               alt="Finished snowglobe cup in the PNP studio"
-              width={600}
-              height={600}
+              width={608}
+              height={1080}
               loading="lazy"
             />
           </div>
